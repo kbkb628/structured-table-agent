@@ -13,19 +13,75 @@ def match_fields(question: str, file_profile: dict) -> dict:
                 return field_name
         return None
 
-    def pick_metric() -> tuple[str | None, str]:
-        if "order" in lowered and "count" in lowered:
-            return ("order_id" if "order_id" in column_names else None, "count")
-        if "sales" in lowered and "sales_amount" in column_names:
-            return ("sales_amount", "sum")
-        return (None, "sum")
+    def has_term(*terms: str) -> bool:
+        return all(term in lowered for term in terms)
 
     dimension_field = pick_dimension()
-    metric_field, aggregation = pick_metric()
+    metrics: list[dict[str, str]] = []
+    warnings: list[str] = []
+    analysis_type = "single_metric"
+
+    wants_order_count = has_term("order", "count")
+    wants_sales = "sales" in lowered
+
+    if dimension_field == "channel" and wants_order_count and wants_sales:
+        analysis_type = "channel_performance"
+        if "order_id" in column_names:
+            metrics.append(
+                {
+                    "metric_field": "order_id",
+                    "aggregation": "count",
+                    "label": "order_count",
+                }
+            )
+        else:
+            warnings.append("Missing order_id for order count analysis.")
+        if "sales_amount" in column_names:
+            metrics.append(
+                {
+                    "metric_field": "sales_amount",
+                    "aggregation": "sum",
+                    "label": "sales_amount_sum",
+                }
+            )
+        else:
+            warnings.append("Missing sales_amount for sales analysis.")
+    elif wants_order_count:
+        if "order_id" in column_names:
+            metrics.append(
+                {
+                    "metric_field": "order_id",
+                    "aggregation": "count",
+                    "label": "order_count",
+                }
+            )
+        else:
+            warnings.append("Missing order_id for order count analysis.")
+    elif wants_sales:
+        if "sales_amount" in column_names:
+            metrics.append(
+                {
+                    "metric_field": "sales_amount",
+                    "aggregation": "sum",
+                    "label": "sales_amount_sum",
+                }
+            )
+        else:
+            warnings.append("Missing sales_amount for sales analysis.")
+    else:
+        warnings.append("No supported metric intent was detected.")
+
+    if dimension_field is None:
+        warnings.append("No supported dimension field was matched.")
+
+    primary_metric = metrics[0] if metrics else {"metric_field": None, "aggregation": "sum"}
 
     return {
         "dimension_field": dimension_field,
-        "metric_field": metric_field,
-        "aggregation": aggregation,
+        "metric_field": primary_metric["metric_field"],
+        "aggregation": primary_metric["aggregation"],
+        "analysis_type": analysis_type,
+        "metrics": metrics,
         "candidate_fields": column_names,
+        "warnings": warnings,
     }

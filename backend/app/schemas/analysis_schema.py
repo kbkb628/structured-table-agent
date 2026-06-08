@@ -37,3 +37,12 @@ class AnalysisTaskState(BaseModel):
     events: list[AnalysisEvent]
     errors: list[dict[str, Any]]
     status: str
+
+
+class EvalRunRequest(BaseModel):
+    task_id: str
+
+
+class EvalRunResponse(BaseModel):
+    task_id: str
+    eval_result: dict[str, Any]

@@ -62,3 +62,13 @@ def init_db() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS eval_results (
+                eval_id TEXT PRIMARY KEY,
+                task_id TEXT NOT NULL,
+                score_json TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )

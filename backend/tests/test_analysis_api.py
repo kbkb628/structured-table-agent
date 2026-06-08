@@ -75,3 +75,83 @@ def test_run_analysis_returns_completed_state(tmp_path):
     assert run.json()["status"] == "completed"
     assert status.json()["task_id"] == task_id
     assert len(events.json()["events"]) > 0
+
+
+def test_run_channel_analysis_returns_multiple_tool_results(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "channel,sales_amount,order_id\nOnline,1200,ORD1\nRetail,800,ORD2\nOnline,300,ORD3\n",
+        encoding="utf-8",
+    )
+    save_file_record(
+        FileRecord(
+            file_id="file_api_channel",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=3,
+            column_count=3,
+            columns_json=json.dumps(
+                [
+                    {"name": "channel", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 3},
+                    {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 3},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": "file_api_channel", "question": "analyse channel order count and sales performance"},
+    )
+    task_id = start.json()["task_id"]
+
+    run = client.post(f"/api/analysis/{task_id}/run")
+
+    assert run.status_code == 200
+    assert run.json()["status"] == "completed"
+    assert len(run.json()["tool_results"]) == 2
+    assert len(run.json()["chart_specs"]) == 2
+
+
+def test_eval_run_persists_eval_result(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n",
+        encoding="utf-8",
+    )
+    save_file_record(
+        FileRecord(
+            file_id="file_api_eval",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=2,
+            column_count=3,
+            columns_json=json.dumps(
+                [
+                    {"name": "region", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": "file_api_eval", "question": "analyse sales by region"},
+    )
+    task_id = start.json()["task_id"]
+    client.post(f"/api/analysis/{task_id}/run")
+
+    eval_response = client.post("/api/eval/run", json={"task_id": task_id})
+    status = client.get(f"/api/analysis/{task_id}")
+
+    assert eval_response.status_code == 200
+    assert eval_response.json()["task_id"] == task_id
+    assert eval_response.json()["eval_result"]["overall_score"] > 0
+    assert status.json()["eval_result"]["overall_score"] == eval_response.json()["eval_result"]["overall_score"]

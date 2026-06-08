@@ -1,4 +1,4 @@
-# Day 1 and Day 2 MVP Backend
+# Hardened MVP Backend
 
 ## Scope
 
@@ -8,6 +8,26 @@
 - DuckDB groupby aggregation
 - Analysis task creation and execution
 - Event timeline query
+- Rule-based task evaluation
+
+## Truthful MVP boundary
+
+Currently implemented:
+
+- category sales TopN analysis
+- region sales comparison
+- channel order-count and sales-amount comparison
+- explicit task failure recording for non-executable field matches
+- automatic `eval_result` persistence after completed runs
+- manual re-run through `POST /api/eval/run`
+
+Not implemented yet:
+
+- LangGraph
+- RAG / knowledge retrieval
+- Redis session state
+- async queue execution
+- real LLM provider integration
 
 ## Setup with uv
 
@@ -40,3 +60,10 @@ cd E:\bgagent1\backend
 3. Run the task with `/api/analysis/{task_id}/run`
 4. Query task state with `/api/analysis/{task_id}`
 5. Query event timeline with `/api/analysis/{task_id}/events`
+6. Re-run evaluation with `/api/eval/run`
+
+## Demo questions
+
+- `analyse category sales top 5`
+- `analyse sales by region`
+- `analyse channel order count and sales performance`
