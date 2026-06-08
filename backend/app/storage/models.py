@@ -10,3 +10,14 @@ class FileRecord:
     column_count: int
     columns_json: str
     created_at: str
+
+
+@dataclass(slots=True)
+class AnalysisTaskRecord:
+    task_id: str
+    file_id: str
+    question: str
+    status: str
+    state_json: str
+    created_at: str
+    updated_at: str
