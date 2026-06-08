@@ -1,5 +1,25 @@
+import uuid
+from datetime import datetime, timezone
+from pathlib import Path
+
+from app.core.config import UPLOAD_DIR
 from app.storage.database import get_connection, init_db
 from app.storage.models import FileRecord
+
+
+def persist_uploaded_file(filename: str, content: bytes) -> Path:
+    UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+    stored_path = UPLOAD_DIR / filename
+    stored_path.write_bytes(content)
+    return stored_path
+
+
+def make_file_id() -> str:
+    return f"file_{uuid.uuid4().hex[:12]}"
+
+
+def make_timestamp() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
 def save_file_record(record: FileRecord) -> None:
