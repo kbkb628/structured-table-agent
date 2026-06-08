@@ -122,3 +122,24 @@ def record_tool_call(task_id: str, tool_name: str, request: dict, response: dict
                 _ts(),
             ),
         )
+
+
+def record_tool_call(task_id: str, tool_name: str, request: dict, response: dict) -> None:
+    init_db()
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO tool_call_logs (log_id, task_id, tool_name, request_json, response_json, success, elapsed_ms, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                f"log_{uuid.uuid4().hex[:12]}",
+                task_id,
+                tool_name,
+                json.dumps(request, ensure_ascii=False),
+                json.dumps(response, ensure_ascii=False),
+                1 if response.get("success") else 0,
+                int(response.get("metadata", {}).get("elapsed_ms", 0)),
+                _ts(),
+            ),
+        )
