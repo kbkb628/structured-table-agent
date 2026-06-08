@@ -19,6 +19,20 @@ def test_generate_chart_returns_bar_spec():
     assert result["plotly_spec"]["data"][0]["type"] == "bar"
 
 
+def test_generate_chart_rejects_empty_rows():
+    try:
+        generate_chart(
+            title="Sales by Region",
+            x_field="region",
+            y_field="sales_amount_sum",
+            rows=[],
+        )
+    except ValueError as exc:
+        assert "Rows cannot be empty" in str(exc)
+    else:
+        raise AssertionError("generate_chart should raise ValueError for empty rows")
+
+
 def test_generate_report_uses_tool_numbers():
     report = generate_report(
         question="analyse sales by region",
@@ -33,3 +47,15 @@ def test_generate_report_uses_tool_numbers():
     assert report["analysis_goal"] == "compare region sales"
     assert report["key_findings"][0]["source_tool"] == "groupby_aggregate"
     assert "1200" in report["key_findings"][0]["evidence"]
+
+
+def test_generate_report_falls_back_when_no_tool_rows():
+    report = generate_report(
+        question="analyse sales by region",
+        analysis_goal="compare region sales",
+        tool_results=[],
+        chart_specs=[],
+    )
+
+    assert report["key_findings"][0]["source_tool"] == "report_builder"
+    assert report["chart_explanations"][0] == "No chart was generated; conclusions are based on tabular tool results."

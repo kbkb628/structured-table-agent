@@ -155,3 +155,12 @@ def test_eval_run_persists_eval_result(tmp_path):
     assert eval_response.json()["task_id"] == task_id
     assert eval_response.json()["eval_result"]["overall_score"] > 0
     assert status.json()["eval_result"]["overall_score"] == eval_response.json()["eval_result"]["overall_score"]
+
+
+def test_eval_run_returns_404_for_missing_task():
+    client = TestClient(app)
+
+    response = client.post("/api/eval/run", json={"task_id": "task_missing"})
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Task not found."

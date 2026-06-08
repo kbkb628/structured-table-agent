@@ -67,3 +67,56 @@ cd E:\bgagent1\backend
 - `analyse category sales top 5`
 - `analyse sales by region`
 - `analyse channel order count and sales performance`
+
+## Windows API examples
+
+Start the server:
+
+```powershell
+cd E:\bgagent1\backend
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+Upload the sample CSV with `curl.exe`:
+
+```powershell
+curl.exe -X POST -F "file=@data/samples/sales_orders.csv" http://127.0.0.1:8000/api/files/upload
+```
+
+Create an analysis task:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/analysis/start" `
+  -ContentType "application/json" `
+  -Body '{"file_id":"file_xxx","question":"analyse sales by region"}'
+```
+
+Run the task:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/analysis/task_xxx/run"
+```
+
+Query task state and event timeline:
+
+```powershell
+Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/analysis/task_xxx"
+Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/analysis/task_xxx/events"
+```
+
+Re-run rule evaluation:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/eval/run" `
+  -ContentType "application/json" `
+  -Body '{"task_id":"task_xxx"}'
+```
+
+Expected failure example:
+
+- if the matched dimension or metric fields do not exist, the task returns `status = failed`
+- the failure reason is written into `errors`
+- the event timeline contains `task_failed`
