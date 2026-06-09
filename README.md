@@ -25,6 +25,8 @@
   当前阶段开发边界与策略来源
 - [backend/README.md](/e:/bgagent1/.worktrees/day1-mvp-backend/backend/README.md)
   后端启动、测试、Windows API 示例
+- [scripts/demo_mvp.ps1](/e:/bgagent1/.worktrees/day1-mvp-backend/scripts/demo_mvp.ps1)
+  一键上传样例 CSV 并跑通三类演示问题
 - [docs/superpowers/specs](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/superpowers/specs)
   已落库的设计文档
 - [docs/superpowers/plans](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/superpowers/plans)
@@ -40,3 +42,19 @@ py -3.12 -m venv .venv
 ```
 
 完整使用示例、测试命令和 API 调用方式见 [backend/README.md](/e:/bgagent1/.worktrees/day1-mvp-backend/backend/README.md)。
+
+## 一键演示
+
+如果本地已经建好 `backend/.venv`，可以直接运行：
+
+```powershell
+cd E:\bgagent1
+.\scripts\demo_mvp.ps1 -StartServer
+```
+
+脚本会：
+
+- 自动启动本地 FastAPI 服务
+- 上传 `backend/data/samples/sales_orders.csv`
+- 依次运行品类、地区、渠道三类分析问题
+- 输出任务状态、图表数量、工具调用数量和评估分数摘要
