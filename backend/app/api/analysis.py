@@ -3,6 +3,8 @@ import uuid
 
 from fastapi import APIRouter, HTTPException
 
+from app.llm.mock_client import MockLLMClient
+from app.rag.keyword_retriever import retrieve_business_context
 from app.schemas.analysis_schema import AnalysisStartRequest, AnalysisStartResponse, AnalysisTaskState
 from app.schemas.event_schema import AnalysisEventList
 from app.services.analysis_runner import run_analysis_task
@@ -10,29 +12,6 @@ from app.storage.analysis_store import create_task, get_task_state, list_task_ev
 from app.storage.file_store import get_file_record
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
-
-
-def _build_goal_and_plan(question: str) -> tuple[str, list[str]]:
-    lowered = question.lower()
-    if "category" in lowered and "sales" in lowered:
-        return (
-            "compare product category sales performance",
-            ["match fields", "aggregate category sales", "generate chart", "generate report"],
-        )
-    if "region" in lowered and "sales" in lowered:
-        return (
-            "compare regional sales performance",
-            ["match fields", "aggregate regional sales", "generate chart", "generate report"],
-        )
-    if "channel" in lowered and ("sales" in lowered or "order" in lowered):
-        return (
-            "compare channel order and sales performance",
-            ["match fields", "aggregate channel metrics", "generate chart", "generate report"],
-        )
-    return (
-        "perform grouped metric analysis on the uploaded file",
-        ["match fields", "aggregate metric", "generate chart", "generate report"],
-    )
 
 
 @router.post("/start", response_model=AnalysisStartResponse)
@@ -50,7 +29,10 @@ def start_analysis(request: AnalysisStartRequest) -> AnalysisStartResponse:
         "columns": json.loads(file_record.columns_json),
         "created_at": file_record.created_at,
     }
-    analysis_goal, analysis_plan = _build_goal_and_plan(request.question)
+    business_context = retrieve_business_context(request.question, file_profile)["items"]
+    llm_client = MockLLMClient()
+    analysis_goal = llm_client.generate_analysis_goal(request.question, file_profile, business_context)
+    analysis_plan = llm_client.generate_analysis_plan(analysis_goal, file_profile, business_context)
     state = {
         "task_id": task_id,
         "file_id": request.file_id,
@@ -58,7 +40,7 @@ def start_analysis(request: AnalysisStartRequest) -> AnalysisStartResponse:
         "analysis_goal": analysis_goal,
         "file_profile": file_profile,
         "field_understanding": {},
-        "business_context": [],
+        "business_context": business_context,
         "analysis_plan": analysis_plan,
         "current_step": "created",
         "completed_steps": [],
@@ -74,6 +56,13 @@ def start_analysis(request: AnalysisStartRequest) -> AnalysisStartResponse:
     }
     create_task(task_id, request.file_id, request.question, state)
     record_event(task_id, "task_created", "start_analysis", "task created", {"status": "created"})
+    record_event(
+        task_id,
+        "rag_retrieved",
+        "start_analysis",
+        "business context retrieved",
+        {"item_count": len(business_context), "item_ids": [item["id"] for item in business_context]},
+    )
     record_event(
         task_id,
         "goal_understood",
@@ -93,6 +82,7 @@ def start_analysis(request: AnalysisStartRequest) -> AnalysisStartResponse:
         status="created",
         analysis_goal=analysis_goal,
         analysis_plan=analysis_plan,
+        business_context=business_context,
     )
 
 

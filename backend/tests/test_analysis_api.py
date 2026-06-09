@@ -37,6 +37,15 @@ def test_start_analysis_creates_task(tmp_path):
     assert response.json()["status"] == "created"
     assert response.json()["analysis_goal"] != ""
     assert len(response.json()["analysis_plan"]) > 0
+    assert len(response.json()["business_context"]) > 0
+
+    task_id = response.json()["task_id"]
+    client = TestClient(app)
+    state = client.get(f"/api/analysis/{task_id}")
+    events = client.get(f"/api/analysis/{task_id}/events")
+
+    assert len(state.json()["business_context"]) > 0
+    assert any(event["event_type"] == "rag_retrieved" for event in events.json()["events"])
 
 
 def test_run_analysis_returns_completed_state(tmp_path):

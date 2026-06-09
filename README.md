@@ -7,6 +7,8 @@
 - CSV 上传与字段画像
 - SQLite 元数据与任务状态持久化
 - 基于 DuckDB 的真实聚合分析
+- 基于 JSONL 的轻量关键词业务语义检索
+- 可替换的 MockLLM 目标与计划生成
 - 分析任务创建、执行、事件时间线查询
 - 品类、地区、渠道三类演示问题闭环
 - 规则评分 `eval_result` 自动写回与手动重算
@@ -14,10 +16,10 @@
 当前明确未实现：
 
 - LangGraph
-- RAG / 本地知识库检索
 - Redis 会话态
 - 异步队列
 - 真实 LLM Provider
+- embedding / BM25 / rerank
 
 ## 项目结构
 
@@ -58,3 +60,18 @@ cd E:\bgagent1
 - 上传 `backend/data/samples/sales_orders.csv`
 - 依次运行品类、地区、渠道三类分析问题
 - 输出任务状态、图表数量、工具调用数量和评估分数摘要
+
+## 当前 MVP 边界
+
+当前已经实现的 AI 相关部分是：
+
+- `MockLLMClient`：基于规则的可替换目标/计划生成器
+- `knowledge_base.jsonl + keyword_retriever`：真实本地 JSONL 检索
+- `business_context`：检索结果会写入任务状态并记录 `rag_retrieved` 事件
+
+当前仍然没有实现的部分是：
+
+- LangGraph 状态图编排
+- 外部真实 LLM API
+- 向量检索或重排
+- Redis 记忆和异步任务

@@ -17,6 +17,8 @@ Currently implemented:
 - category sales TopN analysis
 - region sales comparison
 - channel order-count and sales-amount comparison
+- JSONL keyword retrieval for business context
+- replaceable MockLLM goal and plan generation
 - explicit task failure recording for non-executable field matches
 - automatic `eval_result` persistence after completed runs
 - manual re-run through `POST /api/eval/run`
@@ -24,10 +26,10 @@ Currently implemented:
 Not implemented yet:
 
 - LangGraph
-- RAG / knowledge retrieval
 - Redis session state
 - async queue execution
 - real LLM provider integration
+- embedding / BM25 / rerank
 
 ## Setup with uv
 
@@ -61,6 +63,12 @@ cd E:\bgagent1\backend
 4. Query task state with `/api/analysis/{task_id}`
 5. Query event timeline with `/api/analysis/{task_id}/events`
 6. Re-run evaluation with `/api/eval/run`
+
+`/api/analysis/start` now returns:
+
+- `analysis_goal`
+- `analysis_plan`
+- `business_context`
 
 ## Demo questions
 
