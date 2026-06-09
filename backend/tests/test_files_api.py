@@ -30,3 +30,27 @@ def test_get_profile_returns_persisted_profile():
 
     assert profile_response.status_code == 200
     assert profile_response.json()["file_id"] == file_id
+
+
+def test_upload_rejects_non_csv_file():
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/files/upload",
+        files={"file": ("sales_orders.txt", "not,a,csv\n", "text/plain")},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Only CSV files are supported."
+
+
+def test_upload_rejects_empty_file():
+    client = TestClient(app)
+
+    response = client.post(
+        "/api/files/upload",
+        files={"file": ("sales_orders.csv", "", "text/csv")},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Uploaded file is empty."
