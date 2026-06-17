@@ -139,6 +139,7 @@ class SessionStore:
                     "Redis analysis_state missing; rebuilding task %s from SQLite state plus granular Redis keys",
                     task_id,
                 )
+                update_task_state(task_id, hydrated_state)
                 self._record_session_state_recovered(task_id, recovered_segments)
                 return hydrated_state, True
         logger.warning("Redis unavailable; falling back to SQLite-backed session state for task %s", task_id)
