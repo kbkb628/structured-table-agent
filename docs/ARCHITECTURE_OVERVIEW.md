@@ -9,7 +9,7 @@
 1. 用户上传 CSV / Excel
 2. 服务端生成字段画像并持久化
 3. 用户发起分析任务
-4. 系统执行轻量 JSONL 关键词检索
+4. 系统执行本地 JSONL 混合检索
 5. `LLMClient` 生成分析目标和分析计划
 6. LangGraph 驱动字段匹配、DuckDB 聚合、`validate_tool_result` 校验、`route_next_step` 路由、图表生成、报告生成和评估
 7. 任务状态、事件时间线、工具调用日志和评估结果写入 SQLite / SessionStore
@@ -55,7 +55,7 @@
 
 - `knowledge_base.jsonl`：本地知识库
 - `knowledge_loader.py`：知识加载
-- `keyword_retriever.py`：关键词检索
+- `keyword_retriever.py`：本地混合检索，包含关键词、短语命中、字段加权和 BM25 风格评分
 
 ### `app/llm`
 
@@ -135,7 +135,7 @@
 当前系统真实提供的是：
 
 - CSV / Excel 上传与画像
-- 轻量 RAG 语义增强
+- 轻量 RAG 语义增强与本地混合检索
 - LangGraph 多步状态流
 - DuckDB 聚合与 Plotly 配置
 - 结构化报告
@@ -145,7 +145,7 @@
 
 当前没有实现：
 
-- embedding / BM25 / rerank
+- embedding / 向量检索 / rerank
 - DockerSandbox
 - 完整前端页面
 - 异步队列

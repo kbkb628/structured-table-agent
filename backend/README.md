@@ -18,7 +18,7 @@ Currently implemented:
 - category sales TopN analysis
 - region sales comparison
 - channel order-count and sales-amount comparison
-- JSONL keyword retrieval for business context
+- local hybrid JSONL retrieval for business context
 - replaceable `LLMClient` abstraction with:
   - `QwenClient` for real Tongyi Qianwen calls
   - `MockLLMClient` for explicit fallback and local/offline runs
@@ -34,7 +34,7 @@ Currently implemented:
 Not implemented yet:
 
 - async queue execution
-- embedding / BM25 / rerank
+- embedding / vector retrieval / rerank
 - DockerSandbox
 - full React frontend
 - full production-grade multi-provider management
@@ -54,6 +54,8 @@ The project still does **not** let the LLM fabricate numeric analysis. Determini
 - grouped aggregation
 - chart data
 - numeric evidence quoted in the final report
+
+The retrieval layer is now stronger than the original pure-keyword MVP. It uses local hybrid scoring over JSONL knowledge items with keyword overlap, phrase-hit boosting, field-alignment boosting, and BM25-style normalization. This is still a lightweight local retrieval layer, not a full embedding or rerank stack.
 
 Redis remains a recommended dependency rather than a hard requirement. When Redis is unavailable, task state explicitly degrades to SQLite-backed storage and the timeline records a `session_store_warning` event. When Redis is available, the current implementation also persists `draft_report`, `intermediate_findings`, `business_context`, a compact `context_checkpoint`, and `task_lock` into granular keys alongside the full task snapshot. When Redis is unavailable, duplicate in-process runs of the same task are still blocked by a memory lock.
 

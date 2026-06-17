@@ -15,7 +15,7 @@
 - 固定回归评测：`POST /api/eval/cases/run`
 - SQLite 持久化：`files`、`analysis_tasks`、`analysis_events`、`tool_call_logs`、`eval_results`
 - DuckDB 真实聚合工具：按品类、地区、渠道执行聚合分析
-- JSONL 关键词业务语义检索
+- JSONL 本地混合检索，包含关键词、短语命中、字段加权和 BM25 风格评分
 - LangGraph 显式状态流，包含 `validate_tool_result` 与 `route_next_step`
 - 真实可替换 LLM Provider 接入：
   - `QwenClient`
@@ -36,6 +36,7 @@
 - CSV / Excel 上传与字段画像
 - 从自然语言问题到工具执行的完整分析闭环
 - 轻量 RAG 业务语义增强
+- 本地混合检索 / BM25 风格语义增强
 - LangGraph 多步状态流与最小动态路由
 - pandas / DuckDB / Plotly 的受控工具链
 - 真实 Tongyi Qianwen Provider 接入
@@ -45,7 +46,7 @@
 当前不能声明已实现：
 
 - 异步队列执行
-- embedding / BM25 / rerank
+- embedding / 向量检索 / rerank
 - DockerSandbox
 - 完整 React 前端
 - 完整生产级多 Provider 调度平台
@@ -103,7 +104,13 @@
   - `validate_tool_result` 校验成功与非空结果
   - `route_next_step` 决定继续统计还是进入图表阶段
   - `generate_report` 先形成 `draft_report`，再生成最终 `final_report`
-  - `evaluate_report` 写入 `eval_result` 与 `llm_judgement`
+- `evaluate_report` 写入 `eval_result` 与 `llm_judgement`
+- `keyword_retriever` 当前已升级为本地混合检索：
+  - 关键词重叠打分
+  - 短语命中加权
+  - related_fields 字段加权
+  - BM25 风格归一化评分
+  - `score_breakdown` 检索打分明细
 
 ## 当前结论
 
@@ -113,7 +120,7 @@
 
 ## 剩余增强方向
 
-- 升级到 `embedding + BM25 + rerank`
+- 升级到 `embedding + 向量检索 + rerank`
 - 增强 Redis 会话记忆和异步执行
 - 引入 DockerSandbox
 - 增强前端过程展示

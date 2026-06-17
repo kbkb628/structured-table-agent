@@ -47,11 +47,18 @@
 
 ## 4. 为什么 RAG 只做增强，不做计算
 
-当前项目里的 RAG 是本地 `knowledge_base.jsonl + keyword_retriever`，只解决：
+当前项目里的 RAG 是本地 `knowledge_base.jsonl + keyword_retriever`，并且已经从纯关键词检索升级到本地混合检索，只解决：
 
 - 指标口径解释
 - 字段语义映射
 - 分析模板提示
+
+当前检索层包含：
+
+- 关键词重叠打分
+- 短语命中加权
+- related_fields 字段加权
+- BM25 风格归一化评分
 
 它不负责：
 
@@ -109,10 +116,10 @@
 - 已经接入真实 Tongyi Qianwen Provider
 - 默认可以通过 `LLM_PROVIDER=qwen` 切到真实模型
 - 本地仍保留 `mock` 回退路径
-- 当前 RAG 仍是 `knowledge_base.jsonl + keyword_retriever`
+- 当前 RAG 是 `knowledge_base.jsonl + keyword_retriever` 的本地混合检索实现，不是纯关键词版本
 - 当前 SessionStore 会优先尝试 Redis，不可用时显式降级到 SQLite
 - 当前已经实现 `draft_report`、`final_report`、`llm_judgement`、`context_checkpoint`
-- 当前没有实现 embedding / BM25 / rerank、DockerSandbox、完整 React 前端、异步队列
+- 当前没有实现 embedding / 向量检索 / rerank、DockerSandbox、完整 React 前端、异步队列
 
 如果把没做的能力说成已经完成，会直接破坏项目可信度。
 
@@ -120,7 +127,7 @@
 
 当前代码最合理的后续方向是：
 
-- 升级到 embedding / BM25 / rerank
+- 升级到 embedding / 向量检索 / rerank
 - 增强 Redis 会话记忆和异步执行
 - 引入 DockerSandbox
 - 补更完整的前端过程展示
