@@ -68,6 +68,8 @@ def test_run_analysis_graph_completes_region_task(tmp_path: Path):
     result = run_analysis_graph("task_graph")
 
     assert result["status"] == "completed"
+    assert result["draft_report"]["draft_status"] == "ready_for_final_report"
+    assert result["draft_report"]["analysis_goal"] == "compare region sales"
     assert result["final_report"]["analysis_goal"] == "compare region sales"
     assert result["eval_result"]["overall_score"] > 0
 
@@ -133,6 +135,7 @@ def test_run_analysis_graph_routes_to_next_metric_before_finishing(tmp_path: Pat
     result = run_analysis_graph("task_graph_channel")
 
     assert result["status"] == "completed"
+    assert result["draft_report"]["metric_labels"] == ["order_count", "sales_amount_sum"]
     assert len(result["tool_results"]) == 2
     assert any(step == "route_next_step:continue" for step in result["completed_steps"])
     assert any(step == "route_next_step:finish" for step in result["completed_steps"])

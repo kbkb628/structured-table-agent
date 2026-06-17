@@ -114,6 +114,7 @@
 - `match_fields` 会写入 `field_understanding` 和待执行的 `pending_metrics`
 - `execute_tools` 每次只消费一个 metric，并把结果写入 `tool_results`
 - `route_next_step` 会根据是否还有待执行 metric，决定回到 `execute_tools` 继续统计，或进入 `generate_charts`
+- `generate_report` 前会先基于 `intermediate_findings` 和 `chart_specs` 生成 `draft_report`
 - 遇到不可执行字段匹配或空结果时会进入失败分支，并写入 `task_failed` 事件
 
 ## 5. 真实性边界

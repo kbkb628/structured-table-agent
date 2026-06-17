@@ -59,6 +59,9 @@
   - `match_fields` 会为多指标问题写入 `pending_metrics`
   - `execute_tools` 每次处理一个 metric
   - `route_next_step` 会显式决定继续执行下一轮工具，还是进入图表生成
+- 报告状态当前已形成最小闭环：
+  - `generate_report` 前会先基于 `intermediate_findings` 和 `chart_specs` 生成真实 `draft_report`
+  - `final_report` 继续由受控报告工具生成，并与 `draft_report` 一起持久化
 - Redis 边界已收口一致：
   - 代码实现 `SessionStore` 优先尝试 Redis
   - Redis 不可用时显式降级到 SQLite，并记录 `session_store_warning`

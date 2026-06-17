@@ -165,7 +165,24 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
     return state
 
 
+def _build_draft_report(state: AnalysisGraphState) -> dict:
+    metric_labels = [item.get("metric_label", "unknown_metric") for item in state["intermediate_findings"]]
+    chart_labels = [item.get("metric_label", "unknown_metric") for item in state["chart_specs"]]
+    top_summaries = [item.get("summary", "") for item in state["intermediate_findings"]]
+    return {
+        "title": f"Draft Report: {state['question']}",
+        "analysis_goal": state["analysis_goal"],
+        "metric_labels": metric_labels,
+        "chart_labels": chart_labels,
+        "finding_summaries": top_summaries,
+        "draft_status": "ready_for_final_report",
+    }
+
+
 def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    state["draft_report"] = _build_draft_report(state)
+    state["completed_steps"].append("draft_report_prepared")
+    _persist_state(state)
     tool_request = {
         "question": state["question"],
         "analysis_goal": state["analysis_goal"],

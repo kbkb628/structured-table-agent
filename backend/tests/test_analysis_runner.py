@@ -75,6 +75,7 @@ def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
     assert stored["field_understanding"]["dimension_field"] == "region"
     assert stored["tool_results"][0]["tool_name"] == "groupby_aggregate"
     assert stored["chart_specs"][0]["chart_type"] == "bar"
+    assert stored["draft_report"]["draft_status"] == "ready_for_final_report"
     assert stored["final_report"]["analysis_goal"] == "compare region sales"
     assert any(event["event_type"] == "task_completed" for event in stored["events"])
     tool_logs = get_tool_call_logs(task_id)
@@ -151,6 +152,7 @@ def test_run_analysis_task_supports_channel_dual_metrics(tmp_path: Path):
     assert len(result["tool_results"]) == 2
     assert len(result["chart_specs"]) == 2
     assert len(result["intermediate_findings"]) == 2
+    assert result["draft_report"]["chart_labels"] == ["order_count", "sales_amount_sum"]
     assert result["tool_results"][0]["data"]["rows"][0]["channel"] == "Online"
     assert any(item["metric_label"] == "order_count" for item in result["intermediate_findings"])
     assert any(item["metric_label"] == "sales_amount_sum" for item in result["intermediate_findings"])
