@@ -1,13 +1,15 @@
 import json
+import uuid
 from pathlib import Path
 
 from app.services.analysis_runner import run_analysis_task
-from app.storage.analysis_store import create_task, get_task_state
+from app.storage.analysis_store import create_task, get_task_state, get_tool_call_logs
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
 
 
 def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
+    task_id = f"task_runner_{uuid.uuid4().hex[:8]}"
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text(
         "region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n",
@@ -39,11 +41,11 @@ def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
     )
 
     create_task(
-        "task_runner",
+        task_id,
         "file_task",
         "analyse sales by region",
         {
-            "task_id": "task_runner",
+            "task_id": task_id,
             "file_id": "file_task",
             "question": "analyse sales by region",
             "analysis_goal": "compare region sales",
@@ -65,8 +67,8 @@ def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
         },
     )
 
-    result = run_analysis_task("task_runner")
-    stored = get_task_state("task_runner")
+    result = run_analysis_task(task_id)
+    stored = get_task_state(task_id)
 
     assert result["status"] == "completed"
     assert stored["status"] == "completed"
@@ -75,6 +77,7 @@ def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
     assert stored["chart_specs"][0]["chart_type"] == "bar"
     assert stored["final_report"]["analysis_goal"] == "compare region sales"
     assert any(event["event_type"] == "task_completed" for event in stored["events"])
+    assert len(get_tool_call_logs(task_id)) == 1
 
 
 def test_run_analysis_task_supports_channel_dual_metrics(tmp_path: Path):

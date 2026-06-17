@@ -124,6 +124,34 @@ def record_tool_call(task_id: str, tool_name: str, request: dict, response: dict
         )
 
 
+def get_tool_call_logs(task_id: str) -> list[dict]:
+    init_db()
+    with get_connection() as conn:
+        rows = conn.execute(
+            """
+            SELECT log_id, task_id, tool_name, request_json, response_json, success, elapsed_ms, created_at
+            FROM tool_call_logs
+            WHERE task_id = ?
+            ORDER BY created_at ASC
+            """,
+            (task_id,),
+        ).fetchall()
+
+    return [
+        {
+            "log_id": row[0],
+            "task_id": row[1],
+            "tool_name": row[2],
+            "request_json": row[3],
+            "response_json": row[4],
+            "success": bool(row[5]),
+            "elapsed_ms": row[6],
+            "created_at": row[7],
+        }
+        for row in rows
+    ]
+
+
 def record_eval_result(task_id: str, eval_result: dict) -> None:
     init_db()
     with get_connection() as conn:

@@ -91,7 +91,7 @@
 - `tool_call_logs`
 - `eval_results`
 
-这与 `DEVELOPMENT_GUIDE.md` 的 MVP 存储边界保持一致，尚未引入 Redis。
+这与 `DEVELOPMENT_GUIDE.md` 的 MVP 存储边界保持一致。当前代码已经实现 `SessionStore`，会优先尝试 Redis；当 Redis 不可用或本地未安装依赖时，会显式降级到 SQLite 持久化并记录 `session_store_warning` 事件。
 
 ## 4. 运行时状态流
 
@@ -126,7 +126,7 @@
 
 - 外部真实 LLM API
 - embedding / BM25 / rerank
-- Redis 记忆
+- 更完整的 Redis 会话记忆能力
 - 异步队列
 - DockerSandbox
 - LLM-as-Judge
