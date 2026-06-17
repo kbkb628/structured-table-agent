@@ -16,6 +16,7 @@
 Currently implemented:
 
 - category sales TopN analysis
+- category sales share analysis
 - region sales comparison
 - channel order-count and sales-amount comparison
 - local hybrid JSONL retrieval for business context
@@ -117,9 +118,10 @@ print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
 '@ | .\.venv\Scripts\python.exe -
 ```
 
-The runner executes the three currently supported case families on `data/samples/sales_orders.csv`:
+The runner executes the four currently supported case families on `data/samples/sales_orders.csv`:
 
 - category sales TopN
+- category sales share
 - region sales comparison
 - channel order-count and sales performance
 
@@ -171,6 +173,7 @@ The current graph is still intentionally small, but it now includes:
 ## Demo questions
 
 - `analyse category sales top 5`
+- `analyse category sales share`
 - `analyse sales by region`
 - `analyse channel order count and sales performance`
 

@@ -35,6 +35,14 @@ def get_fixed_eval_cases() -> list[dict]:
             "min_chart_specs": 2,
             "min_overall_score": 0.8,
         },
+        {
+            "case_id": "category_share",
+            "question": "analyse category sales share",
+            "expected_status": "completed",
+            "min_tool_results": 1,
+            "min_chart_specs": 1,
+            "min_overall_score": 0.8,
+        },
     ]
 
 

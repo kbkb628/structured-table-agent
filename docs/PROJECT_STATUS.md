@@ -15,6 +15,7 @@
 - 固定回归评测：`POST /api/eval/cases/run`
 - SQLite 持久化：`files`、`analysis_tasks`、`analysis_events`、`tool_call_logs`、`eval_results`
 - DuckDB 真实聚合工具：按品类、地区、渠道执行聚合分析
+- Share 分析工具：按维度计算指标占比、贡献率和百分比
 - JSONL 本地混合检索，包含关键词、短语命中、字段加权和 BM25 风格评分
 - LangGraph 显式状态流，包含 `validate_tool_result` 与 `route_next_step`
 - 真实可替换 LLM Provider 接入：
@@ -39,6 +40,7 @@
 - 本地混合检索 / BM25 风格语义增强
 - LangGraph 多步状态流与最小动态路由
 - pandas / DuckDB / Plotly 的受控工具链
+- 占比分析工具与主链接入
 - 真实 Tongyi Qianwen Provider 接入
 - SQLite 持久化与 Redis 优先 / SQLite 降级
 - 规则评分与固定 case 回归验证
@@ -85,6 +87,7 @@
 - 工具调用链真实落库到 `tool_call_logs`：
   - `match_fields`
   - `groupby_aggregate`
+  - `calculate_share`
   - `generate_chart`
   - `generate_report`
 - 固定 case 回归当前额外输出：
@@ -105,6 +108,11 @@
   - `route_next_step` 决定继续统计还是进入图表阶段
   - `generate_report` 先形成 `draft_report`，再生成最终 `final_report`
 - `evaluate_report` 写入 `eval_result` 与 `llm_judgement`
+- `share_tool` 当前支持：
+  - 分组后指标占比计算
+  - `share_ratio`
+  - `share_percent`
+  - 自然语言 share 问题接入 LangGraph 主链
 - `keyword_retriever` 当前已升级为本地混合检索：
   - 关键词重叠打分
   - 短语命中加权
