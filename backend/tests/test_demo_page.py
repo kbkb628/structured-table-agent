@@ -20,6 +20,7 @@ def test_demo_page_contains_upload_and_analysis_sections():
 
     assert "Structured Table Analysis Demo" in content
     assert 'id="upload-form"' in content
+    assert 'id="load-sample-button"' in content
     assert 'id="question-input"' in content
     assert 'id="run-analysis-button"' in content
     assert 'id="task-status"' in content
@@ -30,6 +31,7 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'id="report-output"' in content
     assert 'id="events-output"' in content
     assert 'id="tool-logs-output"' in content
+    assert "sales_orders.csv" in content
 
 
 def test_root_path_remains_unregistered():

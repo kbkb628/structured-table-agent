@@ -124,6 +124,19 @@ def test_get_profile_returns_persisted_profile():
     assert profile_response.json()["file_id"] == file_id
 
 
+def test_upload_sample_returns_profile():
+    client = TestClient(app)
+
+    response = client.post("/api/files/upload-sample")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["filename"] == "sales_orders.csv"
+    assert body["row_count"] > 0
+    assert body["column_count"] > 0
+    assert body["file_id"].startswith("file_")
+
+
 def test_upload_rejects_non_csv_file():
     client = TestClient(app)
 

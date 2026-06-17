@@ -197,6 +197,7 @@ http://127.0.0.1:8000/demo
 The page supports:
 
 - uploading a CSV or Excel file
+- loading the built-in `sales_orders.csv` sample into the same upload flow
 - entering or choosing a supported analysis question
 - running the real analysis task flow
 - viewing final report output, task snapshot, event timeline, and tool logs

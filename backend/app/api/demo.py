@@ -311,6 +311,10 @@ def demo_page() -> HTMLResponse:
               <input id="file-input" name="file" type="file" accept=".csv,.xlsx,.xls" required>
             </label>
           </form>
+          <div class="hint">
+            Built-in sample data is available for quick verification:
+            <span class="fine">`sales_orders.csv` can be loaded into the same upload and analysis flow.</span>
+          </div>
 
           <label>
             Analysis Question
@@ -326,6 +330,7 @@ def demo_page() -> HTMLResponse:
           </div>
 
           <div class="button-row">
+            <button id="load-sample-button" class="ghost" type="button">Load Built-in Sample</button>
             <button id="upload-button" class="secondary" type="button">1. Upload File</button>
             <button id="run-analysis-button" class="primary" type="button">2. Start And Run</button>
             <button id="refresh-button" class="ghost" type="button">Refresh Task</button>
@@ -429,6 +434,7 @@ def demo_page() -> HTMLResponse:
     const toolLogsEl = document.getElementById("tool-logs-output");
     const fileInput = document.getElementById("file-input");
     const questionInput = document.getElementById("question-input");
+    const loadSampleButton = document.getElementById("load-sample-button");
     const uploadButton = document.getElementById("upload-button");
     const runButton = document.getElementById("run-analysis-button");
     const refreshButton = document.getElementById("refresh-button");
@@ -595,6 +601,17 @@ def demo_page() -> HTMLResponse:
       return profile;
     }
 
+    async function loadBuiltInSample() {
+      setStatus("Loading built-in sample data...");
+      const profile = await apiFetch("/api/files/upload-sample", {
+        method: "POST",
+      });
+      state.fileId = profile.file_id;
+      taskEl.textContent = stringify({ file_profile: profile });
+      setStatus("Built-in sample loaded. File ID: " + profile.file_id);
+      return profile;
+    }
+
     async function loadTaskArtifacts(taskId) {
       const [task, events, toolLogs] = await Promise.all([
         apiFetch(`/api/analysis/${taskId}`),
@@ -690,6 +707,17 @@ def demo_page() -> HTMLResponse:
         setStatus("Upload failed: " + error.message);
       } finally {
         uploadButton.disabled = false;
+      }
+    });
+
+    loadSampleButton.addEventListener("click", async () => {
+      loadSampleButton.disabled = true;
+      try {
+        await loadBuiltInSample();
+      } catch (error) {
+        setStatus("Loading sample failed: " + error.message);
+      } finally {
+        loadSampleButton.disabled = false;
       }
     });
 
