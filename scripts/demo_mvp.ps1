@@ -57,7 +57,10 @@ try {
 
     $questions = @(
         "analyse category sales top 5",
+        "analyse category sales share",
+        "analyse category sales anomalies",
         "analyse sales by region",
+        "analyse sales trend by order date",
         "analyse channel order count and sales performance"
     )
 

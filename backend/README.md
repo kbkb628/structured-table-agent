@@ -210,7 +210,7 @@ cd E:\bgagent1
 .\scripts\demo_mvp.ps1 -StartServer
 ```
 
-The script uploads the sample CSV, runs all three demo questions, and prints a compact JSON summary.
+The script uploads the sample CSV, runs the current supported demo question set, and prints a compact JSON summary.
 
 ## Windows API examples
 
