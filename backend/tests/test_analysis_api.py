@@ -309,6 +309,49 @@ def test_run_share_analysis_returns_share_rows(tmp_path):
     assert "share_percent" in run.json()["tool_results"][0]["data"]["rows"][0]
 
 
+def test_run_trend_analysis_returns_line_chart(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "order_date,sales_amount,order_id\n"
+        "2026-06-03,800,ORD3\n"
+        "2026-06-01,1200,ORD1\n"
+        "2026-06-02,500,ORD2\n"
+        "2026-06-01,300,ORD4\n",
+        encoding="utf-8",
+    )
+    save_file_record(
+        FileRecord(
+            file_id="file_api_trend",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=4,
+            column_count=3,
+            columns_json=json.dumps(
+                [
+                    {"name": "order_date", "type": "date", "missing_rate": 0.0, "sample_values": [], "unique_count": 3},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 4},
+                    {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 4},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": "file_api_trend", "question": "analyse sales trend by order date"},
+    )
+    task_id = start.json()["task_id"]
+
+    run = client.post(f"/api/analysis/{task_id}/run")
+
+    assert run.status_code == 200
+    assert run.json()["status"] == "completed"
+    assert run.json()["tool_results"][0]["tool_name"] == "trend_analysis"
+    assert run.json()["chart_specs"][0]["chart_type"] == "line"
+
+
 def test_eval_run_persists_eval_result(tmp_path):
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text(
@@ -366,8 +409,8 @@ def test_eval_cases_run_returns_fixed_case_summary():
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["total_cases"] == 4
-    assert payload["passed_cases"] == 4
+    assert payload["total_cases"] == 5
+    assert payload["passed_cases"] == 5
     assert payload["failed_cases"] == 0
     assert payload["pass_rate"] == 1.0
     assert payload["average_tool_success_rate"] == 1.0
@@ -375,7 +418,7 @@ def test_eval_cases_run_returns_fixed_case_summary():
     assert payload["average_report_completeness"] == 1.0
     assert payload["average_chart_validity"] == 1.0
     assert payload["average_field_validity"] == 1.0
-    assert len(payload["results"]) == 4
+    assert len(payload["results"]) == 5
 
 
 def test_get_analysis_tool_logs_returns_persisted_logs(tmp_path):

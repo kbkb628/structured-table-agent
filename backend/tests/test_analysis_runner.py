@@ -339,6 +339,82 @@ def test_run_analysis_task_supports_category_sales_share_question(tmp_path: Path
     assert "share_ratio" in result["tool_results"][0]["data"]["rows"][0]
 
 
+def test_run_analysis_task_supports_sales_trend_question(tmp_path: Path):
+    task_id = f"task_runner_trend_{uuid.uuid4().hex[:8]}"
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "order_date,sales_amount,order_id\n"
+        "2026-06-03,800,ORD3\n"
+        "2026-06-01,1200,ORD1\n"
+        "2026-06-02,500,ORD2\n"
+        "2026-06-01,300,ORD4\n",
+        encoding="utf-8",
+    )
+    file_profile = {
+        "file_id": "file_task_trend",
+        "filename": "sales_orders.csv",
+        "row_count": 4,
+        "column_count": 3,
+        "columns": [
+            {"name": "order_date", "type": "date", "missing_rate": 0.0, "sample_values": [], "unique_count": 3},
+            {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 4},
+            {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 4},
+        ],
+        "created_at": "2026-06-17T00:00:00+00:00",
+    }
+
+    save_file_record(
+        FileRecord(
+            file_id="file_task_trend",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=4,
+            column_count=3,
+            columns_json=json.dumps(file_profile["columns"]),
+            created_at="2026-06-17T00:00:00+00:00",
+        )
+    )
+
+    create_task(
+        task_id,
+        "file_task_trend",
+        "analyse sales trend by order date",
+        {
+            "task_id": task_id,
+            "file_id": "file_task_trend",
+            "question": "analyse sales trend by order date",
+            "analysis_goal": "analyse sales trend over time",
+            "file_profile": file_profile,
+            "field_understanding": {},
+            "business_context": [{"title": "Time Trend"}],
+            "analysis_plan": ["match fields", "trend analysis", "chart", "report"],
+            "current_step": "created",
+            "completed_steps": [],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "llm_judgement": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "created",
+        },
+    )
+
+    result = run_analysis_task(task_id)
+
+    assert result["status"] == "completed"
+    assert result["tool_results"][0]["tool_name"] == "trend_analysis"
+    assert [row["order_date"] for row in result["tool_results"][0]["data"]["rows"]] == [
+        "2026-06-01",
+        "2026-06-02",
+        "2026-06-03",
+    ]
+    assert result["chart_specs"][0]["chart_type"] == "line"
+
+
 def test_run_analysis_task_marks_failed_when_llm_report_generation_fails(tmp_path: Path, monkeypatch):
     task_id = f"task_runner_llm_fail_{uuid.uuid4().hex[:8]}"
     csv_path = tmp_path / "sales_orders.csv"

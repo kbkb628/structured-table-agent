@@ -1,18 +1,24 @@
 from app.eval.eval_cases import _register_sample_file, get_fixed_eval_cases, run_fixed_eval_cases
 
 
-def test_get_fixed_eval_cases_returns_three_supported_cases():
+def test_get_fixed_eval_cases_returns_supported_cases():
     cases = get_fixed_eval_cases()
 
-    assert len(cases) == 4
-    assert {case["case_id"] for case in cases} == {"category_topn", "region_compare", "channel_performance", "category_share"}
+    assert len(cases) == 5
+    assert {case["case_id"] for case in cases} == {
+        "category_topn",
+        "region_compare",
+        "channel_performance",
+        "category_share",
+        "sales_trend",
+    }
 
 
 def test_run_fixed_eval_cases_returns_passing_summary():
     summary = run_fixed_eval_cases()
 
-    assert summary["total_cases"] == 4
-    assert summary["passed_cases"] == 4
+    assert summary["total_cases"] == 5
+    assert summary["passed_cases"] == 5
     assert summary["failed_cases"] == 0
     assert summary["pass_rate"] == 1.0
     assert summary["retried_tool_calls"] == 0
@@ -23,7 +29,7 @@ def test_run_fixed_eval_cases_returns_passing_summary():
     assert summary["average_chart_validity"] == 1.0
     assert summary["average_field_validity"] == 1.0
     assert summary["average_tool_elapsed_ms_total"] >= 0
-    assert len(summary["results"]) == 4
+    assert len(summary["results"]) == 5
     assert all(item["passed"] is True for item in summary["results"])
     assert all(item["overall_score"] >= 0.8 for item in summary["results"])
     assert all(item["tool_success_rate"] == 1.0 for item in summary["results"])
@@ -35,6 +41,7 @@ def test_run_fixed_eval_cases_returns_passing_summary():
     assert all(item["issues"] == [] for item in summary["results"])
     assert all(item["assertion_failures"] == [] for item in summary["results"])
     assert any(item["case_id"] == "category_share" for item in summary["results"])
+    assert any(item["case_id"] == "sales_trend" for item in summary["results"])
 
 
 def test_register_sample_file_uses_profile_dataset_tool(monkeypatch):

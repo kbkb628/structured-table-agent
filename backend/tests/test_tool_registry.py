@@ -39,6 +39,53 @@ def test_invoke_generate_chart_returns_tool_response():
     assert result.data["plotly_spec"]["data"][0]["type"] == "bar"
 
 
+def test_invoke_trend_analysis_returns_tool_response(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "order_date,sales_amount\n"
+        "2026-06-03,800\n"
+        "2026-06-01,1200\n"
+        "2026-06-02,500\n"
+        "2026-06-01,300\n",
+        encoding="utf-8",
+    )
+
+    from app.storage.file_store import save_file_record
+    from app.storage.models import FileRecord
+    import json
+
+    save_file_record(
+        FileRecord(
+            file_id="file_trend_registry",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=4,
+            column_count=2,
+            columns_json=json.dumps(
+                [
+                    {"name": "order_date", "type": "date", "missing_rate": 0.0, "sample_values": [], "unique_count": 3},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 4},
+                ]
+            ),
+            created_at="2026-06-17T00:00:00+00:00",
+        )
+    )
+
+    result = invoke_tool(
+        "trend_analysis",
+        file_id="file_trend_registry",
+        group_by="order_date",
+        metric_column="sales_amount",
+        aggregation="sum",
+        sort_order="asc",
+        limit=10,
+    )
+
+    assert result.success is True
+    assert result.tool_name == "trend_analysis"
+    assert result.data["rows"][0]["order_date"] == "2026-06-01"
+
+
 def test_invoke_generate_chart_returns_failure_response_for_empty_rows():
     result = invoke_tool(
         "generate_chart",

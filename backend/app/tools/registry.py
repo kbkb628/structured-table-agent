@@ -8,6 +8,7 @@ from app.schemas.tool_schema import GenerateReportArgs
 from app.schemas.tool_schema import GroupByAggregateArgs
 from app.schemas.tool_schema import MatchFieldsArgs
 from app.schemas.tool_schema import ProfileDatasetArgs
+from app.schemas.tool_schema import TrendAnalysisArgs
 from app.schemas.tool_schema import TOOL_DATA_SCHEMAS
 from app.schemas.tool_schema import ToolError
 from app.schemas.tool_schema import ToolResponse
@@ -17,6 +18,7 @@ from app.tools.duckdb_tools import groupby_aggregate
 from app.tools.match_fields import match_fields
 from app.tools.report_tool import generate_report
 from app.tools.share_tool import calculate_share
+from app.tools.trend_tool import trend_analysis
 
 
 ToolCallable = Callable[..., ToolResponse]
@@ -27,6 +29,7 @@ TOOL_ARG_SCHEMAS = {
     "match_fields": MatchFieldsArgs,
     "groupby_aggregate": GroupByAggregateArgs,
     "calculate_share": CalculateShareArgs,
+    "trend_analysis": TrendAnalysisArgs,
     "generate_chart": GenerateChartArgs,
     "generate_report": GenerateReportArgs,
 }
@@ -130,6 +133,7 @@ def get_tool_registry() -> dict[str, ToolCallable]:
         "match_fields": match_fields,
         "groupby_aggregate": groupby_aggregate,
         "calculate_share": calculate_share,
+        "trend_analysis": trend_analysis,
         "generate_chart": generate_chart,
         "generate_report": generate_report,
     }

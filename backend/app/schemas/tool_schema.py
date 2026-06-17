@@ -57,11 +57,21 @@ class CalculateShareArgs(ToolSchemaModel):
     limit: int = 10
 
 
+class TrendAnalysisArgs(ToolSchemaModel):
+    file_id: str
+    group_by: str
+    metric_column: str
+    aggregation: str
+    sort_order: str
+    limit: int = 10
+
+
 class GenerateChartArgs(ToolSchemaModel):
     title: str
     x_field: str
     y_field: str
     rows: list[dict[str, Any]]
+    chart_type: str = "bar"
 
 
 class GenerateReportArgs(ToolSchemaModel):
@@ -123,6 +133,7 @@ class PlotlyBarTrace(BaseModel):
     type: str
     x: list[Any]
     y: list[Any]
+    mode: str | None = None
 
 
 class PlotlySpec(BaseModel):
@@ -140,6 +151,7 @@ TOOL_DATA_SCHEMAS = {
     "match_fields": MatchFieldsOutput,
     "groupby_aggregate": AggregateRowsOutput,
     "calculate_share": ShareRowsOutput,
+    "trend_analysis": AggregateRowsOutput,
     "generate_chart": GenerateChartOutput,
     "generate_report": FinalReport,
 }

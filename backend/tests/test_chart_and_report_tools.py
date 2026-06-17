@@ -21,6 +21,26 @@ def test_generate_chart_returns_bar_spec():
     assert result.data["plotly_spec"]["data"][0]["type"] == "bar"
 
 
+def test_generate_chart_supports_line_spec():
+    rows = [
+        {"order_date": "2026-06-01", "sales_amount_sum": 1200},
+        {"order_date": "2026-06-02", "sales_amount_sum": 1500},
+    ]
+
+    result = generate_chart(
+        title="Sales Trend",
+        x_field="order_date",
+        y_field="sales_amount_sum",
+        rows=rows,
+        chart_type="line",
+    )
+
+    assert result.success is True
+    assert result.data["chart_type"] == "line"
+    assert result.data["plotly_spec"]["data"][0]["type"] == "scatter"
+    assert result.data["plotly_spec"]["data"][0]["mode"] == "lines+markers"
+
+
 def test_generate_chart_rejects_empty_rows():
     result = generate_chart(
         title="Sales by Region",

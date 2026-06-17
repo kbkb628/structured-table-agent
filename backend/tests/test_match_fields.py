@@ -68,3 +68,20 @@ def test_match_fields_routes_share_question_to_calculate_share():
     assert result.data["analysis_type"] == "share_analysis"
     assert result.data["planned_tool_calls"][0]["tool_name"] == "calculate_share"
     assert result.data["planned_tool_sequence"][0] == "calculate_share"
+
+
+def test_match_fields_routes_trend_question_to_trend_analysis():
+    file_profile = {
+        "columns": [
+            {"name": "order_date", "type": "date"},
+            {"name": "sales_amount", "type": "number"},
+        ]
+    }
+
+    result = match_fields("analyse sales trend by order date", file_profile)
+
+    assert result.success is True
+    assert result.data["analysis_type"] == "trend_analysis"
+    assert result.data["dimension_field"] == "order_date"
+    assert result.data["planned_tool_calls"][0]["tool_name"] == "trend_analysis"
+    assert result.data["planned_tool_calls"][0]["sort_order"] == "asc"

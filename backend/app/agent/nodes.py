@@ -175,6 +175,7 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
             "x_field": dimension_field,
             "y_field": y_field,
             "rows": rows,
+            "chart_type": "line" if tool_result.get("tool_name") == "trend_analysis" else "bar",
         }
         record_tool_called(state["task_id"], "generate_chart", tool_request)
         chart_response = invoke_tool_with_retry(

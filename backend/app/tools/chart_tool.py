@@ -2,7 +2,13 @@ from app.schemas.tool_schema import ToolError
 from app.schemas.tool_schema import ToolResponse
 
 
-def generate_chart(title: str, x_field: str, y_field: str, rows: list[dict]) -> ToolResponse:
+def generate_chart(
+    title: str,
+    x_field: str,
+    y_field: str,
+    rows: list[dict],
+    chart_type: str = "bar",
+) -> ToolResponse:
     if not rows:
         return ToolResponse(
             success=False,
@@ -30,23 +36,41 @@ def generate_chart(title: str, x_field: str, y_field: str, rows: list[dict]) -> 
             metadata={},
         )
 
+    if chart_type not in {"bar", "line"}:
+        return ToolResponse(
+            success=False,
+            tool_name="generate_chart",
+            data=None,
+            summary="tool execution failed",
+            error=ToolError(
+                code="CHART_GENERATION_FAILED",
+                message=f"Unsupported chart_type: {chart_type}",
+                suggested_fields=["bar", "line"],
+            ),
+            metadata={},
+        )
+
+    trace = {
+        "x": [row[x_field] for row in rows],
+        "y": [row[y_field] for row in rows],
+    }
+    if chart_type == "line":
+        trace["type"] = "scatter"
+        trace["mode"] = "lines+markers"
+    else:
+        trace["type"] = "bar"
+
     return ToolResponse(
         success=True,
         tool_name="generate_chart",
         data={
-            "chart_type": "bar",
+            "chart_type": chart_type,
             "plotly_spec": {
-                "data": [
-                    {
-                        "type": "bar",
-                        "x": [row[x_field] for row in rows],
-                        "y": [row[y_field] for row in rows],
-                    }
-                ],
+                "data": [trace],
                 "layout": {"title": title, "xaxis": {"title": x_field}, "yaxis": {"title": y_field}},
             },
         },
-        summary="generated Plotly bar chart spec from grouped rows",
+        summary=f"generated Plotly {chart_type} chart spec from grouped rows",
         error=None,
-        metadata={"row_count": len(rows), "fields_used": [x_field, y_field]},
+        metadata={"row_count": len(rows), "fields_used": [x_field, y_field], "chart_type": chart_type},
     )
