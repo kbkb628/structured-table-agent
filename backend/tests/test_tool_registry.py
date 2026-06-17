@@ -86,6 +86,55 @@ def test_invoke_trend_analysis_returns_tool_response(tmp_path):
     assert result.data["rows"][0]["order_date"] == "2026-06-01"
 
 
+def test_invoke_anomaly_analysis_returns_tool_response(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "product_category,sales_amount\n"
+        "beauty,10000\n"
+        "apparel,1000\n"
+        "electronics,1000\n"
+        "office,1000\n"
+        "home,1000\n"
+        "food,1000\n",
+        encoding="utf-8",
+    )
+
+    from app.storage.file_store import save_file_record
+    from app.storage.models import FileRecord
+    import json
+
+    save_file_record(
+        FileRecord(
+            file_id="file_anomaly_registry",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=6,
+            column_count=2,
+            columns_json=json.dumps(
+                [
+                    {"name": "product_category", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 6},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                ]
+            ),
+            created_at="2026-06-17T00:00:00+00:00",
+        )
+    )
+
+    result = invoke_tool(
+        "anomaly_analysis",
+        file_id="file_anomaly_registry",
+        group_by="product_category",
+        metric_column="sales_amount",
+        aggregation="sum",
+        sort_order="desc",
+        limit=10,
+    )
+
+    assert result.success is True
+    assert result.tool_name == "anomaly_analysis"
+    assert result.data["rows"][0]["product_category"] == "beauty"
+
+
 def test_invoke_generate_chart_returns_failure_response_for_empty_rows():
     result = invoke_tool(
         "generate_chart",

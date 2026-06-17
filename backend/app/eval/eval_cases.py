@@ -51,6 +51,14 @@ def get_fixed_eval_cases() -> list[dict]:
             "min_chart_specs": 1,
             "min_overall_score": 0.8,
         },
+        {
+            "case_id": "category_anomaly",
+            "question": "analyse category sales anomalies",
+            "expected_status": "completed",
+            "min_tool_results": 1,
+            "min_chart_specs": 1,
+            "min_overall_score": 0.8,
+        },
     ]
 
 

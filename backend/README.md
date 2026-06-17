@@ -17,8 +17,10 @@ Currently implemented:
 
 - category sales TopN analysis
 - category sales share analysis
+- category sales anomaly detection
 - region sales comparison
 - channel order-count and sales-amount comparison
+- sales trend analysis by order date
 - local hybrid JSONL retrieval for business context
 - replaceable `LLMClient` abstraction with:
   - `QwenClient` for real Tongyi Qianwen calls
@@ -118,12 +120,14 @@ print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
 '@ | .\.venv\Scripts\python.exe -
 ```
 
-The runner executes the four currently supported case families on `data/samples/sales_orders.csv`:
+The runner executes the six currently supported case families on `data/samples/sales_orders.csv`:
 
 - category sales TopN
 - category sales share
+- category sales anomaly detection
 - region sales comparison
 - channel order-count and sales performance
+- sales trend by order date
 
 The summary also exposes evaluation aggregates derived from the real `RuleScorer` output:
 
@@ -174,7 +178,9 @@ The current graph is still intentionally small, but it now includes:
 
 - `analyse category sales top 5`
 - `analyse category sales share`
+- `analyse category sales anomalies`
 - `analyse sales by region`
+- `analyse sales trend by order date`
 - `analyse channel order count and sales performance`
 
 ## One-command demo

@@ -36,6 +36,22 @@ def _build_trend_tool_call(dimension_field: str | None, metric: dict[str, str] |
     ]
 
 
+def _build_anomaly_tool_call(dimension_field: str | None, metric: dict[str, str] | None) -> list[dict[str, str | int]]:
+    if dimension_field is None or metric is None or metric.get("metric_field") is None:
+        return []
+    return [
+        {
+            "tool_name": "anomaly_analysis",
+            "group_by": dimension_field,
+            "metric_column": metric["metric_field"],
+            "aggregation": metric["aggregation"],
+            "sort_order": "desc",
+            "limit": 10,
+            "label": metric["label"],
+        }
+    ]
+
+
 def _build_share_tool_call(dimension_field: str | None, metric: dict[str, str] | None) -> list[dict[str, str | int]]:
     if dimension_field is None or metric is None or metric.get("metric_field") is None:
         return []
@@ -81,6 +97,7 @@ def match_fields(question: str, file_profile: dict) -> ToolResponse:
     wants_sales = "sales" in lowered
     wants_share = "share" in lowered
     wants_trend = "trend" in lowered or ("date" in lowered and wants_sales)
+    wants_anomaly = "anomal" in lowered or "outlier" in lowered
 
     if dimension_field == "channel" and wants_order_count and wants_sales:
         analysis_type = "channel_performance"
@@ -133,7 +150,11 @@ def match_fields(question: str, file_profile: dict) -> ToolResponse:
         warnings.append("No supported dimension field was matched.")
 
     primary_metric = metrics[0] if metrics else {"metric_field": None, "aggregation": "sum"}
-    if wants_trend and metrics and dimension_field == "order_date":
+    if wants_anomaly and metrics:
+        analysis_type = "anomaly_analysis"
+        planned_tool_calls = _build_anomaly_tool_call(dimension_field, primary_metric)
+        planned_tool_sequence = ["anomaly_analysis", "generate_chart", "generate_report"]
+    elif wants_trend and metrics and dimension_field == "order_date":
         analysis_type = "trend_analysis"
         planned_tool_calls = _build_trend_tool_call(dimension_field, primary_metric)
         planned_tool_sequence = ["trend_analysis", "generate_chart", "generate_report"]

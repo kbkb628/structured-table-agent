@@ -16,6 +16,8 @@
 - SQLite 持久化：`files`、`analysis_tasks`、`analysis_events`、`tool_call_logs`、`eval_results`
 - DuckDB 真实聚合工具：按品类、地区、渠道执行聚合分析
 - Share 分析工具：按维度计算指标占比、贡献率和百分比
+- Trend 分析工具：按 `order_date` 执行时间维度聚合、升序排序和折线图输出
+- Anomaly 分析工具：按分组聚合结果执行基于 z-score 的异常值识别
 - JSONL 本地混合检索，包含关键词、短语命中、字段加权和 BM25 风格评分
 - LangGraph 显式状态流，包含 `validate_tool_result` 与 `route_next_step`
 - 真实可替换 LLM Provider 接入：
@@ -41,6 +43,8 @@
 - LangGraph 多步状态流与最小动态路由
 - pandas / DuckDB / Plotly 的受控工具链
 - 占比分析工具与主链接入
+- 趋势分析工具与主链接入
+- 异常检测工具与主链接入
 - 真实 Tongyi Qianwen Provider 接入
 - SQLite 持久化与 Redis 优先 / SQLite 降级
 - 规则评分与固定 case 回归验证
@@ -88,6 +92,8 @@
   - `match_fields`
   - `groupby_aggregate`
   - `calculate_share`
+  - `trend_analysis`
+  - `anomaly_analysis`
   - `generate_chart`
   - `generate_report`
 - 固定 case 回归当前额外输出：
@@ -113,6 +119,14 @@
   - `share_ratio`
   - `share_percent`
   - 自然语言 share 问题接入 LangGraph 主链
+- `trend_tool` 当前支持：
+  - 按时间维度聚合
+  - 按日期升序排序
+  - 趋势类问题输出折线图配置
+- `anomaly_tool` 当前支持：
+  - 按维度聚合后的 z-score 异常值识别
+  - 输出 `z_score`
+  - 输出 `is_anomaly`
 - `keyword_retriever` 当前已升级为本地混合检索：
   - 关键词重叠打分
   - 短语命中加权
@@ -132,4 +146,4 @@
 - 增强 Redis 会话记忆和异步执行
 - 引入 DockerSandbox
 - 增强前端过程展示
-- 扩展更多分析工具，如趋势分析、异常检测、占比分析
+- 扩展更多分析工具，如更细粒度趋势分析、更多异常检测策略

@@ -85,3 +85,19 @@ def test_match_fields_routes_trend_question_to_trend_analysis():
     assert result.data["dimension_field"] == "order_date"
     assert result.data["planned_tool_calls"][0]["tool_name"] == "trend_analysis"
     assert result.data["planned_tool_calls"][0]["sort_order"] == "asc"
+
+
+def test_match_fields_routes_anomaly_question_to_anomaly_analysis():
+    file_profile = {
+        "columns": [
+            {"name": "product_category", "type": "string"},
+            {"name": "sales_amount", "type": "number"},
+        ]
+    }
+
+    result = match_fields("analyse category sales anomalies", file_profile)
+
+    assert result.success is True
+    assert result.data["analysis_type"] == "anomaly_analysis"
+    assert result.data["dimension_field"] == "product_category"
+    assert result.data["planned_tool_calls"][0]["tool_name"] == "anomaly_analysis"

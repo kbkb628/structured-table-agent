@@ -66,6 +66,15 @@ class TrendAnalysisArgs(ToolSchemaModel):
     limit: int = 10
 
 
+class AnomalyAnalysisArgs(ToolSchemaModel):
+    file_id: str
+    group_by: str
+    metric_column: str
+    aggregation: str
+    sort_order: str
+    limit: int = 10
+
+
 class GenerateChartArgs(ToolSchemaModel):
     title: str
     x_field: str
@@ -119,6 +128,10 @@ class ShareRowsOutput(BaseModel):
     rows: list[dict[str, Any]]
 
 
+class AnomalyRowsOutput(BaseModel):
+    rows: list[dict[str, Any]]
+
+
 class PlotlyAxisTitle(BaseModel):
     title: str
 
@@ -152,6 +165,7 @@ TOOL_DATA_SCHEMAS = {
     "groupby_aggregate": AggregateRowsOutput,
     "calculate_share": ShareRowsOutput,
     "trend_analysis": AggregateRowsOutput,
+    "anomaly_analysis": AnomalyRowsOutput,
     "generate_chart": GenerateChartOutput,
     "generate_report": FinalReport,
 }

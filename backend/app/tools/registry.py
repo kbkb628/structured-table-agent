@@ -3,6 +3,7 @@ from collections.abc import Callable
 from pydantic import ValidationError
 
 from app.schemas.tool_schema import CalculateShareArgs
+from app.schemas.tool_schema import AnomalyAnalysisArgs
 from app.schemas.tool_schema import GenerateChartArgs
 from app.schemas.tool_schema import GenerateReportArgs
 from app.schemas.tool_schema import GroupByAggregateArgs
@@ -13,6 +14,7 @@ from app.schemas.tool_schema import TOOL_DATA_SCHEMAS
 from app.schemas.tool_schema import ToolError
 from app.schemas.tool_schema import ToolResponse
 from app.tools.chart_tool import generate_chart
+from app.tools.anomaly_tool import anomaly_analysis
 from app.tools.data_profile import profile_dataset
 from app.tools.duckdb_tools import groupby_aggregate
 from app.tools.match_fields import match_fields
@@ -30,6 +32,7 @@ TOOL_ARG_SCHEMAS = {
     "groupby_aggregate": GroupByAggregateArgs,
     "calculate_share": CalculateShareArgs,
     "trend_analysis": TrendAnalysisArgs,
+    "anomaly_analysis": AnomalyAnalysisArgs,
     "generate_chart": GenerateChartArgs,
     "generate_report": GenerateReportArgs,
 }
@@ -134,6 +137,7 @@ def get_tool_registry() -> dict[str, ToolCallable]:
         "groupby_aggregate": groupby_aggregate,
         "calculate_share": calculate_share,
         "trend_analysis": trend_analysis,
+        "anomaly_analysis": anomaly_analysis,
         "generate_chart": generate_chart,
         "generate_report": generate_report,
     }
