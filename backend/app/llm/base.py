@@ -14,3 +14,16 @@ class LLMClient(ABC):
         business_context: list[dict],
     ) -> list[str]:
         raise NotImplementedError
+
+    @abstractmethod
+    def generate_report(
+        self,
+        intermediate_findings: list[dict],
+        chart_specs: list[dict],
+        business_context: list[dict],
+    ) -> dict:
+        raise NotImplementedError
+
+    @abstractmethod
+    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+        raise NotImplementedError

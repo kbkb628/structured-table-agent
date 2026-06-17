@@ -3,6 +3,7 @@ from pathlib import Path
 import pandas as pd
 
 from app.schemas.file_schema import ColumnProfile, FileProfile
+from app.schemas.tool_schema import ToolResponse
 
 
 def _map_dtype(dtype: str) -> str:
@@ -39,4 +40,26 @@ def build_file_profile(
         column_count=int(len(df.columns)),
         columns=columns,
         created_at=created_at,
+    )
+
+
+def profile_dataset(
+    csv_path: Path,
+    file_id: str = "",
+    created_at: str = "",
+    filename: str | None = None,
+) -> ToolResponse:
+    profile = build_file_profile(
+        csv_path=csv_path,
+        file_id=file_id,
+        created_at=created_at,
+        filename=filename,
+    )
+    return ToolResponse(
+        success=True,
+        tool_name="profile_dataset",
+        data=profile.model_dump(),
+        summary="built a dataset profile from the uploaded CSV",
+        error=None,
+        metadata={"row_count": profile.row_count, "column_count": profile.column_count},
     )

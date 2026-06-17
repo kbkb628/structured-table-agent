@@ -70,3 +70,25 @@ def test_invoke_generate_report_returns_tool_response():
     assert result.tool_name == "generate_report"
     assert result.data["analysis_goal"] == "compare region sales"
     assert result.data["key_findings"][0]["source_tool"] == "groupby_aggregate"
+
+
+def test_invoke_profile_dataset_returns_tool_response(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "product_category,sales_amount,order_status\n"
+        "electronics,1200,completed\n"
+        "office,800,cancelled\n",
+        encoding="utf-8",
+    )
+
+    result = invoke_tool(
+        "profile_dataset",
+        csv_path=csv_path,
+        file_id="file_profile_tool",
+        created_at="2026-06-17T00:00:00+00:00",
+    )
+
+    assert result.success is True
+    assert result.tool_name == "profile_dataset"
+    assert result.data["row_count"] == 2
+    assert result.data["column_count"] == 3

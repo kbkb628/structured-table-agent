@@ -11,7 +11,7 @@ from app.storage.file_store import (
     save_file_record,
 )
 from app.storage.models import FileRecord
-from app.tools.data_profile import build_file_profile
+from app.tools.registry import invoke_tool
 
 router = APIRouter(prefix="/api/files", tags=["files"])
 
@@ -29,12 +29,16 @@ async def upload_file(file: UploadFile = File(...)) -> FileProfile:
     stored_name = f"{file_id}_{file.filename}"
     full_path = persist_uploaded_file(stored_name, content)
     created_at = make_timestamp()
-    profile = build_file_profile(
-        full_path,
+    profile_result = invoke_tool(
+        "profile_dataset",
+        csv_path=full_path,
         file_id=file_id,
         created_at=created_at,
         filename=file.filename,
     )
+    if not profile_result.success or profile_result.data is None:
+        raise HTTPException(status_code=500, detail="Failed to build file profile.")
+    profile = FileProfile.model_validate(profile_result.data)
 
     save_file_record(
         FileRecord(

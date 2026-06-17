@@ -35,3 +35,23 @@ def test_mock_llm_generates_channel_plan_with_two_steps():
     assert any("channel" in step.lower() for step in plan)
     assert any("order" in step.lower() for step in plan)
     assert any("sales" in step.lower() for step in plan)
+
+
+def test_mock_llm_can_generate_structured_report_and_judge_result():
+    client = MockLLMClient()
+
+    report = client.generate_report(
+        intermediate_findings=[{"summary": "East performs best."}],
+        chart_specs=[{"chart_type": "bar"}],
+        business_context=[{"title": "Region"}],
+    )
+    judgement = client.judge_report(
+        question="analyse sales by region",
+        final_report=report,
+        tool_results=[{"tool_name": "groupby_aggregate", "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]}}],
+    )
+
+    assert report["title"] != ""
+    assert len(report["key_findings"]) > 0
+    assert judgement["supported_by_tools"] is True
+    assert judgement["issue_count"] == 0

@@ -3,6 +3,7 @@ from collections.abc import Callable
 from app.schemas.tool_schema import ToolError
 from app.schemas.tool_schema import ToolResponse
 from app.tools.chart_tool import generate_chart
+from app.tools.data_profile import profile_dataset
 from app.tools.duckdb_tools import groupby_aggregate
 from app.tools.match_fields import match_fields
 from app.tools.report_tool import generate_report
@@ -31,6 +32,7 @@ def invoke_tool(tool_name: str, **kwargs) -> ToolResponse:
 
 def get_tool_registry() -> dict[str, ToolCallable]:
     return {
+        "profile_dataset": profile_dataset,
         "match_fields": match_fields,
         "groupby_aggregate": groupby_aggregate,
         "generate_chart": generate_chart,

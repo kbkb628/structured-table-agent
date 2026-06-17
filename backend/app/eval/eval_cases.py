@@ -6,7 +6,7 @@ from app.core.config import SAMPLE_DIR
 from app.services.task_builder import create_analysis_task
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
-from app.tools.data_profile import build_file_profile
+from app.tools.registry import invoke_tool
 
 
 def get_fixed_eval_cases() -> list[dict]:
@@ -42,24 +42,28 @@ def _register_sample_file() -> dict:
     sample_path = SAMPLE_DIR / "sales_orders.csv"
     file_id = f"file_eval_{uuid.uuid4().hex[:12]}"
     created_at = "2026-06-17T00:00:00+00:00"
-    profile = build_file_profile(
-        sample_path,
+    profile_result = invoke_tool(
+        "profile_dataset",
+        csv_path=sample_path,
         file_id=file_id,
         created_at=created_at,
         filename=sample_path.name,
     )
+    if not profile_result.success or profile_result.data is None:
+        raise RuntimeError("Failed to build sample file profile for eval cases.")
+    profile = profile_result.data
     save_file_record(
         FileRecord(
-            file_id=profile.file_id,
-            filename=profile.filename,
+            file_id=profile["file_id"],
+            filename=profile["filename"],
             stored_path=str(sample_path),
-            row_count=profile.row_count,
-            column_count=profile.column_count,
-            columns_json=json.dumps([item.model_dump() for item in profile.columns], ensure_ascii=False),
-            created_at=profile.created_at,
+            row_count=profile["row_count"],
+            column_count=profile["column_count"],
+            columns_json=json.dumps(profile["columns"], ensure_ascii=False),
+            created_at=profile["created_at"],
         )
     )
-    return profile.model_dump()
+    return profile
 
 
 def _build_case_task(case: dict, file_profile: dict) -> dict:
