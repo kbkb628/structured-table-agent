@@ -72,6 +72,72 @@ def test_run_analysis_graph_completes_region_task(tmp_path: Path):
     assert result["eval_result"]["overall_score"] > 0
 
 
+def test_run_analysis_graph_routes_to_next_metric_before_finishing(tmp_path: Path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "channel,sales_amount,order_id\nOnline,1200,ORD1\nRetail,800,ORD2\nOnline,300,ORD3\n",
+        encoding="utf-8",
+    )
+    file_profile = {
+        "file_id": "file_graph_channel",
+        "filename": "sales_orders.csv",
+        "row_count": 3,
+        "column_count": 3,
+        "columns": [
+            {"name": "channel", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+            {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 3},
+            {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 3},
+        ],
+        "created_at": "2026-06-17T00:00:00+00:00",
+    }
+
+    save_file_record(
+        FileRecord(
+            file_id="file_graph_channel",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=3,
+            column_count=3,
+            columns_json=json.dumps(file_profile["columns"]),
+            created_at="2026-06-17T00:00:00+00:00",
+        )
+    )
+
+    create_task(
+        "task_graph_channel",
+        "file_graph_channel",
+        "analyse channel order count and sales performance",
+        {
+            "task_id": "task_graph_channel",
+            "file_id": "file_graph_channel",
+            "question": "analyse channel order count and sales performance",
+            "analysis_goal": "compare channel order and sales performance",
+            "file_profile": file_profile,
+            "field_understanding": {},
+            "business_context": [],
+            "analysis_plan": ["match fields", "aggregate orders", "aggregate sales", "chart", "report"],
+            "current_step": "created",
+            "completed_steps": [],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "created",
+        },
+    )
+
+    result = run_analysis_graph("task_graph_channel")
+
+    assert result["status"] == "completed"
+    assert len(result["tool_results"]) == 2
+    assert any(step == "route_next_step:continue" for step in result["completed_steps"])
+    assert any(step == "route_next_step:finish" for step in result["completed_steps"])
+
+
 def test_run_analysis_graph_returns_failed_state_for_bad_match(tmp_path: Path):
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text(

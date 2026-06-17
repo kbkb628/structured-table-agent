@@ -15,7 +15,7 @@
 - DuckDB 真实聚合工具：按品类、地区、渠道执行聚合分析
 - MockLLM 目标/计划生成
 - JSONL 关键词业务语义检索
-- LangGraph 最小线性状态流
+- LangGraph 显式路由状态流，支持多指标任务继续下一轮工具执行
 - Observability 事件收口：`backend/app/observability`
 - 固定回归评测：3 个真实支持 case
 - Windows 一键演示脚本：`scripts/demo_mvp.ps1`
@@ -41,12 +41,12 @@
 
 ## 完成审计证据
 
-- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `51 passed, 2 warnings`
+- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `54 passed, 2 warnings`
 - 最新演示验证：`.\scripts\demo_mvp.ps1 -StartServer`
 - 三个演示问题最近一次结果：
   - `analyse category sales top 5` -> `completed`，`eval_score = 1.0`
   - `analyse sales by region` -> `completed`，`eval_score = 1.0`
-  - `analyse channel order count and sales performance` -> `completed`，`eval_score = 1.0`
+  - `analyse channel order count and sales performance` -> `completed`，`tool_results = 2`，`chart_specs = 2`，`eval_score = 1.0`
 - 接口契约已按 `DEVELOPMENT_GUIDE.md` 收口：
   - `POST /api/analysis/start` 仅返回 `task_id`、`status`、`analysis_goal`、`analysis_plan`
   - `business_context` 继续真实写入任务状态，并通过 `GET /api/analysis/{task_id}` 可见
@@ -55,6 +55,10 @@
   - `groupby_aggregate`
   - `generate_chart`
   - `generate_report`
+- LangGraph 当前已支持最小动态推进边界：
+  - `match_fields` 会为多指标问题写入 `pending_metrics`
+  - `execute_tools` 每次处理一个 metric
+  - `route_next_step` 会显式决定继续执行下一轮工具，还是进入图表生成
 - Redis 边界已收口一致：
   - 代码实现 `SessionStore` 优先尝试 Redis
   - Redis 不可用时显式降级到 SQLite，并记录 `session_store_warning`

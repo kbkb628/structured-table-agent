@@ -82,17 +82,25 @@
 
 用途：
 
-- 执行 LangGraph 最小线性状态流
+- 执行带显式 `route_next_step` 的 LangGraph 最小状态流
 - 完成字段匹配、DuckDB 聚合、图表生成、报告生成和规则评分
+- 对多指标问题显式决定是否继续执行下一轮工具
 
 当前图结构：
 
 1. `load_task`
 2. `match_fields`
 3. `execute_tools`
-4. `generate_charts`
-5. `generate_report`
-6. `evaluate_report`
+4. `route_next_step`
+5. `generate_charts`
+6. `generate_report`
+7. `evaluate_report`
+
+当前最小动态行为：
+
+- `match_fields` 可以为单个问题解析出多个待执行 metric
+- `execute_tools` 每次只执行一个 metric 的聚合
+- `route_next_step` 会根据 `pending_metrics` 决定继续进入 `execute_tools`，或结束工具阶段进入图表生成
 
 响应为完整任务状态，包含：
 

@@ -11,7 +11,7 @@
 3. 用户发起分析任务
 4. 系统执行轻量 JSONL 关键词检索
 5. `MockLLM` 生成分析目标和计划
-6. LangGraph 驱动字段匹配、DuckDB 聚合、图表生成、报告生成和规则评分
+6. LangGraph 驱动字段匹配、DuckDB 聚合、`route_next_step` 显式路由、图表生成、报告生成和规则评分
 7. 任务状态、事件时间线、工具调用日志和评估结果都写入 SQLite
 
 ## 2. 模块职责
@@ -35,8 +35,8 @@
 
 负责 LangGraph 状态流：
 
-- `graph.py`：定义最小线性图
-- `nodes.py`：实现字段匹配、工具执行、图表生成、报告生成和评估节点
+- `graph.py`：定义带 `route_next_step` 的最小状态图
+- `nodes.py`：实现字段匹配、工具执行、下一步路由、图表生成、报告生成和评估节点
 - `state.py`：任务状态结构
 
 ### `app/tools`
@@ -109,7 +109,12 @@
 - `errors`
 - `status`
 
-运行阶段通过 LangGraph 顺序推进，遇到不可执行字段匹配或空结果时会进入失败分支，并写入 `task_failed` 事件。
+运行阶段通过 LangGraph 推进：
+
+- `match_fields` 会写入 `field_understanding` 和待执行的 `pending_metrics`
+- `execute_tools` 每次只消费一个 metric，并把结果写入 `tool_results`
+- `route_next_step` 会根据是否还有待执行 metric，决定回到 `execute_tools` 继续统计，或进入 `generate_charts`
+- 遇到不可执行字段匹配或空结果时会进入失败分支，并写入 `task_failed` 事件
 
 ## 5. 真实性边界
 

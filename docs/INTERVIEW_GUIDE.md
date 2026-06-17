@@ -46,23 +46,26 @@
 
 引入 LangGraph 不是为了堆概念，而是为了让任务流转可见、可扩展、可验证。
 
-当前最小图很简单：
+当前最小图已经是一个带显式路由节点的可执行状态流：
 
 - `load_task`
 - `match_fields`
 - `execute_tools`
+- `route_next_step`
 - `generate_charts`
 - `generate_report`
 - `evaluate_report`
 
-虽然还是线性流，但它已经把：
+其中 `route_next_step` 会根据当前是否还有待执行指标，决定继续回到 `execute_tools`，还是进入 `generate_charts`。这让当前版本已经可以对“渠道订单数 + 销售额”这类多指标问题完成一轮最小动态推进。
+
+虽然还不是开放式规划 Agent，但它已经把：
 
 - 状态字段
 - 失败分支
 - 节点责任
 - 事件记录
 
-这几件事明确下来了，为后续迭代保留了稳定接口。
+这几件事明确下来了，并且把“根据中间发现决定继续执行下一轮统计还是结束工具阶段”的最小闭环先真实落地，为后续迭代保留了稳定接口。
 
 ## 5. 为什么先做 RuleScorer
 

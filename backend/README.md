@@ -19,7 +19,7 @@ Currently implemented:
 - channel order-count and sales-amount comparison
 - JSONL keyword retrieval for business context
 - replaceable MockLLM goal and plan generation
-- LangGraph-based linear orchestration for `/api/analysis/{task_id}/run`
+- LangGraph-based orchestration with explicit `route_next_step` routing for `/api/analysis/{task_id}/run`
 - explicit task failure recording for non-executable field matches
 - automatic `eval_result` persistence after completed runs
 - manual re-run through `POST /api/eval/run`
@@ -86,6 +86,8 @@ The runner executes the three currently supported case families on `data/samples
 6. Re-run evaluation with `/api/eval/run`
 
 The persisted timeline returned by `/api/analysis/{task_id}/events` is now routed through `app/observability/event_logger.py`, while SQLite remains the storage backend.
+
+The current graph is still intentionally small, but it now includes an explicit `route_next_step` node so multi-metric tasks can continue into another real tool-execution round before chart generation.
 
 `/api/analysis/start` now returns:
 

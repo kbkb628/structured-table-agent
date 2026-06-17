@@ -26,7 +26,7 @@ Redis 在当前 MVP 中属于推荐依赖而非强制依赖；如果 Redis 不�
 - 基于 DuckDB 的真实聚合分析
 - 基于 JSONL 的轻量关键词业务语义检索
 - 可替换的 MockLLM 目标与计划生成
-- 基于 LangGraph 的最小分析状态流编排
+- 基于 LangGraph 的最小分析状态流编排，包含显式 `route_next_step` 路由
 - 分析任务创建、执行、事件时间线查询
 - 品类、地区、渠道三类演示问题闭环
 - 规则评分 `eval_result` 自动写回与手动重算
@@ -55,7 +55,7 @@ Redis 在当前 MVP 中属于推荐依赖而非强制依赖；如果 Redis 不�
 
 1. 用户上传 CSV，服务端生成字段画像并落库
 2. 用户创建分析任务，系统检索本地业务知识并生成目标/计划
-3. LangGraph 驱动字段匹配、DuckDB 聚合、图表生成、报告生成和规则评分
+3. LangGraph 驱动字段匹配、DuckDB 聚合、显式下一步路由、图表生成、报告生成和规则评分
 4. 每个关键步骤写入事件时间线，任务状态和评估结果持久化到 SQLite
 5. 固定回归评测可用同一条真实链路批量执行 3 个支持 case
 
@@ -231,7 +231,7 @@ print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
 - `knowledge_base.jsonl + keyword_retriever`：真实本地 JSONL 检索
 - `business_context`：检索结果会写入任务状态并记录 `rag_retrieved` 事件
 - `SessionStore`：当 Redis 可用时，会把总状态之外的 `draft_report`、`intermediate_findings`、`business_context` 拆分到独立 key 保存
-- `LangGraph`：当前 `/api/analysis/{task_id}/run` 已通过最小线性状态流执行
+- `LangGraph`：当前 `/api/analysis/{task_id}/run` 已通过包含 `route_next_step` 的最小状态流执行，多指标任务可继续执行下一轮真实工具调用
 - `RuleScorer + fixed eval cases`：规则评分与固定 case 回归
 
 当前仍然没有实现的部分是：

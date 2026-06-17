@@ -7,6 +7,7 @@ from app.agent.nodes import (
     generate_report_node,
     load_task_node,
     match_fields_node,
+    route_next_step_node,
 )
 from app.agent.state import AnalysisGraphState
 from app.storage.session_store import SessionStore
@@ -16,11 +17,16 @@ def route_on_task_status(state: AnalysisGraphState) -> str:
     return "failed" if state.get("status") == "failed" else "continue"
 
 
+def route_after_next_step(state: AnalysisGraphState) -> str:
+    return state.get("next_step", "generate_charts")
+
+
 def build_analysis_graph():
     graph = StateGraph(AnalysisGraphState)
     graph.add_node("load_task", load_task_node)
     graph.add_node("match_fields", match_fields_node)
     graph.add_node("execute_tools", execute_tools_node)
+    graph.add_node("route_next_step", route_next_step_node)
     graph.add_node("generate_charts", generate_charts_node)
     graph.add_node("generate_report", generate_report_node)
     graph.add_node("evaluate_report", evaluate_report_node)
@@ -39,8 +45,16 @@ def build_analysis_graph():
         "execute_tools",
         route_on_task_status,
         {
-            "continue": "generate_charts",
+            "continue": "route_next_step",
             "failed": END,
+        },
+    )
+    graph.add_conditional_edges(
+        "route_next_step",
+        route_after_next_step,
+        {
+            "execute_tools": "execute_tools",
+            "generate_charts": "generate_charts",
         },
     )
     graph.add_edge("generate_charts", "generate_report")
