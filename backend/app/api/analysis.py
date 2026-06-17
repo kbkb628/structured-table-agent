@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException
 
+from app.llm.factory import LLMConfigurationError
+from app.llm.qwen_client import QwenResponseError
 from app.observability.event_logger import list_analysis_events
 from app.schemas.analysis_schema import AnalysisStartRequest, AnalysisStartResponse, AnalysisTaskState
 from app.schemas.analysis_schema import AnalysisToolLogList
@@ -19,12 +21,17 @@ def start_analysis(request: AnalysisStartRequest) -> AnalysisStartResponse:
     if file_profile is None:
         raise HTTPException(status_code=404, detail="File not found.")
 
-    task_id, state = create_analysis_task(
-        file_id=request.file_id,
-        question=request.question,
-        source_node="start_analysis",
-        file_profile=file_profile,
-    )
+    try:
+        task_id, state = create_analysis_task(
+            file_id=request.file_id,
+            question=request.question,
+            source_node="start_analysis",
+            file_profile=file_profile,
+        )
+    except LLMConfigurationError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except QwenResponseError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
     return AnalysisStartResponse(
         task_id=task_id,
         status="created",

@@ -1,9 +1,11 @@
 import json
+import os
 import uuid
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
+from app.llm.qwen_client import QwenResponseError
 from app.main import app
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
@@ -35,6 +37,47 @@ class FakeRedisClient:
 
     def ping(self):
         return True
+
+
+class FailingGoalLLMClient:
+    def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+        del question
+        del file_profile
+        del business_context
+        raise QwenResponseError("simulated provider failure")
+
+    def generate_analysis_plan(self, analysis_goal: str, file_profile: dict, business_context: list[dict]) -> list[str]:
+        del analysis_goal
+        del file_profile
+        del business_context
+        return []
+
+    def generate_report(
+        self,
+        analysis_goal: str,
+        intermediate_findings: list[dict],
+        chart_specs: list[dict],
+        business_context: list[dict],
+    ) -> dict:
+        del analysis_goal
+        del intermediate_findings
+        del chart_specs
+        del business_context
+        return {}
+
+    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+        del question
+        del final_report
+        del tool_results
+        return {}
+
+
+def _clear_provider_keys(monkeypatch):
+    monkeypatch.delenv("QWEN_API_KEY", raising=False)
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    for name in list(os.environ):
+        if name.startswith("OPENAI_API_KEY"):
+            monkeypatch.delenv(name, raising=False)
 
 
 def test_start_analysis_creates_task(tmp_path):
@@ -78,6 +121,69 @@ def test_start_analysis_creates_task(tmp_path):
     assert "context_checkpoint" in state.json()
     assert state.json()["context_checkpoint"]["analysis_goal"] != ""
     assert any(event["event_type"] == "rag_retrieved" for event in events.json()["events"])
+
+
+def test_start_analysis_returns_503_when_qwen_provider_is_misconfigured(tmp_path, monkeypatch):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text("product_category,sales_amount\nelectronics,1200\n", encoding="utf-8")
+    save_file_record(
+        FileRecord(
+            file_id="file_api_llm_missing_key",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=1,
+            column_count=2,
+            columns_json=json.dumps(
+                [
+                    {"name": "product_category", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 1},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 1},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+    monkeypatch.setenv("LLM_PROVIDER", "qwen")
+    _clear_provider_keys(monkeypatch)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/analysis/start",
+        json={"file_id": "file_api_llm_missing_key", "question": "analyse category sales top 5"},
+    )
+
+    assert response.status_code == 503
+    assert "API key" in response.json()["detail"]
+
+
+def test_start_analysis_returns_502_when_provider_call_fails(tmp_path, monkeypatch):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text("product_category,sales_amount\nelectronics,1200\n", encoding="utf-8")
+    save_file_record(
+        FileRecord(
+            file_id="file_api_llm_provider_error",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=1,
+            column_count=2,
+            columns_json=json.dumps(
+                [
+                    {"name": "product_category", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 1},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 1},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+    monkeypatch.setattr("app.services.task_builder.get_llm_client", lambda: FailingGoalLLMClient())
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/analysis/start",
+        json={"file_id": "file_api_llm_provider_error", "question": "analyse category sales top 5"},
+    )
+
+    assert response.status_code == 502
+    assert response.json()["detail"] == "simulated provider failure"
 
 
 def test_run_analysis_returns_completed_state(tmp_path):

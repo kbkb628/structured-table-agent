@@ -68,7 +68,14 @@ def build_analysis_graph():
         },
     )
     graph.add_edge("generate_charts", "generate_report")
-    graph.add_edge("generate_report", "evaluate_report")
+    graph.add_conditional_edges(
+        "generate_report",
+        route_on_task_status,
+        {
+            "continue": "evaluate_report",
+            "failed": END,
+        },
+    )
     graph.add_edge("evaluate_report", END)
 
     return graph.compile()

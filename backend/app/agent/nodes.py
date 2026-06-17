@@ -1,6 +1,8 @@
 from app.agent.state import AnalysisGraphState
 from app.eval.rule_scorer import score_task_state
+from app.llm.factory import LLMConfigurationError
 from app.llm.factory import get_llm_client
+from app.llm.qwen_client import QwenResponseError
 from app.observability.event_logger import hydrate_state_events
 from app.observability.event_logger import record_chart_failed
 from app.observability.event_logger import record_chart_generated
@@ -214,7 +216,6 @@ def _build_draft_report(state: AnalysisGraphState) -> dict:
 
 
 def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
-    llm_client = get_llm_client()
     state["draft_report"] = _build_draft_report(state)
     state["completed_steps"].append("draft_report_prepared")
     _persist_state(state)
@@ -228,29 +229,46 @@ def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
     report_response = invoke_tool_with_retry("generate_report", **tool_request)
     record_tool_call(state["task_id"], "generate_report", tool_request, report_response.model_dump())
     baseline_report = report_response.data or {}
-    llm_report = llm_client.generate_report(
-        analysis_goal=state["analysis_goal"],
-        intermediate_findings=state["intermediate_findings"],
-        chart_specs=state["chart_specs"],
-        business_context=state["business_context"],
-    )
-    state["final_report"] = FinalReport.model_validate(llm_report or baseline_report).model_dump()
+    try:
+        llm_client = get_llm_client()
+        llm_report = llm_client.generate_report(
+            analysis_goal=state["analysis_goal"],
+            intermediate_findings=state["intermediate_findings"],
+            chart_specs=state["chart_specs"],
+            business_context=state["business_context"],
+        )
+        state["final_report"] = FinalReport.model_validate(llm_report or baseline_report).model_dump()
+    except (LLMConfigurationError, QwenResponseError) as exc:
+        return fail_task(
+            state,
+            "LLM_REPORT_FAILED",
+            str(exc),
+            {"baseline_report_available": bool(baseline_report)},
+        )
     state["completed_steps"].append("generate_report")
     record_report_generated(state["task_id"], state["final_report"])
     return state
 
 
 def evaluate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
-    llm_client = get_llm_client()
+    try:
+        llm_client = get_llm_client()
+        state["llm_judgement"] = llm_client.judge_report(
+            state["question"],
+            state["final_report"],
+            state["tool_results"],
+        )
+    except (LLMConfigurationError, QwenResponseError) as exc:
+        return fail_task(
+            state,
+            "LLM_JUDGEMENT_FAILED",
+            str(exc),
+            {"final_report_available": bool(state.get("final_report"))},
+        )
     state["current_step"] = "completed"
     state["status"] = "completed"
     record_task_completed(state["task_id"], "langgraph")
     hydrate_state_events(state)
-    state["llm_judgement"] = llm_client.judge_report(
-        state["question"],
-        state["final_report"],
-        state["tool_results"],
-    )
     state["eval_result"] = score_task_state(state)
     record_eval_result(state["task_id"], state["eval_result"])
     record_eval_finished(state["task_id"], "langgraph", state["eval_result"])
