@@ -52,3 +52,19 @@ def test_match_fields_builds_channel_dual_metric_plan():
     ]
     assert result.data["planned_tool_calls"][0]["label"] == "order_count"
     assert result.data["planned_tool_calls"][1]["label"] == "sales_amount_sum"
+
+
+def test_match_fields_routes_share_question_to_calculate_share():
+    file_profile = {
+        "columns": [
+            {"name": "product_category", "type": "string"},
+            {"name": "sales_amount", "type": "number"},
+        ]
+    }
+
+    result = match_fields("analyse category sales share", file_profile)
+
+    assert result.success is True
+    assert result.data["analysis_type"] == "share_analysis"
+    assert result.data["planned_tool_calls"][0]["tool_name"] == "calculate_share"
+    assert result.data["planned_tool_sequence"][0] == "calculate_share"

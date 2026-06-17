@@ -268,6 +268,47 @@ def test_run_channel_analysis_returns_multiple_tool_results(tmp_path):
     assert run.json()["pending_metrics"] == []
 
 
+def test_run_share_analysis_returns_share_rows(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "product_category,sales_amount\n"
+        "electronics,1200\n"
+        "office,800\n"
+        "electronics,1000\n",
+        encoding="utf-8",
+    )
+    save_file_record(
+        FileRecord(
+            file_id="file_api_share",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=3,
+            column_count=2,
+            columns_json=json.dumps(
+                [
+                    {"name": "product_category", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 3},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": "file_api_share", "question": "analyse category sales share"},
+    )
+    task_id = start.json()["task_id"]
+
+    run = client.post(f"/api/analysis/{task_id}/run")
+
+    assert run.status_code == 200
+    assert run.json()["status"] == "completed"
+    assert run.json()["tool_results"][0]["tool_name"] == "calculate_share"
+    assert "share_percent" in run.json()["tool_results"][0]["data"]["rows"][0]
+
+
 def test_eval_run_persists_eval_result(tmp_path):
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text(

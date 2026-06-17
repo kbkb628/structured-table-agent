@@ -2,6 +2,7 @@ from collections.abc import Callable
 
 from pydantic import ValidationError
 
+from app.schemas.tool_schema import CalculateShareArgs
 from app.schemas.tool_schema import GenerateChartArgs
 from app.schemas.tool_schema import GenerateReportArgs
 from app.schemas.tool_schema import GroupByAggregateArgs
@@ -15,6 +16,7 @@ from app.tools.data_profile import profile_dataset
 from app.tools.duckdb_tools import groupby_aggregate
 from app.tools.match_fields import match_fields
 from app.tools.report_tool import generate_report
+from app.tools.share_tool import calculate_share
 
 
 ToolCallable = Callable[..., ToolResponse]
@@ -24,6 +26,7 @@ TOOL_ARG_SCHEMAS = {
     "profile_dataset": ProfileDatasetArgs,
     "match_fields": MatchFieldsArgs,
     "groupby_aggregate": GroupByAggregateArgs,
+    "calculate_share": CalculateShareArgs,
     "generate_chart": GenerateChartArgs,
     "generate_report": GenerateReportArgs,
 }
@@ -126,6 +129,7 @@ def get_tool_registry() -> dict[str, ToolCallable]:
         "profile_dataset": profile_dataset,
         "match_fields": match_fields,
         "groupby_aggregate": groupby_aggregate,
+        "calculate_share": calculate_share,
         "generate_chart": generate_chart,
         "generate_report": generate_report,
     }

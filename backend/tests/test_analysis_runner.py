@@ -269,6 +269,76 @@ def test_run_analysis_task_uses_llm_final_report_and_records_judgement(tmp_path:
     assert stored["llm_judgement"]["issue_count"] == 0
 
 
+def test_run_analysis_task_supports_category_sales_share_question(tmp_path: Path):
+    task_id = f"task_runner_share_{uuid.uuid4().hex[:8]}"
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "product_category,sales_amount\n"
+        "electronics,1200\n"
+        "office,800\n"
+        "electronics,1000\n",
+        encoding="utf-8",
+    )
+    file_profile = {
+        "file_id": "file_task_share",
+        "filename": "sales_orders.csv",
+        "row_count": 3,
+        "column_count": 2,
+        "columns": [
+            {"name": "product_category", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+            {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 3},
+        ],
+        "created_at": "2026-06-17T00:00:00+00:00",
+    }
+
+    save_file_record(
+        FileRecord(
+            file_id="file_task_share",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=3,
+            column_count=2,
+            columns_json=json.dumps(file_profile["columns"]),
+            created_at="2026-06-17T00:00:00+00:00",
+        )
+    )
+
+    create_task(
+        task_id,
+        "file_task_share",
+        "analyse category sales share",
+        {
+            "task_id": task_id,
+            "file_id": "file_task_share",
+            "question": "analyse category sales share",
+            "analysis_goal": "compare category sales share",
+            "file_profile": file_profile,
+            "field_understanding": {},
+            "business_context": [{"title": "Product Category"}],
+            "analysis_plan": ["match fields", "share analysis", "chart", "report"],
+            "current_step": "created",
+            "completed_steps": [],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "llm_judgement": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "created",
+        },
+    )
+
+    result = run_analysis_task(task_id)
+
+    assert result["status"] == "completed"
+    assert result["tool_results"][0]["tool_name"] == "calculate_share"
+    assert result["tool_results"][0]["data"]["rows"][0]["product_category"] == "electronics"
+    assert "share_ratio" in result["tool_results"][0]["data"]["rows"][0]
+
+
 def test_run_analysis_task_marks_failed_when_llm_report_generation_fails(tmp_path: Path, monkeypatch):
     task_id = f"task_runner_llm_fail_{uuid.uuid4().hex[:8]}"
     csv_path = tmp_path / "sales_orders.csv"

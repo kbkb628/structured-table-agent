@@ -48,6 +48,15 @@ class GroupByAggregateArgs(ToolSchemaModel):
     limit: int = 10
 
 
+class CalculateShareArgs(ToolSchemaModel):
+    file_id: str
+    group_by: str
+    metric_column: str
+    aggregation: str
+    sort_order: str
+    limit: int = 10
+
+
 class GenerateChartArgs(ToolSchemaModel):
     title: str
     x_field: str
@@ -96,6 +105,10 @@ class AggregateRowsOutput(BaseModel):
     rows: list[dict[str, Any]]
 
 
+class ShareRowsOutput(BaseModel):
+    rows: list[dict[str, Any]]
+
+
 class PlotlyAxisTitle(BaseModel):
     title: str
 
@@ -126,6 +139,7 @@ TOOL_DATA_SCHEMAS = {
     "profile_dataset": FileProfile,
     "match_fields": MatchFieldsOutput,
     "groupby_aggregate": AggregateRowsOutput,
+    "calculate_share": ShareRowsOutput,
     "generate_chart": GenerateChartOutput,
     "generate_report": FinalReport,
 }
