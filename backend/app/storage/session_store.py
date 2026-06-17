@@ -1,5 +1,9 @@
 import json
 import logging
+import threading
+import time
+import uuid
+from contextlib import contextmanager
 
 from app.storage.analysis_store import get_task_state
 from app.storage.analysis_store import update_task_state
@@ -13,6 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 class SessionStore:
+    _memory_locks: dict[str, tuple[str, float | None]] = {}
+    _memory_lock = threading.Lock()
+
     def __init__(self, url: str = "redis://127.0.0.1:6379/0"):
         self._url = url
 
@@ -22,6 +29,7 @@ class SessionStore:
             "draft_report": f"draft_report:{task_id}",
             "intermediate_findings": f"intermediate_findings:{task_id}",
             "latest_context": f"latest_context:{task_id}",
+            "task_lock": f"task_lock:{task_id}",
         }
 
     def _connect(self):
@@ -70,3 +78,55 @@ class SessionStore:
         logger.warning("Redis unavailable; persisting session state to SQLite for task %s", task_id)
         update_task_state(task_id, state)
         return False
+
+    def acquire_task_lock(self, task_id: str, ttl_seconds: int = 900) -> str | None:
+        token = uuid.uuid4().hex
+        client = self._connect()
+        if client is not None:
+            keys = self._build_keys(task_id)
+            locked = client.set(keys["task_lock"], token, nx=True, ex=ttl_seconds)
+            return token if locked else None
+
+        expires_at = time.monotonic() + ttl_seconds if ttl_seconds > 0 else None
+        with self._memory_lock:
+            current = self._memory_locks.get(task_id)
+            if current is not None:
+                _, current_expires_at = current
+                if current_expires_at is None or current_expires_at > time.monotonic():
+                    return None
+                self._memory_locks.pop(task_id, None)
+            self._memory_locks[task_id] = (token, expires_at)
+        return token
+
+    def release_task_lock(self, task_id: str, token: str) -> bool:
+        client = self._connect()
+        if client is not None:
+            keys = self._build_keys(task_id)
+            release_script = """
+            if redis.call("GET", KEYS[1]) == ARGV[1] then
+                return redis.call("DEL", KEYS[1])
+            end
+            return 0
+            """
+            released = client.eval(release_script, 1, keys["task_lock"], token)
+            return bool(released)
+
+        with self._memory_lock:
+            current = self._memory_locks.get(task_id)
+            if current is None:
+                return False
+            current_token, _ = current
+            if current_token != token:
+                return False
+            self._memory_locks.pop(task_id, None)
+            return True
+
+    @contextmanager
+    def task_lock(self, task_id: str, ttl_seconds: int = 900):
+        token = self.acquire_task_lock(task_id, ttl_seconds=ttl_seconds)
+        if token is None:
+            raise RuntimeError(f"Task {task_id} is already running.")
+        try:
+            yield
+        finally:
+            self.release_task_lock(task_id, token)

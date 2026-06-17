@@ -36,7 +36,10 @@ def run_analysis(task_id: str) -> AnalysisTaskState:
     state = get_task_state(task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
-    return AnalysisTaskState(**run_analysis_task(task_id))
+    try:
+        return AnalysisTaskState(**run_analysis_task(task_id))
+    except RuntimeError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @router.get("/{task_id}", response_model=AnalysisTaskState)

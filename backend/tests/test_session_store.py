@@ -17,8 +17,21 @@ class FakeRedisClient:
     def get(self, key: str):
         return self.values.get(key)
 
-    def set(self, key: str, value: str):
+    def set(self, key: str, value: str, nx: bool = False, ex: int | None = None):
+        if nx and key in self.values:
+            return False
         self.values[key] = value
+        return True
+
+    def delete(self, key: str):
+        return 1 if self.values.pop(key, None) is not None else 0
+
+    def eval(self, script: str, numkeys: int, key: str, token: str):
+        del script, numkeys
+        if self.values.get(key) == token:
+            self.values.pop(key, None)
+            return 1
+        return 0
 
     def ping(self):
         return True
@@ -257,3 +270,31 @@ def test_session_store_persists_granular_redis_keys(monkeypatch):
     assert f"draft_report:{task_id}" in fake_client.values
     assert f"intermediate_findings:{task_id}" in fake_client.values
     assert f"latest_context:{task_id}" in fake_client.values
+
+
+def test_session_store_task_lock_blocks_duplicate_acquire():
+    store = SessionStore()
+    task_id = f"task_session_lock_{uuid.uuid4().hex[:8]}"
+
+    first_token = store.acquire_task_lock(task_id)
+    second_token = store.acquire_task_lock(task_id)
+
+    assert first_token is not None
+    assert second_token is None
+    assert store.release_task_lock(task_id, first_token) is True
+    assert store.acquire_task_lock(task_id) is not None
+
+
+def test_session_store_task_lock_roundtrip_with_fake_redis(monkeypatch):
+    fake_client = FakeRedisClient()
+    monkeypatch.setattr(SessionStore, "_connect", lambda self: fake_client)
+    store = SessionStore()
+    task_id = f"task_session_lock_redis_{uuid.uuid4().hex[:8]}"
+
+    token = store.acquire_task_lock(task_id)
+
+    assert token is not None
+    assert f"task_lock:{task_id}" in fake_client.values
+    assert store.acquire_task_lock(task_id) is None
+    assert store.release_task_lock(task_id, token) is True
+    assert f"task_lock:{task_id}" not in fake_client.values

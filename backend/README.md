@@ -31,7 +31,7 @@ Not implemented yet:
 - embedding / BM25 / rerank
 
 Redis remains a recommended dependency rather than a hard requirement in the current MVP. When Redis is unavailable, task state explicitly degrades to SQLite-backed storage and the timeline records a `session_store_warning` event.
-When Redis is available, the current implementation also persists `draft_report`, `intermediate_findings`, and `business_context` into granular keys alongside the full task snapshot.
+When Redis is available, the current implementation also persists `draft_report`, `intermediate_findings`, `business_context`, and `task_lock` into granular keys alongside the full task snapshot. When Redis is unavailable, duplicate in-process runs of the same task are still blocked by a memory lock.
 
 ## Setup with uv
 
@@ -169,3 +169,4 @@ Expected failure example:
 - if the matched dimension or metric fields do not exist, the task returns `status = failed`
 - the failure reason is written into `errors`
 - the event timeline contains `task_failed`
+- if the same task is already running, `/api/analysis/{task_id}/run` returns `409`

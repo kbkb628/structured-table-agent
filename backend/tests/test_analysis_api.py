@@ -1,10 +1,12 @@
 import json
+import uuid
 
 from fastapi.testclient import TestClient
 
 from app.main import app
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
+from app.storage.session_store import SessionStore
 
 
 def test_start_analysis_creates_task(tmp_path):
@@ -173,3 +175,45 @@ def test_eval_run_returns_404_for_missing_task():
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Task not found."
+
+
+def test_run_analysis_returns_409_when_task_is_already_locked(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text("region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n", encoding="utf-8")
+    file_id = f"file_api_locked_{uuid.uuid4().hex[:8]}"
+    save_file_record(
+        FileRecord(
+            file_id=file_id,
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=2,
+            column_count=3,
+            columns_json=json.dumps(
+                [
+                    {"name": "region", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": file_id, "question": "analyse sales by region"},
+    )
+    task_id = start.json()["task_id"]
+
+    store = SessionStore()
+    token = store.acquire_task_lock(task_id)
+
+    try:
+        run = client.post(f"/api/analysis/{task_id}/run")
+    finally:
+        if token is not None:
+            store.release_task_lock(task_id, token)
+
+    assert run.status_code == 409
+    assert run.json()["detail"] == f"Task {task_id} is already running."

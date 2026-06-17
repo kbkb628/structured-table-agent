@@ -230,7 +230,7 @@ print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
 - `MockLLMClient`：基于规则的可替换目标/计划生成器
 - `knowledge_base.jsonl + keyword_retriever`：真实本地 JSONL 检索
 - `business_context`：检索结果会写入任务状态并记录 `rag_retrieved` 事件
-- `SessionStore`：当 Redis 可用时，会把总状态之外的 `draft_report`、`intermediate_findings`、`business_context` 拆分到独立 key 保存
+- `SessionStore`：当 Redis 可用时，会把总状态之外的 `draft_report`、`intermediate_findings`、`business_context` 和 `task_lock` 拆分到独立 key 保存；Redis 不可用时降级为 SQLite + 进程内任务锁
 - `LangGraph`：当前 `/api/analysis/{task_id}/run` 已通过包含 `route_next_step` 的最小状态流执行，多指标任务可继续执行下一轮真实工具调用
 - `RuleScorer + fixed eval cases`：规则评分与固定 case 回归
 

@@ -86,7 +86,8 @@ MVP 阶段先做 `RuleScorer` 而不是 LLM-as-Judge，原因是：
 - 当前 RAG 是 `knowledge_base.jsonl + keyword_retriever`
 - 当前支持 CSV / Excel 上传；Excel 会先在服务端标准化为 CSV 再进入分析链路
 - 当前 SessionStore 会优先尝试 Redis，不可用时显式降级到 SQLite
-- 当 Redis 可用时，当前实现会把报告草稿、中间发现和业务上下文拆分到独立 key 保存
+- 当 Redis 可用时，当前实现会把报告草稿、中间发现、业务上下文和 `task_lock` 拆分到独立 key 保存
+- 当前 `/api/analysis/{task_id}/run` 已增加最小任务锁治理，避免同一任务被重复并发执行
 - 当前没有异步队列、真实模型 API、向量检索、DockerSandbox、完整前端
 
 如果把这些没做的能力说成已经实现，会直接破坏项目可信度。

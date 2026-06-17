@@ -101,6 +101,7 @@
 - `match_fields` 可以为单个问题解析出多个待执行 metric
 - `execute_tools` 每次只执行一个 metric 的聚合
 - `route_next_step` 会根据 `pending_metrics` 决定继续进入 `execute_tools`，或结束工具阶段进入图表生成
+- 运行入口会为同一 `task_id` 获取 `task_lock`，避免重复并发执行同一任务
 
 响应为完整任务状态，包含：
 
@@ -110,6 +111,11 @@
 - `final_report`
 - `eval_result`
 - `errors`
+
+额外失败场景：
+
+- 任务不存在时返回 `404`
+- 同一任务在执行中再次调用 `/run` 时返回 `409`
 
 ## 5. 查询任务状态
 
