@@ -98,7 +98,7 @@
 - `tool_call_logs`
 - `eval_results`
 
-`SessionStore` 会优先尝试 Redis；当 Redis 不可用时，会显式降级到 SQLite 并记录 `session_store_warning`。若 Redis 可用，系统还会把 `draft_report`、`intermediate_findings`、`business_context`、压缩后的 `context_checkpoint` 和 `task_lock` 分别写入细粒度 key。
+`SessionStore` 会优先尝试 Redis；当 Redis 不可用时，会显式降级到 SQLite 并记录 `session_store_warning`。若 Redis 可用，系统还会把 `draft_report`、`final_report`、`llm_judgement`、`intermediate_findings`、`business_context`、压缩后的 `context_checkpoint` 和 `task_lock` 分别写入细粒度 key。
 
 ## 4. 运行时状态流
 

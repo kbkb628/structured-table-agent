@@ -28,6 +28,8 @@ class SessionStore:
         return {
             "analysis_state": f"analysis_state:{task_id}",
             "draft_report": f"draft_report:{task_id}",
+            "final_report": f"final_report:{task_id}",
+            "llm_judgement": f"llm_judgement:{task_id}",
             "intermediate_findings": f"intermediate_findings:{task_id}",
             "business_context": f"business_context:{task_id}",
             "latest_context": f"latest_context:{task_id}",
@@ -78,11 +80,17 @@ class SessionStore:
             if payload:
                 state = json.loads(payload)
                 draft_report = client.get(keys["draft_report"])
+                final_report = client.get(keys["final_report"])
+                llm_judgement = client.get(keys["llm_judgement"])
                 intermediate_findings = client.get(keys["intermediate_findings"])
                 business_context = client.get(keys["business_context"])
                 latest_context = client.get(keys["latest_context"])
                 if draft_report:
                     state["draft_report"] = json.loads(draft_report)
+                if final_report:
+                    state["final_report"] = json.loads(final_report)
+                if llm_judgement:
+                    state["llm_judgement"] = json.loads(llm_judgement)
                 if intermediate_findings:
                     state["intermediate_findings"] = json.loads(intermediate_findings)
                 if business_context:
@@ -104,6 +112,8 @@ class SessionStore:
             keys = self._build_keys(task_id)
             client.set(keys["analysis_state"], json.dumps(state, ensure_ascii=False))
             client.set(keys["draft_report"], json.dumps(state.get("draft_report", {}), ensure_ascii=False))
+            client.set(keys["final_report"], json.dumps(state.get("final_report", {}), ensure_ascii=False))
+            client.set(keys["llm_judgement"], json.dumps(state.get("llm_judgement", {}), ensure_ascii=False))
             client.set(
                 keys["intermediate_findings"],
                 json.dumps(state.get("intermediate_findings", []), ensure_ascii=False),
