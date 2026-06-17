@@ -32,7 +32,6 @@
 
 当前不能声称已实现：
 
-- Redis 会话状态
 - 异步队列执行
 - 真实外部 LLM Provider
 - embedding / BM25 / rerank
@@ -42,15 +41,14 @@
 
 ## 待收口项
 
-- 根 `README.md` 持续对齐开发文档的交付要求，避免边界表达漂移
-- 保持 `backend/README.md`、演示脚本、固定回归说明同步
+- 根 `README.md`、`backend/README.md` 与 `DEVELOPMENT_GUIDE.md` 保持持续同步
 - 继续以真实验证为准推进，不新增第二阶段能力
 
 ## 第二阶段规划
 
 - 接入真实 LLM Provider
 - 升级为 embedding / BM25 / rerank 检索
-- 增加 Redis 会话记忆与异步任务执行
+- 增加更完整的 Redis 会话记忆与异步任务执行
 - 引入 DockerSandbox
 - 引入 LLM-as-Judge
 - 补完整前端体验

@@ -77,5 +77,12 @@ def create_analysis_task(
         llm_client=llm_client,
     )
     create_task(resolved_task_id, file_id, question, state)
-    record_startup_events(resolved_task_id, source_node, business_context, analysis_goal, analysis_plan)
+    record_startup_events(
+        resolved_task_id,
+        source_node,
+        file_profile,
+        business_context,
+        analysis_goal,
+        analysis_plan,
+    )
     return resolved_task_id, state

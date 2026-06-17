@@ -1,3 +1,4 @@
+DATASET_PROFILED = "dataset_profiled"
 TASK_CREATED = "task_created"
 RAG_RETRIEVED = "rag_retrieved"
 GOAL_UNDERSTOOD = "goal_understood"
@@ -15,6 +16,7 @@ TASK_FAILED = "task_failed"
 
 STARTUP_TRACE_EVENTS = (
     TASK_CREATED,
+    DATASET_PROFILED,
     RAG_RETRIEVED,
     GOAL_UNDERSTOOD,
     PLAN_GENERATED,

@@ -39,6 +39,12 @@ def test_record_startup_events_writes_expected_trace_sequence():
     record_startup_events(
         state["task_id"],
         "start_analysis",
+        {
+            "filename": "sales_orders.csv",
+            "row_count": 2,
+            "column_count": 3,
+            "columns": [{"name": "region"}, {"name": "sales_amount"}, {"name": "order_id"}],
+        },
         [{"id": "metric_sales_amount"}, {"id": "dimension_region"}],
         "compare region sales",
         ["match fields", "aggregate sales"],
@@ -48,12 +54,14 @@ def test_record_startup_events_writes_expected_trace_sequence():
 
     assert [event["event_type"] for event in events] == [
         "task_created",
+        "dataset_profiled",
         "rag_retrieved",
         "goal_understood",
         "plan_generated",
     ]
-    assert events[1]["payload"]["item_count"] == 2
-    assert events[1]["payload"]["item_ids"] == ["metric_sales_amount", "dimension_region"]
+    assert events[1]["payload"]["row_count"] == 2
+    assert events[2]["payload"]["item_count"] == 2
+    assert events[2]["payload"]["item_ids"] == ["metric_sales_amount", "dimension_region"]
 
 
 def test_hydrate_state_events_loads_latest_persisted_events():
@@ -63,6 +71,12 @@ def test_hydrate_state_events_loads_latest_persisted_events():
     record_startup_events(
         state["task_id"],
         "eval_cases",
+        {
+            "filename": "sales_orders.csv",
+            "row_count": 1,
+            "column_count": 2,
+            "columns": [{"name": "region"}, {"name": "sales_amount"}],
+        },
         [{"id": "metric_sales_amount"}],
         state["analysis_goal"],
         state["analysis_plan"],
@@ -72,7 +86,7 @@ def test_hydrate_state_events_loads_latest_persisted_events():
 
     hydrate_state_events(state)
 
-    assert len(state["events"]) == 6
+    assert len(state["events"]) == 7
     assert state["events"][-2]["event_type"] == "task_completed"
     assert state["events"][-1]["event_type"] == "eval_finished"
     assert state["events"][-1]["payload"]["overall_score"] == 1.0

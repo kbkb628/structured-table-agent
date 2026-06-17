@@ -82,6 +82,7 @@ def test_create_analysis_task_persists_state_and_startup_events(tmp_path):
     assert stored["question"] == "analyse sales by region"
     assert [event["event_type"] for event in events] == [
         "task_created",
+        "dataset_profiled",
         "rag_retrieved",
         "goal_understood",
         "plan_generated",

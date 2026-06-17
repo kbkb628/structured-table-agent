@@ -16,6 +16,7 @@
 - 规则评分与固定 case 回归
 
 当前默认使用 `MockLLM` 和本地 JSONL 关键词检索，所有数值结论都必须来自真实工具结果，不依赖模型臆造。
+Redis 在当前 MVP 中属于推荐依赖而非强制依赖；如果 Redis 不可用，系统会显式降级到 SQLite 并记录 `session_store_warning` 事件。
 
 当前主线已经打通：
 
@@ -31,7 +32,6 @@
 
 当前明确未实现：
 
-- Redis 会话态
 - 异步队列
 - 真实 LLM Provider
 - embedding / BM25 / rerank
@@ -125,6 +125,7 @@ py -3.12 -m venv .venv
 - 默认上传目录：`backend/data/uploads`
 
 当前没有额外环境变量要求；MVP 默认走本地 `MockLLM` 和 SQLite。
+如果本地额外安装并启动 Redis，可作为推荐的会话状态层；未安装或不可用时，当前版本会降级到 SQLite。
 
 ## 一键演示
 

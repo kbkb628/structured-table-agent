@@ -1,3 +1,4 @@
+from app.observability.trace_models import DATASET_PROFILED
 from app.observability.trace_models import CHART_FAILED
 from app.observability.trace_models import CHART_GENERATED
 from app.observability.trace_models import EVAL_FINISHED
@@ -32,11 +33,24 @@ def hydrate_state_events(state: dict) -> dict:
 def record_startup_events(
     task_id: str,
     node: str,
+    file_profile: dict,
     business_context: list[dict],
     analysis_goal: str,
     analysis_plan: list[str],
 ) -> None:
     record_analysis_event(task_id, TASK_CREATED, node, "task created", {"status": "created"})
+    record_analysis_event(
+        task_id,
+        DATASET_PROFILED,
+        node,
+        "dataset profile prepared",
+        {
+            "filename": file_profile.get("filename"),
+            "row_count": file_profile.get("row_count"),
+            "column_count": file_profile.get("column_count"),
+            "column_names": [item["name"] for item in file_profile.get("columns", [])],
+        },
+    )
     record_analysis_event(
         task_id,
         RAG_RETRIEVED,
@@ -98,3 +112,13 @@ def record_task_failed(task_id: str, node: str, message: str, payload: dict) -> 
 
 def record_eval_finished(task_id: str, node: str, payload: dict) -> dict:
     return record_analysis_event(task_id, EVAL_FINISHED, node, "rule evaluation completed", payload)
+
+
+def record_session_store_warning(task_id: str, payload: dict) -> dict:
+    return record_analysis_event(
+        task_id,
+        "session_store_warning",
+        "session_store",
+        "session store downgraded to SQLite",
+        payload,
+    )
