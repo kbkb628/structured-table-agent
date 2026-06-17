@@ -41,6 +41,7 @@ def test_mock_llm_can_generate_structured_report_and_judge_result():
     client = MockLLMClient()
 
     report = client.generate_report(
+        analysis_goal="analyse sales by region",
         intermediate_findings=[{"summary": "East performs best."}],
         chart_specs=[{"chart_type": "bar"}],
         business_context=[{"title": "Region"}],
@@ -52,6 +53,7 @@ def test_mock_llm_can_generate_structured_report_and_judge_result():
     )
 
     assert report["title"] != ""
+    assert report["analysis_goal"] == "analyse sales by region"
     assert len(report["key_findings"]) > 0
     assert judgement["supported_by_tools"] is True
     assert judgement["issue_count"] == 0

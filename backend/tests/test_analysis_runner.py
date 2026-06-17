@@ -8,6 +8,63 @@ from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
 
 
+class RunnerStubLLMClient:
+    def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+        del question
+        del file_profile
+        del business_context
+        return "runner stub goal"
+
+    def generate_analysis_plan(
+        self,
+        analysis_goal: str,
+        file_profile: dict,
+        business_context: list[dict],
+    ) -> list[str]:
+        del analysis_goal
+        del file_profile
+        del business_context
+        return ["runner stub plan"]
+
+    def generate_report(
+        self,
+        analysis_goal: str,
+        intermediate_findings: list[dict],
+        chart_specs: list[dict],
+        business_context: list[dict],
+    ) -> dict:
+        del analysis_goal
+        del intermediate_findings
+        del chart_specs
+        del business_context
+        return {
+            "title": "LLM Final Report",
+            "analysis_goal": "compare region sales",
+            "key_findings": [
+                {
+                    "finding": "East performs best",
+                    "evidence": "LLM grounded this in deterministic tool output.",
+                    "source_tool": "groupby_aggregate",
+                }
+            ],
+            "chart_explanations": ["Bar chart compares regional sales totals."],
+            "business_suggestions": ["Expand the strongest region playbook."],
+            "data_limitations": ["Limited to the uploaded sample data."],
+            "next_steps": ["Investigate regional segment drivers."],
+        }
+
+    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+        del question
+        del final_report
+        del tool_results
+        return {
+            "supported_by_tools": True,
+            "has_findings": True,
+            "issue_count": 0,
+            "issues": [],
+        }
+
+
 def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
     task_id = f"task_runner_{uuid.uuid4().hex[:8]}"
     csv_path = tmp_path / "sales_orders.csv"
@@ -101,6 +158,76 @@ def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
         "generate_chart",
         "generate_report",
     ]
+
+
+def test_run_analysis_task_uses_llm_final_report_and_records_judgement(tmp_path: Path, monkeypatch):
+    task_id = f"task_runner_llm_{uuid.uuid4().hex[:8]}"
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n",
+        encoding="utf-8",
+    )
+    file_profile = {
+        "file_id": "file_task_llm",
+        "filename": "sales_orders.csv",
+        "row_count": 2,
+        "column_count": 3,
+        "columns": [
+            {"name": "region", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+            {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+            {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+        ],
+        "created_at": "2026-06-17T00:00:00+00:00",
+    }
+
+    save_file_record(
+        FileRecord(
+            file_id="file_task_llm",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=2,
+            column_count=3,
+            columns_json=json.dumps(file_profile["columns"]),
+            created_at="2026-06-17T00:00:00+00:00",
+        )
+    )
+
+    create_task(
+        task_id,
+        "file_task_llm",
+        "analyse sales by region",
+        {
+            "task_id": task_id,
+            "file_id": "file_task_llm",
+            "question": "analyse sales by region",
+            "analysis_goal": "compare region sales",
+            "file_profile": file_profile,
+            "field_understanding": {},
+            "business_context": [{"title": "Region"}],
+            "analysis_plan": ["match fields", "aggregate", "chart", "report"],
+            "current_step": "created",
+            "completed_steps": [],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "created",
+        },
+    )
+
+    monkeypatch.setattr("app.agent.nodes.get_llm_client", lambda: RunnerStubLLMClient())
+
+    result = run_analysis_task(task_id)
+    stored = get_task_state(task_id)
+
+    assert result["final_report"]["title"] == "LLM Final Report"
+    assert stored["final_report"]["title"] == "LLM Final Report"
+    assert result["llm_judgement"]["supported_by_tools"] is True
+    assert stored["llm_judgement"]["issue_count"] == 0
 
 
 def test_run_analysis_task_supports_channel_dual_metrics(tmp_path: Path):

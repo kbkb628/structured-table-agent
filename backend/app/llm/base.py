@@ -18,6 +18,7 @@ class LLMClient(ABC):
     @abstractmethod
     def generate_report(
         self,
+        analysis_goal: str,
         intermediate_findings: list[dict],
         chart_specs: list[dict],
         business_context: list[dict],

@@ -28,10 +28,12 @@ class StubLLMClient:
 
     def generate_report(
         self,
+        analysis_goal: str,
         intermediate_findings: list[dict],
         chart_specs: list[dict],
         business_context: list[dict],
     ) -> dict:
+        del analysis_goal
         del intermediate_findings
         del chart_specs
         del business_context

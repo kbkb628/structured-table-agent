@@ -59,6 +59,7 @@ class MockLLMClient(LLMClient):
 
     def generate_report(
         self,
+        analysis_goal: str,
         intermediate_findings: list[dict],
         chart_specs: list[dict],
         business_context: list[dict],
@@ -67,7 +68,7 @@ class MockLLMClient(LLMClient):
         summary = intermediate_findings[0]["summary"] if intermediate_findings else "No findings were available."
         return {
             "title": "MockLLM Structured Summary",
-            "analysis_goal": "Summarise intermediate findings into a lightweight report.",
+            "analysis_goal": analysis_goal,
             "key_findings": [
                 {
                     "finding": summary,
