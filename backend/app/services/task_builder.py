@@ -2,7 +2,7 @@ import json
 import uuid
 
 from app.llm.base import LLMClient
-from app.llm.mock_client import MockLLMClient
+from app.llm.factory import get_llm_client
 from app.observability.event_logger import record_startup_events
 from app.rag.keyword_retriever import retrieve_business_context
 from app.storage.analysis_store import create_task
@@ -32,7 +32,7 @@ def build_analysis_state(
     file_profile: dict,
     llm_client: LLMClient | None = None,
 ) -> tuple[dict, list[dict], str, list[str]]:
-    client = llm_client or MockLLMClient()
+    client = llm_client or get_llm_client()
     business_context = retrieve_business_context(question, file_profile)["items"]
     analysis_goal = client.generate_analysis_goal(question, file_profile, business_context)
     analysis_plan = client.generate_analysis_plan(analysis_goal, file_profile, business_context)
