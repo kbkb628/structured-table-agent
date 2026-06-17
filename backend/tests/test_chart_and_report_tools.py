@@ -1,5 +1,6 @@
 from app.tools.chart_tool import generate_chart
 from app.tools.report_tool import generate_report
+from app.schemas.report_schema import FinalReport
 
 
 def test_generate_chart_returns_bar_spec():
@@ -61,3 +62,22 @@ def test_generate_report_falls_back_when_no_tool_rows():
     assert report.success is True
     assert report.data["key_findings"][0]["source_tool"] == "report_builder"
     assert report.data["chart_explanations"][0] == "No chart was generated; conclusions are based on tabular tool results."
+
+
+def test_generate_report_returns_final_report_schema():
+    report = generate_report(
+        question="analyse sales by region",
+        analysis_goal="compare region sales",
+        tool_results=[
+            {
+                "tool_name": "groupby_aggregate",
+                "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]},
+            }
+        ],
+        chart_specs=[{"chart_type": "bar"}],
+    )
+
+    validated = FinalReport.model_validate(report.data)
+
+    assert validated.analysis_goal == "compare region sales"
+    assert validated.key_findings[0].source_tool == "groupby_aggregate"

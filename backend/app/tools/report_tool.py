@@ -1,3 +1,4 @@
+from app.schemas.report_schema import FinalReport
 from app.schemas.tool_schema import ToolResponse
 
 
@@ -71,10 +72,11 @@ def generate_report(
         "data_limitations": ["This report reflects the uploaded CSV and the matched fields only."],
         "next_steps": ["Validate whether additional segmentation is needed for deeper analysis."],
     }
+    validated_report = FinalReport.model_validate(report)
     return ToolResponse(
         success=True,
         tool_name="generate_report",
-        data=report,
+        data=validated_report.model_dump(),
         summary="generated a structured analysis report from tool outputs",
         error=None,
         metadata={"tool_result_count": len(resolved_tool_results), "chart_count": len(resolved_chart_specs)},
