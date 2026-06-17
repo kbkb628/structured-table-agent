@@ -3,13 +3,10 @@ import uuid
 
 from app.agent.graph import run_analysis_graph
 from app.core.config import SAMPLE_DIR
-from app.observability.event_logger import record_startup_events
-from app.storage.analysis_store import create_task
+from app.services.task_builder import create_analysis_task
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
 from app.tools.data_profile import build_file_profile
-from app.llm.mock_client import MockLLMClient
-from app.rag.keyword_retriever import retrieve_business_context
 
 
 def get_fixed_eval_cases() -> list[dict]:
@@ -66,36 +63,13 @@ def _register_sample_file() -> dict:
 
 
 def _build_case_task(case: dict, file_profile: dict) -> dict:
-    question = case["question"]
-    business_context = retrieve_business_context(question, file_profile)["items"]
-    llm_client = MockLLMClient()
-    analysis_goal = llm_client.generate_analysis_goal(question, file_profile, business_context)
-    analysis_plan = llm_client.generate_analysis_plan(analysis_goal, file_profile, business_context)
-    task_id = f"task_eval_{uuid.uuid4().hex[:12]}"
-
-    state = {
-        "task_id": task_id,
-        "file_id": file_profile["file_id"],
-        "question": question,
-        "analysis_goal": analysis_goal,
-        "file_profile": file_profile,
-        "field_understanding": {},
-        "business_context": business_context,
-        "analysis_plan": analysis_plan,
-        "current_step": "created",
-        "completed_steps": [],
-        "intermediate_findings": [],
-        "tool_results": [],
-        "chart_specs": [],
-        "draft_report": {},
-        "final_report": {},
-        "eval_result": {},
-        "events": [],
-        "errors": [],
-        "status": "created",
-    }
-    create_task(task_id, file_profile["file_id"], question, state)
-    record_startup_events(task_id, "eval_cases", business_context, analysis_goal, analysis_plan)
+    _, state = create_analysis_task(
+        file_id=file_profile["file_id"],
+        question=case["question"],
+        source_node="eval_cases",
+        file_profile=file_profile,
+        task_id=f"task_eval_{uuid.uuid4().hex[:12]}",
+    )
     return state
 
 

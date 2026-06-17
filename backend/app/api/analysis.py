@@ -1,69 +1,34 @@
-import json
-import uuid
-
 from fastapi import APIRouter, HTTPException
 
-from app.llm.mock_client import MockLLMClient
 from app.observability.event_logger import list_analysis_events
-from app.observability.event_logger import record_startup_events
-from app.rag.keyword_retriever import retrieve_business_context
 from app.schemas.analysis_schema import AnalysisStartRequest, AnalysisStartResponse, AnalysisTaskState
 from app.schemas.event_schema import AnalysisEventList
+from app.services.task_builder import build_file_profile_from_record
+from app.services.task_builder import create_analysis_task
 from app.services.analysis_runner import run_analysis_task
-from app.storage.analysis_store import create_task, get_task_state
-from app.storage.file_store import get_file_record
+from app.storage.analysis_store import get_task_state
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
 
 
 @router.post("/start", response_model=AnalysisStartResponse)
 def start_analysis(request: AnalysisStartRequest) -> AnalysisStartResponse:
-    file_record = get_file_record(request.file_id)
-    if file_record is None:
+    file_profile = build_file_profile_from_record(request.file_id)
+    if file_profile is None:
         raise HTTPException(status_code=404, detail="File not found.")
 
-    task_id = f"task_{uuid.uuid4().hex[:12]}"
-    file_profile = {
-        "file_id": file_record.file_id,
-        "filename": file_record.filename,
-        "row_count": file_record.row_count,
-        "column_count": file_record.column_count,
-        "columns": json.loads(file_record.columns_json),
-        "created_at": file_record.created_at,
-    }
-    business_context = retrieve_business_context(request.question, file_profile)["items"]
-    llm_client = MockLLMClient()
-    analysis_goal = llm_client.generate_analysis_goal(request.question, file_profile, business_context)
-    analysis_plan = llm_client.generate_analysis_plan(analysis_goal, file_profile, business_context)
-    state = {
-        "task_id": task_id,
-        "file_id": request.file_id,
-        "question": request.question,
-        "analysis_goal": analysis_goal,
-        "file_profile": file_profile,
-        "field_understanding": {},
-        "business_context": business_context,
-        "analysis_plan": analysis_plan,
-        "current_step": "created",
-        "completed_steps": [],
-        "intermediate_findings": [],
-        "tool_results": [],
-        "chart_specs": [],
-        "draft_report": {},
-        "final_report": {},
-        "eval_result": {},
-        "events": [],
-        "errors": [],
-        "status": "created",
-    }
-    create_task(task_id, request.file_id, request.question, state)
-    record_startup_events(task_id, "start_analysis", business_context, analysis_goal, analysis_plan)
+    task_id, state = create_analysis_task(
+        file_id=request.file_id,
+        question=request.question,
+        source_node="start_analysis",
+        file_profile=file_profile,
+    )
     return AnalysisStartResponse(
         task_id=task_id,
         status="created",
-        analysis_goal=analysis_goal,
-        analysis_plan=analysis_plan,
-        business_context=business_context,
+        analysis_goal=state["analysis_goal"],
+        analysis_plan=state["analysis_plan"],
+        business_context=state["business_context"],
     )
 
 
