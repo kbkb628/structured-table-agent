@@ -2,11 +2,13 @@ from fastapi import APIRouter, HTTPException
 
 from app.observability.event_logger import list_analysis_events
 from app.schemas.analysis_schema import AnalysisStartRequest, AnalysisStartResponse, AnalysisTaskState
+from app.schemas.analysis_schema import AnalysisToolLogList
 from app.schemas.event_schema import AnalysisEventList
 from app.services.task_builder import build_file_profile_from_record
 from app.services.task_builder import create_analysis_task
 from app.services.analysis_runner import run_analysis_task
-from app.storage.analysis_store import get_task_state
+from app.storage.analysis_store import get_task_state, get_tool_call_logs
+from app.storage.session_store import SessionStore
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
 
@@ -47,7 +49,13 @@ def get_analysis(task_id: str) -> AnalysisTaskState:
     state = get_task_state(task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
+    state, _ = SessionStore().load_state(task_id)
+    if state is None:
+        raise HTTPException(status_code=404, detail="Task not found.")
     state["events"] = list_analysis_events(task_id)
+    state["tool_call_logs"] = get_tool_call_logs(task_id)
+    if "context_checkpoint" not in state:
+        state["context_checkpoint"] = SessionStore()._build_context_checkpoint(state)
     return AnalysisTaskState(**state)
 
 
@@ -57,3 +65,11 @@ def get_analysis_events(task_id: str) -> AnalysisEventList:
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
     return AnalysisEventList(task_id=task_id, events=list_analysis_events(task_id))
+
+
+@router.get("/{task_id}/tool-logs", response_model=AnalysisToolLogList)
+def get_analysis_tool_logs(task_id: str) -> AnalysisToolLogList:
+    state = get_task_state(task_id)
+    if state is None:
+        raise HTTPException(status_code=404, detail="Task not found.")
+    return AnalysisToolLogList(task_id=task_id, tool_call_logs=get_tool_call_logs(task_id))

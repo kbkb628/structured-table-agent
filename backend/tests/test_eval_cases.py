@@ -17,9 +17,21 @@ def test_run_fixed_eval_cases_returns_passing_summary():
     assert summary["pass_rate"] == 1.0
     assert summary["retried_tool_calls"] == 0
     assert summary["retry_attempts_total"] == 0
+    assert summary["average_tool_success_rate"] == 1.0
+    assert summary["average_trace_completeness"] == 1.0
+    assert summary["average_report_completeness"] == 1.0
+    assert summary["average_chart_validity"] == 1.0
+    assert summary["average_field_validity"] == 1.0
+    assert summary["average_tool_elapsed_ms_total"] >= 0
     assert len(summary["results"]) == 3
     assert all(item["passed"] is True for item in summary["results"])
     assert all(item["overall_score"] >= 0.8 for item in summary["results"])
+    assert all(item["tool_success_rate"] == 1.0 for item in summary["results"])
+    assert all(item["trace_completeness"] == 1.0 for item in summary["results"])
+    assert all(item["report_completeness"] == 1.0 for item in summary["results"])
+    assert all(item["chart_validity"] is True for item in summary["results"])
+    assert all(item["field_validity"] is True for item in summary["results"])
+    assert all(item["tool_elapsed_ms_total"] >= 0 for item in summary["results"])
     assert all(item["issues"] == [] for item in summary["results"])
     assert all(item["assertion_failures"] == [] for item in summary["results"])
 

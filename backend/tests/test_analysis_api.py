@@ -47,6 +47,8 @@ def test_start_analysis_creates_task(tmp_path):
     events = client.get(f"/api/analysis/{task_id}/events")
 
     assert len(state.json()["business_context"]) > 0
+    assert "context_checkpoint" in state.json()
+    assert state.json()["context_checkpoint"]["analysis_goal"] != ""
     assert any(event["event_type"] == "rag_retrieved" for event in events.json()["events"])
 
 
@@ -85,6 +87,9 @@ def test_run_analysis_returns_completed_state(tmp_path):
     assert run.status_code == 200
     assert run.json()["status"] == "completed"
     assert status.json()["task_id"] == task_id
+    assert "context_checkpoint" in status.json()
+    assert "tool_call_logs" in status.json()
+    assert len(status.json()["tool_call_logs"]) == 4
     assert len(events.json()["events"]) > 0
 
 
@@ -125,6 +130,8 @@ def test_run_channel_analysis_returns_multiple_tool_results(tmp_path):
     assert run.json()["status"] == "completed"
     assert len(run.json()["tool_results"]) == 2
     assert len(run.json()["chart_specs"]) == 2
+    assert run.json()["pending_tool_calls"] == []
+    assert run.json()["pending_metrics"] == []
 
 
 def test_eval_run_persists_eval_result(tmp_path):
@@ -175,6 +182,64 @@ def test_eval_run_returns_404_for_missing_task():
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Task not found."
+
+
+def test_eval_cases_run_returns_fixed_case_summary():
+    client = TestClient(app)
+
+    response = client.post("/api/eval/cases/run")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["total_cases"] == 3
+    assert payload["passed_cases"] == 3
+    assert payload["failed_cases"] == 0
+    assert payload["pass_rate"] == 1.0
+    assert payload["average_tool_success_rate"] == 1.0
+    assert payload["average_trace_completeness"] == 1.0
+    assert payload["average_report_completeness"] == 1.0
+    assert payload["average_chart_validity"] == 1.0
+    assert payload["average_field_validity"] == 1.0
+    assert len(payload["results"]) == 3
+
+
+def test_get_analysis_tool_logs_returns_persisted_logs(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text("region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n", encoding="utf-8")
+    save_file_record(
+        FileRecord(
+            file_id="file_api_logs",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=2,
+            column_count=3,
+            columns_json=json.dumps(
+                [
+                    {"name": "region", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": "file_api_logs", "question": "analyse sales by region"},
+    )
+    task_id = start.json()["task_id"]
+    client.post(f"/api/analysis/{task_id}/run")
+
+    response = client.get(f"/api/analysis/{task_id}/tool-logs")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["task_id"] == task_id
+    assert len(payload["tool_call_logs"]) == 4
+    assert payload["tool_call_logs"][0]["tool_name"] == "match_fields"
+    assert payload["tool_call_logs"][-1]["tool_name"] == "generate_report"
 
 
 def test_run_analysis_returns_409_when_task_is_already_locked(tmp_path):

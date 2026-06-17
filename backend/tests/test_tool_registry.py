@@ -156,3 +156,93 @@ def test_invoke_tool_with_retry_returns_failure_after_retry_exhausted(monkeypatc
     assert calls["count"] == 2
     assert result.metadata["retry_attempts"] == 1
     assert result.metadata["retry_status"] == "exhausted"
+
+
+def test_invoke_tool_returns_schema_failure_for_missing_required_parameter():
+    result = invoke_tool(
+        "generate_chart",
+        title="Sales by Region",
+        x_field="region",
+        rows=[{"region": "East", "sales_amount_sum": 1200}],
+    )
+
+    assert result.success is False
+    assert result.error is not None
+    assert result.error.code == "TOOL_ARGUMENT_VALIDATION_FAILED"
+    assert "y_field" in result.error.message
+
+
+def test_invoke_tool_returns_schema_failure_for_invalid_parameter_type():
+    result = invoke_tool(
+        "groupby_aggregate",
+        file_id="file_missing",
+        group_by="region",
+        metric_column="sales_amount",
+        aggregation="sum",
+        sort_order="desc",
+        limit="five",
+    )
+
+    assert result.success is False
+    assert result.error is not None
+    assert result.error.code == "TOOL_ARGUMENT_VALIDATION_FAILED"
+    assert "limit" in result.error.message
+
+
+def test_invoke_tool_returns_failure_for_invalid_tool_response(monkeypatch):
+    def invalid_tool(**kwargs):
+        return {
+            "success": True,
+            "tool_name": "invalid_tool",
+            "data": {"rows": []},
+            "summary": "broken response",
+            "metadata": "not-a-dict",
+        }
+
+    monkeypatch.setattr(
+        "app.tools.registry.get_tool_registry",
+        lambda: {"invalid_tool": invalid_tool},
+    )
+
+    result = invoke_tool("invalid_tool", anything="value")
+
+    assert result.success is False
+    assert result.error is not None
+    assert result.error.code == "TOOL_RESPONSE_VALIDATION_FAILED"
+    assert "metadata" in result.error.message
+
+
+def test_invoke_tool_returns_failure_for_invalid_tool_output_data(monkeypatch):
+    def invalid_chart_tool(**kwargs):
+        return ToolResponse(
+            success=True,
+            tool_name="generate_chart",
+            data={
+                "chart_type": "bar",
+                "plotly_spec": {
+                    "data": "not-a-list",
+                    "layout": {"title": "Sales by Region"},
+                },
+            },
+            summary="broken chart output",
+            error=None,
+            metadata={},
+        )
+
+    monkeypatch.setattr(
+        "app.tools.registry.get_tool_registry",
+        lambda: {"generate_chart": invalid_chart_tool},
+    )
+
+    result = invoke_tool(
+        "generate_chart",
+        title="Sales by Region",
+        x_field="region",
+        y_field="sales_amount_sum",
+        rows=[{"region": "East", "sales_amount_sum": 1200}],
+    )
+
+    assert result.success is False
+    assert result.error is not None
+    assert result.error.code == "TOOL_DATA_VALIDATION_FAILED"
+    assert "plotly_spec" in result.error.message

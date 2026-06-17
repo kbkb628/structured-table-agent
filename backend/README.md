@@ -31,7 +31,7 @@ Not implemented yet:
 - embedding / BM25 / rerank
 
 Redis remains a recommended dependency rather than a hard requirement in the current MVP. When Redis is unavailable, task state explicitly degrades to SQLite-backed storage and the timeline records a `session_store_warning` event.
-When Redis is available, the current implementation also persists `draft_report`, `intermediate_findings`, a compact `context_checkpoint`, and `task_lock` into granular keys alongside the full task snapshot. When Redis is unavailable, duplicate in-process runs of the same task are still blocked by a memory lock.
+When Redis is available, the current implementation also persists `draft_report`, `intermediate_findings`, `business_context`, a compact `context_checkpoint`, and `task_lock` into granular keys alongside the full task snapshot. When Redis is unavailable, duplicate in-process runs of the same task are still blocked by a memory lock.
 
 ## Setup with uv
 
@@ -76,6 +76,19 @@ The runner executes the three currently supported case families on `data/samples
 - region sales comparison
 - channel order-count and sales performance
 
+The summary now also exposes evaluation aggregates derived from the real `RuleScorer` output:
+
+- `average_tool_success_rate`
+- `average_tool_elapsed_ms_total`
+- `average_trace_completeness`
+- `average_report_completeness`
+- `average_chart_validity`
+- `average_field_validity`
+- `retried_tool_calls`
+- `retry_attempts_total`
+
+The same regression summary is also available through `POST /api/eval/cases/run`.
+
 ## Analysis flow
 
 1. Upload a CSV file with `/api/files/upload`
@@ -83,7 +96,8 @@ The runner executes the three currently supported case families on `data/samples
 3. Run the task with `/api/analysis/{task_id}/run`
 4. Query task state with `/api/analysis/{task_id}`
 5. Query event timeline with `/api/analysis/{task_id}/events`
-6. Re-run evaluation with `/api/eval/run`
+6. Query tool call logs with `/api/analysis/{task_id}/tool-logs`
+7. Re-run evaluation with `/api/eval/run`
 
 The persisted timeline returned by `/api/analysis/{task_id}/events` is now routed through `app/observability/event_logger.py`, while SQLite remains the storage backend.
 
@@ -162,6 +176,13 @@ Invoke-RestMethod -Method Post `
   -Uri "http://127.0.0.1:8000/api/eval/run" `
   -ContentType "application/json" `
   -Body '{"task_id":"task_xxx"}'
+```
+
+Run the fixed eval suite:
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/eval/cases/run"
 ```
 
 Expected failure example:

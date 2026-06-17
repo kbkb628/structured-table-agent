@@ -55,9 +55,16 @@
   - `groupby_aggregate`
   - `generate_chart`
   - `generate_report`
+  - 当前可通过 `GET /api/analysis/{task_id}/tool-logs` 查询
 - 固定 case 回归汇总当前会额外输出：
   - `retried_tool_calls`
   - `retry_attempts_total`
+  - `average_tool_success_rate`
+  - `average_tool_elapsed_ms_total`
+  - `average_trace_completeness`
+  - `average_report_completeness`
+  - `average_chart_validity`
+  - `average_field_validity`
 - 报告工具输出当前已通过 `FinalReport` Pydantic schema 校验后再返回，结构化输出边界更完整
 - LangGraph 当前已支持最小动态推进边界：
   - `match_fields` 会为多指标问题写入 `pending_metrics`
@@ -73,7 +80,7 @@
 - Redis 边界已收口一致：
   - 代码实现 `SessionStore` 优先尝试 Redis
   - Redis 不可用时显式降级到 SQLite，并记录 `session_store_warning`
-  - Redis 可用时会额外保存 `draft_report:{task_id}`、`intermediate_findings:{task_id}`、`latest_context:{task_id}`（压缩后的 `context_checkpoint`）、`task_lock:{task_id}`
+  - Redis 可用时会额外保存 `draft_report:{task_id}`、`intermediate_findings:{task_id}`、`business_context:{task_id}`、`latest_context:{task_id}`（压缩后的 `context_checkpoint`）、`task_lock:{task_id}`
   - 每次任务状态保存时都会刷新 `context_checkpoint`，并记录 `context_checkpoint_refreshed` 事件
   - 同一任务重复调用 `/api/analysis/{task_id}/run` 时，当前实现会因任务锁冲突返回 `409`
   - README、架构说明、面试稿已经同步到同一表述

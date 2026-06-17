@@ -1,6 +1,6 @@
 from typing import Any
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.schemas.event_schema import AnalysisEvent
 
@@ -15,6 +15,22 @@ class AnalysisStartResponse(BaseModel):
     status: str
     analysis_goal: str
     analysis_plan: list[str]
+
+
+class ToolCallLog(BaseModel):
+    log_id: str
+    task_id: str
+    tool_name: str
+    request_json: str
+    response_json: str
+    success: bool
+    elapsed_ms: int
+    created_at: str
+
+
+class AnalysisToolLogList(BaseModel):
+    task_id: str
+    tool_call_logs: list[ToolCallLog]
 
 
 class AnalysisTaskState(BaseModel):
@@ -37,6 +53,10 @@ class AnalysisTaskState(BaseModel):
     events: list[AnalysisEvent]
     errors: list[dict[str, Any]]
     status: str
+    pending_metrics: list[dict[str, Any]] = Field(default_factory=list)
+    pending_tool_calls: list[dict[str, Any]] = Field(default_factory=list)
+    context_checkpoint: dict[str, Any] = Field(default_factory=dict)
+    tool_call_logs: list[ToolCallLog] = Field(default_factory=list)
 
 
 class EvalRunRequest(BaseModel):
@@ -46,3 +66,19 @@ class EvalRunRequest(BaseModel):
 class EvalRunResponse(BaseModel):
     task_id: str
     eval_result: dict[str, Any]
+
+
+class EvalCasesRunResponse(BaseModel):
+    total_cases: int
+    passed_cases: int
+    failed_cases: int
+    pass_rate: float
+    retried_tool_calls: int
+    retry_attempts_total: int
+    average_tool_success_rate: float
+    average_tool_elapsed_ms_total: float
+    average_trace_completeness: float
+    average_report_completeness: float
+    average_chart_validity: float
+    average_field_validity: float
+    results: list[dict[str, Any]]

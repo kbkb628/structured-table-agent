@@ -269,7 +269,10 @@ def test_session_store_persists_granular_redis_keys(monkeypatch):
     assert f"analysis_state:{task_id}" in fake_client.values
     assert f"draft_report:{task_id}" in fake_client.values
     assert f"intermediate_findings:{task_id}" in fake_client.values
+    assert f"business_context:{task_id}" in fake_client.values
     assert f"latest_context:{task_id}" in fake_client.values
+    stored_business_context = json.loads(fake_client.values[f"business_context:{task_id}"])
+    assert stored_business_context[0]["title"] == "Sales Amount"
     latest_context = json.loads(fake_client.values[f"latest_context:{task_id}"])
     assert latest_context["analysis_goal"] == "compare region sales"
     assert latest_context["current_step"] == "report"
@@ -311,6 +314,10 @@ def test_session_store_load_state_hydrates_context_checkpoint_from_redis(monkeyp
         [{"summary": "East leads."}],
         ensure_ascii=False,
     )
+    fake_client.values[f"business_context:{task_id}"] = json.dumps(
+        [{"id": "metric_sales_amount", "title": "Sales Amount"}],
+        ensure_ascii=False,
+    )
     fake_client.values[f"latest_context:{task_id}"] = json.dumps(
         {
             "analysis_goal": "compare region sales",
@@ -328,6 +335,7 @@ def test_session_store_load_state_hydrates_context_checkpoint_from_redis(monkeyp
     assert state is not None
     assert state["draft_report"]["title"] == "Draft report"
     assert state["intermediate_findings"][0]["summary"] == "East leads."
+    assert state["business_context"][0]["title"] == "Sales Amount"
     assert state["context_checkpoint"]["draft_report_status"] == "available"
 
 

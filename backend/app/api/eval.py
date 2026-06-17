@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException
 
+from app.eval.eval_cases import run_fixed_eval_cases
 from app.eval.rule_scorer import score_task_state
 from app.observability.event_logger import hydrate_state_events
 from app.observability.event_logger import record_eval_finished
+from app.schemas.analysis_schema import EvalCasesRunResponse
 from app.schemas.analysis_schema import EvalRunRequest, EvalRunResponse
 from app.storage.analysis_store import get_task_state, record_eval_result
 from app.storage.session_store import SessionStore
@@ -24,3 +26,8 @@ def run_eval(request: EvalRunRequest) -> EvalRunResponse:
     hydrate_state_events(state)
     SessionStore().save_state(request.task_id, state)
     return EvalRunResponse(task_id=request.task_id, eval_result=eval_result)
+
+
+@router.post("/cases/run", response_model=EvalCasesRunResponse)
+def run_eval_cases() -> EvalCasesRunResponse:
+    return EvalCasesRunResponse(**run_fixed_eval_cases())

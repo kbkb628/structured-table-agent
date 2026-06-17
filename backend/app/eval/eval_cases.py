@@ -79,6 +79,7 @@ def _build_case_task(case: dict, file_profile: dict) -> dict:
 
 def _evaluate_case(case: dict, result: dict) -> dict:
     failures: list[str] = []
+    eval_result = result["eval_result"]
     if result["status"] != case["expected_status"]:
         failures.append(f"Expected status {case['expected_status']}, got {result['status']}.")
     if len(result["tool_results"]) < case["min_tool_results"]:
@@ -89,9 +90,9 @@ def _evaluate_case(case: dict, result: dict) -> dict:
         failures.append(
             f"Expected at least {case['min_chart_specs']} chart specs, got {len(result['chart_specs'])}."
         )
-    if result["eval_result"]["overall_score"] < case["min_overall_score"]:
+    if eval_result["overall_score"] < case["min_overall_score"]:
         failures.append(
-            f"Expected overall score >= {case['min_overall_score']}, got {result['eval_result']['overall_score']}."
+            f"Expected overall score >= {case['min_overall_score']}, got {eval_result['overall_score']}."
         )
 
     return {
@@ -100,8 +101,14 @@ def _evaluate_case(case: dict, result: dict) -> dict:
         "passed": len(failures) == 0,
         "task_id": result["task_id"],
         "status": result["status"],
-        "overall_score": result["eval_result"]["overall_score"],
-        "issues": result["eval_result"]["issues"],
+        "overall_score": eval_result["overall_score"],
+        "tool_success_rate": eval_result["tool_success_rate"],
+        "tool_elapsed_ms_total": eval_result["tool_elapsed_ms_total"],
+        "trace_completeness": eval_result["trace_completeness"],
+        "report_completeness": eval_result["report_completeness"],
+        "chart_validity": eval_result["chart_validity"],
+        "field_validity": eval_result["field_validity"],
+        "issues": eval_result["issues"],
         "assertion_failures": failures,
     }
 
@@ -128,6 +135,11 @@ def run_fixed_eval_cases() -> dict:
     total_cases = len(results)
     failed_cases = total_cases - passed_cases
 
+    def _average(metric: str) -> float:
+        if not results:
+            return 0.0
+        return round(sum(float(item[metric]) for item in results) / len(results), 2)
+
     return {
         "total_cases": total_cases,
         "passed_cases": passed_cases,
@@ -135,5 +147,11 @@ def run_fixed_eval_cases() -> dict:
         "pass_rate": round(passed_cases / total_cases, 2) if total_cases else 0.0,
         "retried_tool_calls": retried_tool_calls,
         "retry_attempts_total": retry_attempts_total,
+        "average_tool_success_rate": _average("tool_success_rate"),
+        "average_tool_elapsed_ms_total": _average("tool_elapsed_ms_total"),
+        "average_trace_completeness": _average("trace_completeness"),
+        "average_report_completeness": _average("report_completeness"),
+        "average_chart_validity": _average("chart_validity"),
+        "average_field_validity": _average("field_validity"),
         "results": results,
     }

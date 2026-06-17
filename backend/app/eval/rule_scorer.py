@@ -36,6 +36,10 @@ def score_task_state(state: dict) -> dict:
     total_tools = len(tool_results)
     success_count = sum(1 for item in tool_results if item.get("success") is True)
     tool_success_rate = success_count / total_tools if total_tools else 0.0
+    tool_elapsed_ms_total = sum(
+        int((item.get("metadata") or {}).get("elapsed_ms", 0))
+        for item in tool_results
+    )
     if total_tools == 0:
         issues.append("No tool result was available to score.")
         suggestions.append("Run at least one real tool call before evaluating the task.")
@@ -88,6 +92,7 @@ def score_task_state(state: dict) -> dict:
         "overall_score": overall_score,
         "schema_valid": schema_valid,
         "tool_success_rate": round(tool_success_rate, 2),
+        "tool_elapsed_ms_total": tool_elapsed_ms_total,
         "field_validity": field_validity,
         "chart_validity": chart_validity if has_tool_rows else True,
         "report_completeness": round(report_completeness, 2),

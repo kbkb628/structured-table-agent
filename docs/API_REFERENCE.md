@@ -91,16 +91,19 @@
 1. `load_task`
 2. `match_fields`
 3. `execute_tools`
-4. `route_next_step`
-5. `generate_charts`
-6. `generate_report`
-7. `evaluate_report`
+4. `validate_tool_result`
+5. `route_next_step`
+6. `generate_charts`
+7. `generate_report`
+8. `evaluate_report`
 
 当前最小动态行为：
 
 - `match_fields` 可以为单个问题解析出多个待执行 metric
-- `execute_tools` 每次只执行一个 metric 的聚合
-- `route_next_step` 会根据 `pending_metrics` 决定继续进入 `execute_tools`，或结束工具阶段进入图表生成
+- `match_fields` 会把本轮 `planned_tool_calls` 写入状态
+- `execute_tools` 每次只执行一个 metric 的真实工具调用
+- `validate_tool_result` 会显式校验工具结果是否成功且非空
+- `route_next_step` 会根据 `pending_metrics` 决定继续进入 `execute_tools`，还是结束工具阶段进入图表生成
 - 运行入口会为同一 `task_id` 获取 `task_lock`，避免重复并发执行同一任务
 
 响应为完整任务状态，包含：
@@ -108,8 +111,10 @@
 - `field_understanding`
 - `tool_results`
 - `chart_specs`
+- `draft_report`
 - `final_report`
 - `eval_result`
+- `events`
 - `errors`
 
 额外失败场景：
@@ -125,6 +130,7 @@
 
 - 读取完整任务状态
 - 回填当前任务事件列表
+- 返回 `pending_metrics`、`pending_tool_calls`、`context_checkpoint` 和 `tool_call_logs`
 
 失败：
 
@@ -156,11 +162,25 @@
 - `chart_generated`
 - `chart_failed`
 - `report_generated`
+- `eval_finished`
 - `task_completed`
 - `task_failed`
-- `eval_finished`
+- `context_checkpoint_refreshed`
 
-## 7. 手动重跑评估
+## 7. 查询工具调用日志
+
+### `GET /api/analysis/{task_id}/tool-logs`
+
+用途：
+
+- 查询当前任务持久化到 SQLite 的工具调用日志
+- 返回每次工具调用的请求 JSON、响应 JSON、成功状态与耗时
+
+失败：
+
+- 任务不存在时返回 `404`
+
+## 8. 手动重跑单任务评估
 
 ### `POST /api/eval/run`
 
@@ -182,13 +202,46 @@
 
 - 任务不存在时返回 `404`
 
-## 8. 相关验证命令
+## 9. 运行固定回归评测
+
+### `POST /api/eval/cases/run`
+
+用途：
+
+- 运行当前 3 个真实支持 case 的固定回归评测
+- 返回整体通过率、重试统计和平均质量指标
+- 复用真实 `run_fixed_eval_cases()` 链路，不依赖额外 mock
+
+当前摘要字段：
+
+- `total_cases`
+- `passed_cases`
+- `failed_cases`
+- `pass_rate`
+- `retried_tool_calls`
+- `retry_attempts_total`
+- `average_tool_success_rate`
+- `average_tool_elapsed_ms_total`
+- `average_trace_completeness`
+- `average_report_completeness`
+- `average_chart_validity`
+- `average_field_validity`
+- `results`
+
+## 10. 相关验证命令
 
 全量测试：
 
 ```powershell
 cd E:\bgagent1\backend
 .\.venv\Scripts\python.exe -m pytest -v
+```
+
+固定回归评测：
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/eval/cases/run"
 ```
 
 一键演示：

@@ -9,6 +9,7 @@ def test_score_task_state_returns_high_score_for_complete_task():
                 "success": True,
                 "tool_name": "groupby_aggregate",
                 "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]},
+                "metadata": {"elapsed_ms": 12},
             }
         ],
         "chart_specs": [{"chart_type": "bar", "plotly_spec": {"data": [{"type": "bar"}]}}],
@@ -36,6 +37,7 @@ def test_score_task_state_returns_high_score_for_complete_task():
 
     assert result["schema_valid"] is True
     assert result["tool_success_rate"] == 1.0
+    assert result["tool_elapsed_ms_total"] == 12
     assert result["chart_validity"] is True
     assert result["report_completeness"] == 1.0
     assert result["trace_completeness"] == 1.0
@@ -51,6 +53,7 @@ def test_score_task_state_reports_missing_chart_and_trace():
                 "success": True,
                 "tool_name": "groupby_aggregate",
                 "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]},
+                "metadata": {"elapsed_ms": 8},
             }
         ],
         "chart_specs": [],
@@ -74,6 +77,7 @@ def test_score_task_state_reports_missing_chart_and_trace():
     result = score_task_state(state)
 
     assert result["chart_validity"] is False
+    assert result["tool_elapsed_ms_total"] == 8
     assert result["trace_completeness"] < 1.0
     assert any("chart" in issue.lower() for issue in result["issues"])
     assert any("trace" in suggestion.lower() for suggestion in result["suggestions"])

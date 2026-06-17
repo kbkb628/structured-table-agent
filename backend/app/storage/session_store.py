@@ -29,6 +29,7 @@ class SessionStore:
             "analysis_state": f"analysis_state:{task_id}",
             "draft_report": f"draft_report:{task_id}",
             "intermediate_findings": f"intermediate_findings:{task_id}",
+            "business_context": f"business_context:{task_id}",
             "latest_context": f"latest_context:{task_id}",
             "task_lock": f"task_lock:{task_id}",
         }
@@ -78,14 +79,16 @@ class SessionStore:
             if state is not None:
                 draft_report = client.get(keys["draft_report"])
                 intermediate_findings = client.get(keys["intermediate_findings"])
+                business_context = client.get(keys["business_context"])
                 latest_context = client.get(keys["latest_context"])
                 if draft_report:
                     state["draft_report"] = json.loads(draft_report)
                 if intermediate_findings:
                     state["intermediate_findings"] = json.loads(intermediate_findings)
+                if business_context:
+                    state["business_context"] = json.loads(business_context)
                 if latest_context:
                     state["context_checkpoint"] = json.loads(latest_context)
-                    state["business_context"] = state["context_checkpoint"].get("business_context", state.get("business_context", []))
                 else:
                     state["context_checkpoint"] = self._build_context_checkpoint(state)
             return (state, True)
@@ -104,6 +107,10 @@ class SessionStore:
             client.set(
                 keys["intermediate_findings"],
                 json.dumps(state.get("intermediate_findings", []), ensure_ascii=False),
+            )
+            client.set(
+                keys["business_context"],
+                json.dumps(state.get("business_context", []), ensure_ascii=False),
             )
             context_checkpoint = self._build_context_checkpoint(state)
             state["context_checkpoint"] = context_checkpoint
