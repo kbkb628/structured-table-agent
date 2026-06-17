@@ -16,6 +16,9 @@ def test_match_fields_detects_region_sales_question():
     assert result.data["dimension_field"] == "region"
     assert result.data["metric_field"] == "sales_amount"
     assert result.data["aggregation"] == "sum"
+    assert result.data["planned_tool_sequence"] == ["groupby_aggregate", "generate_chart", "generate_report"]
+    assert result.data["planned_tool_calls"][0]["tool_name"] == "groupby_aggregate"
+    assert result.data["planned_tool_calls"][0]["group_by"] == "region"
 
 
 def test_match_fields_builds_channel_dual_metric_plan():
@@ -43,3 +46,9 @@ def test_match_fields_builds_channel_dual_metric_plan():
         "aggregation": "sum",
         "label": "sales_amount_sum",
     }
+    assert [item["tool_name"] for item in result.data["planned_tool_calls"]] == [
+        "groupby_aggregate",
+        "groupby_aggregate",
+    ]
+    assert result.data["planned_tool_calls"][0]["label"] == "order_count"
+    assert result.data["planned_tool_calls"][1]["label"] == "sales_amount_sum"

@@ -58,6 +58,7 @@
 - 报告工具输出当前已通过 `FinalReport` Pydantic schema 校验后再返回，结构化输出边界更完整
 - LangGraph 当前已支持最小动态推进边界：
   - `match_fields` 会为多指标问题写入 `pending_metrics`
+  - `match_fields` 会显式产出 `planned_tool_calls`，把本轮准备执行的工具计划写入状态
   - `execute_tools` 每次处理一个 metric
   - `route_next_step` 会显式决定继续执行下一轮工具，还是进入图表生成
 - 报告状态当前已形成最小闭环：

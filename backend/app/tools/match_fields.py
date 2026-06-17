@@ -1,6 +1,25 @@
 from app.schemas.tool_schema import ToolResponse
 
 
+def _build_planned_tool_calls(dimension_field: str | None, metrics: list[dict[str, str]]) -> list[dict[str, str | int]]:
+    if dimension_field is None:
+        return []
+    planned_calls: list[dict[str, str | int]] = []
+    for metric in metrics:
+        planned_calls.append(
+            {
+                "tool_name": "groupby_aggregate",
+                "group_by": dimension_field,
+                "metric_column": metric["metric_field"],
+                "aggregation": metric["aggregation"],
+                "sort_order": "desc",
+                "limit": 5,
+                "label": metric["label"],
+            }
+        )
+    return planned_calls
+
+
 def match_fields(question: str, file_profile: dict) -> ToolResponse:
     lowered = question.lower()
     column_names = [column["name"] for column in file_profile["columns"]]
@@ -78,6 +97,7 @@ def match_fields(question: str, file_profile: dict) -> ToolResponse:
         warnings.append("No supported dimension field was matched.")
 
     primary_metric = metrics[0] if metrics else {"metric_field": None, "aggregation": "sum"}
+    planned_tool_calls = _build_planned_tool_calls(dimension_field, metrics)
 
     return ToolResponse(
         success=True,
@@ -88,6 +108,8 @@ def match_fields(question: str, file_profile: dict) -> ToolResponse:
             "aggregation": primary_metric["aggregation"],
             "analysis_type": analysis_type,
             "metrics": metrics,
+            "planned_tool_calls": planned_tool_calls,
+            "planned_tool_sequence": ["groupby_aggregate", "generate_chart", "generate_report"],
             "candidate_fields": column_names,
             "warnings": warnings,
         },

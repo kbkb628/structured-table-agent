@@ -112,6 +112,7 @@
 运行阶段通过 LangGraph 推进：
 
 - `match_fields` 会写入 `field_understanding` 和待执行的 `pending_metrics`
+- `match_fields` 还会生成 `planned_tool_calls`，把当前分析问题对应的受控工具执行计划写入状态
 - `execute_tools` 每次只消费一个 metric，并把结果写入 `tool_results`
 - `route_next_step` 会根据是否还有待执行 metric，决定回到 `execute_tools` 继续统计，或进入 `generate_charts`
 - `generate_report` 前会先基于 `intermediate_findings` 和 `chart_specs` 生成 `draft_report`

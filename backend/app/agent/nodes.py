@@ -59,30 +59,42 @@ def match_fields_node(state: AnalysisGraphState) -> AnalysisGraphState:
             },
         )
     state["pending_metrics"] = metrics.copy()
+    state["pending_tool_calls"] = (field_result.get("planned_tool_calls") or []).copy()
     return state
 
 
 def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    pending_tool_calls = state.get("pending_tool_calls") or state["field_understanding"].get("planned_tool_calls") or []
     metrics = state.get("pending_metrics") or state["field_understanding"]["metrics"]
-    dimension_field = state["field_understanding"]["dimension_field"]
     metric = metrics[0]
-    tool_request = {
-        "file_id": state["file_id"],
-        "group_by": dimension_field,
+    planned_call = pending_tool_calls[0] if pending_tool_calls else {
+        "tool_name": "groupby_aggregate",
+        "group_by": state["field_understanding"]["dimension_field"],
         "metric_column": metric["metric_field"],
         "aggregation": metric["aggregation"],
         "sort_order": "desc",
         "limit": 5,
+        "label": metric["label"],
     }
-    record_tool_called(state["task_id"], "groupby_aggregate", tool_request)
-    tool_response = invoke_tool("groupby_aggregate", **tool_request)
+    tool_name = str(planned_call["tool_name"])
+    tool_request = {
+        "file_id": state["file_id"],
+        "group_by": planned_call["group_by"],
+        "metric_column": planned_call["metric_column"],
+        "aggregation": planned_call["aggregation"],
+        "sort_order": planned_call["sort_order"],
+        "limit": planned_call["limit"],
+    }
+    record_tool_called(state["task_id"], tool_name, tool_request)
+    tool_response = invoke_tool(tool_name, **tool_request)
     tool_response_dict = tool_response.model_dump()
     tool_response_dict["metric_label"] = metric["label"]
-    record_tool_call(state["task_id"], "groupby_aggregate", tool_request, tool_response_dict)
+    tool_response_dict["selected_tool"] = tool_name
+    record_tool_call(state["task_id"], tool_name, tool_request, tool_response_dict)
 
     if not tool_response.success:
         state["tool_results"].append(tool_response_dict)
-        record_tool_failed(state["task_id"], "groupby_aggregate", tool_response_dict)
+        record_tool_failed(state["task_id"], tool_name, tool_response_dict)
         return fail_task(
             state,
             tool_response_dict["error"]["code"],
@@ -100,7 +112,7 @@ def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
         )
 
     state["tool_results"].append(tool_response_dict)
-    state["completed_steps"].append(f"groupby_aggregate:{metric['label']}")
+    state["completed_steps"].append(f"{tool_name}:{metric['label']}")
     state["intermediate_findings"].append(
         {
             "metric_label": metric["label"],
@@ -109,13 +121,15 @@ def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
         }
     )
     state["pending_metrics"] = metrics[1:]
-    record_tool_succeeded(state["task_id"], "groupby_aggregate", tool_response_dict)
+    state["pending_tool_calls"] = pending_tool_calls[1:]
+    record_tool_succeeded(state["task_id"], tool_name, tool_response_dict)
     return state
 
 
 def route_next_step_node(state: AnalysisGraphState) -> AnalysisGraphState:
     pending_metrics = state.get("pending_metrics", [])
-    if pending_metrics:
+    pending_tool_calls = state.get("pending_tool_calls", [])
+    if pending_metrics or pending_tool_calls:
         state["current_step"] = "execute_tools"
         state["completed_steps"].append("route_next_step:continue")
         state["next_step"] = "execute_tools"
