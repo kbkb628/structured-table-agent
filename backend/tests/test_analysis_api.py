@@ -7,6 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.llm.qwen_client import QwenResponseError
 from app.main import app
+from app.storage.analysis_store import create_task, record_event
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
 from app.storage.session_store import SessionStore
@@ -435,6 +436,80 @@ def test_eval_run_persists_eval_result(tmp_path):
     assert eval_response.json()["task_id"] == task_id
     assert eval_response.json()["eval_result"]["overall_score"] > 0
     assert status.json()["eval_result"]["overall_score"] == eval_response.json()["eval_result"]["overall_score"]
+
+
+def test_eval_run_uses_session_store_state_when_redis_snapshot_is_newer():
+    task_id = f"task_eval_redis_state_{uuid.uuid4().hex[:8]}"
+    stale_state = {
+        "task_id": task_id,
+        "file_id": "file_eval_redis_state",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [],
+        "analysis_plan": ["match fields", "aggregate", "chart", "report"],
+        "current_step": "completed",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "completed",
+    }
+    create_task(task_id, "file_eval_redis_state", "analyse sales by region", stale_state)
+    for event_type in [
+        "task_created",
+        "fields_matched",
+        "tool_succeeded",
+        "chart_generated",
+        "report_generated",
+        "task_completed",
+    ]:
+        record_event(task_id, event_type, "test_eval", event_type, {})
+
+    richer_state = {
+        **stale_state,
+        "field_understanding": {"dimension_field": "region", "metric_field": "sales_amount"},
+        "tool_results": [
+            {
+                "success": True,
+                "tool_name": "groupby_aggregate",
+                "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]},
+                "summary": "East leads region sales.",
+                "error": None,
+                "metadata": {"elapsed_ms": 12},
+            }
+        ],
+        "chart_specs": [{"chart_type": "bar", "plotly_spec": {"data": [{"type": "bar"}]}}],
+        "final_report": {
+            "title": "Analysis Report: analyse sales by region",
+            "analysis_goal": "compare region sales",
+            "key_findings": [{"finding": "East performs best", "evidence": "1200", "source_tool": "groupby_aggregate"}],
+            "chart_explanations": ["Bar chart generated for bar view."],
+            "business_suggestions": ["Focus on East."],
+            "data_limitations": ["Uploaded CSV only."],
+            "next_steps": ["Check by channel."],
+        },
+    }
+
+    fake_client = FakeRedisClient()
+    fake_client.values[f"analysis_state:{task_id}"] = json.dumps(richer_state, ensure_ascii=False)
+
+    client = TestClient(app)
+    with patch.object(SessionStore, "_connect", lambda self: fake_client):
+        response = client.post("/api/eval/run", json={"task_id": task_id})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["eval_result"]["report_completeness"] == 1.0
+    assert payload["eval_result"]["field_validity"] is True
+    assert payload["eval_result"]["tool_success_rate"] == 1.0
 
 
 def test_eval_run_returns_404_for_missing_task():

@@ -14,7 +14,10 @@ router = APIRouter(prefix="/api/eval", tags=["eval"])
 
 @router.post("/run", response_model=EvalRunResponse)
 def run_eval(request: EvalRunRequest) -> EvalRunResponse:
-    state = get_task_state(request.task_id)
+    persisted_state = get_task_state(request.task_id)
+    if persisted_state is None:
+        raise HTTPException(status_code=404, detail="Task not found.")
+    state, _ = SessionStore().load_state(request.task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
 
