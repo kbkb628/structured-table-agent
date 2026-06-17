@@ -39,10 +39,31 @@
 - LLM-as-Judge
 - 完整 React 前端
 
-## 待收口项
+## 完成审计证据
 
-- 保持 README、演示脚本、测试和文档边界持续一致
-- 如果要宣称“项目完成”，必须先按 `DEVELOPMENT_GUIDE.md` 做逐项完成度审计并保留验证证据
+- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `51 passed, 2 warnings`
+- 最新演示验证：`.\scripts\demo_mvp.ps1 -StartServer`
+- 三个演示问题最近一次结果：
+  - `analyse category sales top 5` -> `completed`，`eval_score = 1.0`
+  - `analyse sales by region` -> `completed`，`eval_score = 1.0`
+  - `analyse channel order count and sales performance` -> `completed`，`eval_score = 1.0`
+- 接口契约已按 `DEVELOPMENT_GUIDE.md` 收口：
+  - `POST /api/analysis/start` 仅返回 `task_id`、`status`、`analysis_goal`、`analysis_plan`
+  - `business_context` 继续真实写入任务状态，并通过 `GET /api/analysis/{task_id}` 可见
+- 工具调用链已真实落库到 `tool_call_logs`：
+  - `match_fields`
+  - `groupby_aggregate`
+  - `generate_chart`
+  - `generate_report`
+- Redis 边界已收口一致：
+  - 代码实现 `SessionStore` 优先尝试 Redis
+  - Redis 不可用时显式降级到 SQLite，并记录 `session_store_warning`
+  - README、架构说明、面试稿已经同步到同一表述
+
+## 当前结论
+
+- 以 `DEVELOPMENT_GUIDE.md` 定义的第一阶段 MVP 范围看，当前仓库已达到“项目完成”状态
+- 当前剩余未实现项均属于文档明确列出的第二阶段能力，而不是 MVP 缺口
 
 ## 第二阶段规划
 
