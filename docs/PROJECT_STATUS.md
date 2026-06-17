@@ -62,6 +62,7 @@
   - `execute_tools` 每次处理一个 metric，并把最新工具结果暂存到状态
   - `validate_tool_result` 会显式校验工具执行成功、结果非空，再决定是否写入 `tool_results` 和 `intermediate_findings`
   - `route_next_step` 会显式决定继续执行下一轮工具，还是进入图表生成
+  - 关键事件 payload 现在包含 `node_input_summary`、`node_output_summary`、`tool_result_summary` 等轻量摘要字段
 - 报告状态当前已形成最小闭环：
   - `generate_report` 前会先基于 `intermediate_findings` 和 `chart_specs` 生成真实 `draft_report`
   - `final_report` 继续由受控报告工具生成，并与 `draft_report` 一起持久化

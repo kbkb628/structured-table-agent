@@ -21,6 +21,48 @@ def record_analysis_event(task_id: str, event_type: str, node: str, message: str
     return record_event(task_id, event_type, node, message, payload)
 
 
+def _summarize_tool_request(payload: dict) -> dict:
+    return {
+        "input_keys": sorted(payload.keys()),
+        "group_by": payload.get("group_by"),
+        "metric_column": payload.get("metric_column"),
+        "aggregation": payload.get("aggregation"),
+        "limit": payload.get("limit"),
+        "row_count": len(payload.get("rows", [])) if isinstance(payload.get("rows"), list) else 0,
+    }
+
+
+def _summarize_tool_response(payload: dict) -> dict:
+    rows = (payload.get("data") or {}).get("rows") or []
+    error = payload.get("error") or {}
+    return {
+        "output_keys": sorted(payload.keys()),
+        "success": payload.get("success"),
+        "row_count": len(rows),
+        "metric_label": payload.get("metric_label"),
+        "error_code": error.get("code"),
+        "summary": payload.get("summary", ""),
+    }
+
+
+def _summarize_field_match(payload: dict) -> dict:
+    return {
+        "dimension_field": payload.get("dimension_field"),
+        "metric_count": len(payload.get("metrics", [])),
+        "planned_tool_call_count": len(payload.get("planned_tool_calls", [])),
+        "warning_count": len(payload.get("warnings", [])),
+    }
+
+
+def _summarize_report(payload: dict) -> dict:
+    return {
+        "title": payload.get("title"),
+        "analysis_goal": payload.get("analysis_goal"),
+        "key_findings_count": len(payload.get("key_findings", [])),
+        "chart_count": len(payload.get("chart_specs", [])),
+    }
+
+
 def list_analysis_events(task_id: str) -> list[dict]:
     return list_task_events(task_id)
 
@@ -75,19 +117,56 @@ def record_startup_events(
 
 
 def record_fields_matched(task_id: str, payload: dict) -> dict:
-    return record_analysis_event(task_id, FIELDS_MATCHED, "match_fields", "matched analysis fields", payload)
+    enriched_payload = {
+        **payload,
+        "node_input_summary": {
+            "candidate_field_count": len(payload.get("candidate_fields", [])),
+        },
+        "node_output_summary": _summarize_field_match(payload),
+        "tool_result_summary": {
+            "dimension_field": payload.get("dimension_field"),
+            "metric_count": len(payload.get("metrics", [])),
+        },
+    }
+    return record_analysis_event(task_id, FIELDS_MATCHED, "match_fields", "matched analysis fields", enriched_payload)
 
 
 def record_tool_called(task_id: str, tool_name: str, payload: dict) -> dict:
-    return record_analysis_event(task_id, TOOL_CALLED, tool_name, f"calling {tool_name}", payload)
+    enriched_payload = {
+        **payload,
+        "node_input_summary": _summarize_tool_request(payload),
+        "node_output_summary": {"status": "pending"},
+        "tool_result_summary": {"tool_name": tool_name, "status": "called"},
+    }
+    return record_analysis_event(task_id, TOOL_CALLED, tool_name, f"calling {tool_name}", enriched_payload)
 
 
 def record_tool_succeeded(task_id: str, tool_name: str, payload: dict) -> dict:
-    return record_analysis_event(task_id, TOOL_SUCCEEDED, tool_name, f"{tool_name} succeeded", payload)
+    tool_summary = _summarize_tool_response(payload)
+    enriched_payload = {
+        **payload,
+        "node_input_summary": {
+            "tool_name": tool_name,
+            "metric_label": payload.get("metric_label"),
+        },
+        "node_output_summary": tool_summary,
+        "tool_result_summary": tool_summary,
+    }
+    return record_analysis_event(task_id, TOOL_SUCCEEDED, tool_name, f"{tool_name} succeeded", enriched_payload)
 
 
 def record_tool_failed(task_id: str, tool_name: str, payload: dict) -> dict:
-    return record_analysis_event(task_id, TOOL_FAILED, tool_name, f"{tool_name} failed", payload)
+    tool_summary = _summarize_tool_response(payload)
+    enriched_payload = {
+        **payload,
+        "node_input_summary": {
+            "tool_name": tool_name,
+            "metric_label": payload.get("metric_label"),
+        },
+        "node_output_summary": tool_summary,
+        "tool_result_summary": tool_summary,
+    }
+    return record_analysis_event(task_id, TOOL_FAILED, tool_name, f"{tool_name} failed", enriched_payload)
 
 
 def record_chart_generated(task_id: str, payload: dict) -> dict:
@@ -99,7 +178,16 @@ def record_chart_failed(task_id: str, payload: dict) -> dict:
 
 
 def record_report_generated(task_id: str, payload: dict) -> dict:
-    return record_analysis_event(task_id, REPORT_GENERATED, "generate_report", "generated final report", payload)
+    enriched_payload = {
+        **payload,
+        "node_input_summary": {
+            "title": payload.get("title"),
+            "analysis_goal": payload.get("analysis_goal"),
+        },
+        "node_output_summary": _summarize_report(payload),
+        "tool_result_summary": _summarize_report(payload),
+    }
+    return record_analysis_event(task_id, REPORT_GENERATED, "generate_report", "generated final report", enriched_payload)
 
 
 def record_task_completed(task_id: str, node: str) -> dict:

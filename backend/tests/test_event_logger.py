@@ -5,6 +5,8 @@ from app.observability.event_logger import list_analysis_events
 from app.observability.event_logger import record_eval_finished
 from app.observability.event_logger import record_startup_events
 from app.observability.event_logger import record_task_completed
+from app.observability.event_logger import record_tool_called
+from app.observability.event_logger import record_tool_succeeded
 from app.storage.analysis_store import create_task
 
 
@@ -90,3 +92,44 @@ def test_hydrate_state_events_loads_latest_persisted_events():
     assert state["events"][-2]["event_type"] == "task_completed"
     assert state["events"][-1]["event_type"] == "eval_finished"
     assert state["events"][-1]["payload"]["overall_score"] == 1.0
+
+
+def test_tool_events_include_summary_fields():
+    state = _build_state(f"task_event_tool_{uuid.uuid4().hex[:8]}")
+    create_task(state["task_id"], state["file_id"], state["question"], state)
+
+    record_tool_called(
+        state["task_id"],
+        "groupby_aggregate",
+        {
+            "group_by": "region",
+            "metric_column": "sales_amount",
+            "aggregation": "sum",
+            "sort_order": "desc",
+            "limit": 5,
+        },
+    )
+    record_tool_succeeded(
+        state["task_id"],
+        "groupby_aggregate",
+        {
+            "success": True,
+            "tool_name": "groupby_aggregate",
+            "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]},
+            "summary": "East leads region sales.",
+            "error": None,
+            "metadata": {"elapsed_ms": 12},
+            "metric_label": "sales_amount_sum",
+        },
+    )
+
+    events = list_analysis_events(state["task_id"])
+    tool_called = next(event for event in events if event["event_type"] == "tool_called")
+    tool_succeeded = next(event for event in events if event["event_type"] == "tool_succeeded")
+
+    assert "node_input_summary" in tool_called["payload"]
+    assert "node_output_summary" in tool_called["payload"]
+    assert "tool_result_summary" in tool_called["payload"]
+    assert "node_input_summary" in tool_succeeded["payload"]
+    assert "node_output_summary" in tool_succeeded["payload"]
+    assert "tool_result_summary" in tool_succeeded["payload"]

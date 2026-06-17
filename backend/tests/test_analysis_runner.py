@@ -84,6 +84,14 @@ def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
     assert checkpoint_events[-1]["payload"]["draft_report_status"] == "available"
     assert "business_context_titles" in checkpoint_events[-1]["payload"]
     assert "business_context" not in checkpoint_events[-1]["payload"]
+    tool_events = [
+        event for event in stored["events"]
+        if event["event_type"] in {"tool_called", "tool_succeeded"} and event["node"] == "groupby_aggregate"
+    ]
+    assert tool_events
+    assert any("node_input_summary" in event["payload"] for event in tool_events)
+    assert any("node_output_summary" in event["payload"] for event in tool_events)
+    assert any("tool_result_summary" in event["payload"] for event in tool_events)
     tool_logs = get_tool_call_logs(task_id)
     assert len(tool_logs) == 4
     assert [item["tool_name"] for item in tool_logs] == [

@@ -119,6 +119,7 @@
 - `generate_report` 前会先基于 `intermediate_findings` 和 `chart_specs` 生成 `draft_report`
 - `generate_report` 工具返回前会通过 `FinalReport` Pydantic schema 校验最终报告结构
 - 遇到不可执行字段匹配或空结果时会进入失败分支，并写入 `task_failed` 事件
+- 关键事件 payload 当前还会补充 `node_input_summary`、`node_output_summary` 和 `tool_result_summary`，只保存轻量摘要而不写入完整大数据内容
 
 ## 5. 真实性边界
 
