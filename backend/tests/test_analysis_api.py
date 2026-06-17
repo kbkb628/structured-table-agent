@@ -582,3 +582,74 @@ def test_get_analysis_falls_back_to_sqlite_when_redis_is_available_but_task_key_
     assert response.status_code == 200
     assert response.json()["task_id"] == task_id
     assert response.json()["business_context"]
+
+
+def test_get_analysis_uses_granular_redis_recovery_when_snapshot_is_missing(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text("region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n", encoding="utf-8")
+    file_id = f"file_api_granular_recovery_{uuid.uuid4().hex[:8]}"
+    save_file_record(
+        FileRecord(
+            file_id=file_id,
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=2,
+            column_count=3,
+            columns_json=json.dumps(
+                [
+                    {"name": "region", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": file_id, "question": "analyse sales by region"},
+    )
+    task_id = start.json()["task_id"]
+
+    fake_client = FakeRedisClient()
+    fake_client.values[f"draft_report:{task_id}"] = json.dumps({"title": "Redis draft report"}, ensure_ascii=False)
+    fake_client.values[f"final_report:{task_id}"] = json.dumps(
+        {"title": "Redis final report", "analysis_goal": "compare region sales"},
+        ensure_ascii=False,
+    )
+    fake_client.values[f"llm_judgement:{task_id}"] = json.dumps(
+        {"supported_by_tools": True, "issue_count": 0},
+        ensure_ascii=False,
+    )
+    fake_client.values[f"intermediate_findings:{task_id}"] = json.dumps(
+        [{"summary": "Redis says East leads."}],
+        ensure_ascii=False,
+    )
+    fake_client.values[f"business_context:{task_id}"] = json.dumps(
+        [{"id": "redis_metric", "title": "Redis Sales Amount"}],
+        ensure_ascii=False,
+    )
+    fake_client.values[f"latest_context:{task_id}"] = json.dumps(
+        {
+            "analysis_goal": "compare region sales",
+            "current_step": "report",
+            "status": "running",
+            "draft_report_status": "available",
+            "finding_count": 1,
+        },
+        ensure_ascii=False,
+    )
+
+    with patch.object(SessionStore, "_connect", lambda self: fake_client):
+        response = client.get(f"/api/analysis/{task_id}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["task_id"] == task_id
+    assert body["draft_report"]["title"] == "Redis draft report"
+    assert body["final_report"]["title"] == "Redis final report"
+    assert body["llm_judgement"]["supported_by_tools"] is True
+    assert body["intermediate_findings"][0]["summary"] == "Redis says East leads."
+    assert body["business_context"][0]["title"] == "Redis Sales Amount"

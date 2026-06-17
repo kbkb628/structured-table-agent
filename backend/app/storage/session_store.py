@@ -72,34 +72,58 @@ class SessionStore:
         except Exception:
             return None
 
+    def _hydrate_state_from_granular_keys(self, client, task_id: str, base_state: dict | None = None) -> dict | None:
+        keys = self._build_keys(task_id)
+        state = dict(base_state) if base_state is not None else None
+
+        granular_payloads = {
+            "draft_report": client.get(keys["draft_report"]),
+            "final_report": client.get(keys["final_report"]),
+            "llm_judgement": client.get(keys["llm_judgement"]),
+            "intermediate_findings": client.get(keys["intermediate_findings"]),
+            "business_context": client.get(keys["business_context"]),
+            "context_checkpoint": client.get(keys["latest_context"]),
+        }
+        if not any(granular_payloads.values()):
+            return None
+
+        if state is None:
+            state = get_task_state(task_id)
+            if state is None:
+                return None
+
+        if granular_payloads["draft_report"]:
+            state["draft_report"] = json.loads(granular_payloads["draft_report"])
+        if granular_payloads["final_report"]:
+            state["final_report"] = json.loads(granular_payloads["final_report"])
+        if granular_payloads["llm_judgement"]:
+            state["llm_judgement"] = json.loads(granular_payloads["llm_judgement"])
+        if granular_payloads["intermediate_findings"]:
+            state["intermediate_findings"] = json.loads(granular_payloads["intermediate_findings"])
+        if granular_payloads["business_context"]:
+            state["business_context"] = json.loads(granular_payloads["business_context"])
+        if granular_payloads["context_checkpoint"]:
+            state["context_checkpoint"] = json.loads(granular_payloads["context_checkpoint"])
+        else:
+            state["context_checkpoint"] = self._build_context_checkpoint(state)
+        return state
+
     def load_state(self, task_id: str) -> tuple[dict | None, bool]:
         client = self._connect()
         if client is not None:
-            keys = self._build_keys(task_id)
-            payload = client.get(keys["analysis_state"])
+            payload = client.get(self._build_keys(task_id)["analysis_state"])
             if payload:
                 state = json.loads(payload)
-                draft_report = client.get(keys["draft_report"])
-                final_report = client.get(keys["final_report"])
-                llm_judgement = client.get(keys["llm_judgement"])
-                intermediate_findings = client.get(keys["intermediate_findings"])
-                business_context = client.get(keys["business_context"])
-                latest_context = client.get(keys["latest_context"])
-                if draft_report:
-                    state["draft_report"] = json.loads(draft_report)
-                if final_report:
-                    state["final_report"] = json.loads(final_report)
-                if llm_judgement:
-                    state["llm_judgement"] = json.loads(llm_judgement)
-                if intermediate_findings:
-                    state["intermediate_findings"] = json.loads(intermediate_findings)
-                if business_context:
-                    state["business_context"] = json.loads(business_context)
-                if latest_context:
-                    state["context_checkpoint"] = json.loads(latest_context)
-                else:
-                    state["context_checkpoint"] = self._build_context_checkpoint(state)
-                return state, True
+                hydrated_state = self._hydrate_state_from_granular_keys(client, task_id, base_state=state)
+                return hydrated_state or state, True
+
+            hydrated_state = self._hydrate_state_from_granular_keys(client, task_id)
+            if hydrated_state is not None:
+                logger.warning(
+                    "Redis analysis_state missing; rebuilding task %s from SQLite state plus granular Redis keys",
+                    task_id,
+                )
+                return hydrated_state, True
         logger.warning("Redis unavailable; falling back to SQLite-backed session state for task %s", task_id)
         state = get_task_state(task_id)
         if state is not None and "context_checkpoint" not in state:

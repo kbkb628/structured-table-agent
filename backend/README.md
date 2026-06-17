@@ -61,7 +61,7 @@ The project still does **not** let the LLM fabricate numeric analysis. Determini
 
 The retrieval layer is now stronger than the original pure-keyword MVP. It uses local hybrid scoring over JSONL knowledge items with keyword overlap, phrase-hit boosting, field-alignment boosting, and BM25-style normalization. This is still a lightweight local retrieval layer, not a full embedding or rerank stack.
 
-Redis remains a recommended dependency rather than a hard requirement. When Redis is unavailable, task state explicitly degrades to SQLite-backed storage and the timeline records a `session_store_warning` event. When Redis is available, the current implementation also persists `draft_report`, `final_report`, `llm_judgement`, `intermediate_findings`, `business_context`, a compact `context_checkpoint`, and `task_lock` into granular keys alongside the full task snapshot. When Redis is unavailable, duplicate in-process runs of the same task are still blocked by a memory lock.
+Redis remains a recommended dependency rather than a hard requirement. When Redis is unavailable, task state explicitly degrades to SQLite-backed storage and the timeline records a `session_store_warning` event. When Redis is available, the current implementation also persists `draft_report`, `final_report`, `llm_judgement`, `intermediate_findings`, `business_context`, a compact `context_checkpoint`, and `task_lock` into granular keys alongside the full task snapshot. If the main `analysis_state` snapshot is missing but these granular keys still exist, the backend rebuilds the task view from SQLite state plus the granular Redis payloads. When Redis is unavailable, duplicate in-process runs of the same task are still blocked by a memory lock.
 
 ## LLM configuration
 

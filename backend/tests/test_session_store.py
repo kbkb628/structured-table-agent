@@ -210,6 +210,79 @@ def test_session_store_falls_back_to_sqlite_when_redis_is_available_but_task_key
     assert loaded_state["business_context"][0]["title"] == "Sales Amount"
 
 
+def test_session_store_hydrates_from_granular_redis_keys_when_snapshot_is_missing(monkeypatch):
+    task_id = f"task_session_granular_recovery_{uuid.uuid4().hex[:8]}"
+    create_task(
+        task_id,
+        "file_session_granular_recovery",
+        "analyse sales by region",
+        {
+            "task_id": task_id,
+            "file_id": "file_session_granular_recovery",
+            "question": "analyse sales by region",
+            "analysis_goal": "stale sqlite goal",
+            "file_profile": {},
+            "field_understanding": {},
+            "business_context": [{"id": "sqlite_metric", "title": "SQLite Sales Amount"}],
+            "analysis_plan": ["match fields"],
+            "current_step": "created",
+            "completed_steps": [],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {"title": "SQLite draft report"},
+            "final_report": {"title": "SQLite final report"},
+            "llm_judgement": {"supported_by_tools": False, "issue_count": 2},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "created",
+        },
+    )
+
+    fake_client = FakeRedisClient()
+    fake_client.values[f"draft_report:{task_id}"] = json.dumps({"title": "Redis draft report"}, ensure_ascii=False)
+    fake_client.values[f"final_report:{task_id}"] = json.dumps(
+        {"title": "Redis final report", "analysis_goal": "redis goal"},
+        ensure_ascii=False,
+    )
+    fake_client.values[f"llm_judgement:{task_id}"] = json.dumps(
+        {"supported_by_tools": True, "issue_count": 0},
+        ensure_ascii=False,
+    )
+    fake_client.values[f"intermediate_findings:{task_id}"] = json.dumps(
+        [{"summary": "Redis says East leads."}],
+        ensure_ascii=False,
+    )
+    fake_client.values[f"business_context:{task_id}"] = json.dumps(
+        [{"id": "redis_metric", "title": "Redis Sales Amount"}],
+        ensure_ascii=False,
+    )
+    fake_client.values[f"latest_context:{task_id}"] = json.dumps(
+        {
+            "analysis_goal": "redis goal",
+            "current_step": "report",
+            "status": "running",
+            "draft_report_status": "available",
+            "finding_count": 1,
+        },
+        ensure_ascii=False,
+    )
+    monkeypatch.setattr(SessionStore, "_connect", lambda self: fake_client)
+
+    loaded_state, used_redis = SessionStore().load_state(task_id)
+
+    assert used_redis is True
+    assert loaded_state is not None
+    assert loaded_state["task_id"] == task_id
+    assert loaded_state["draft_report"]["title"] == "Redis draft report"
+    assert loaded_state["final_report"]["title"] == "Redis final report"
+    assert loaded_state["llm_judgement"]["supported_by_tools"] is True
+    assert loaded_state["intermediate_findings"][0]["summary"] == "Redis says East leads."
+    assert loaded_state["business_context"][0]["title"] == "Redis Sales Amount"
+    assert loaded_state["context_checkpoint"]["draft_report_status"] == "available"
+
+
 def test_run_analysis_task_records_session_store_warning_when_redis_is_unavailable(tmp_path):
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text("region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n", encoding="utf-8")
