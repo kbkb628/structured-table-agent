@@ -20,7 +20,7 @@ Redis 在当前 MVP 中属于推荐依赖而非强制依赖；如果 Redis 不�
 
 当前主线已经打通：
 
-- CSV 上传与字段画像
+- CSV / Excel 上传与字段画像
 - SQLite 元数据与任务状态持久化
 - 基于 DuckDB 的真实聚合分析
 - 基于 JSONL 的轻量关键词业务语义检索
@@ -240,7 +240,7 @@ print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
 
 ## 已知限制
 
-- 只支持 CSV 上传，不支持 Excel
+- 支持 CSV / Excel 上传；Excel 文件会在服务端标准化为 CSV 后复用现有分析主链
 - 分析问题当前只在品类、地区、渠道三类英文问法上做了真实支持
 - 图表当前只输出 Plotly 柱状图配置，不包含前端渲染页面
 - 当前事件时间线以 SQLite 为主，不包含外部 tracing 平台

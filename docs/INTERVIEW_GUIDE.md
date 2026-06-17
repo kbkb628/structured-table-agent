@@ -81,7 +81,7 @@ MVP 阶段先做 `RuleScorer` 而不是 LLM-as-Judge，原因是：
 
 - 当前默认使用 `MockLLM`
 - 当前 RAG 是 `knowledge_base.jsonl + keyword_retriever`
-- 当前只支持 CSV
+- 当前支持 CSV / Excel 上传；Excel 会先在服务端标准化为 CSV 再进入分析链路
 - 当前 SessionStore 会优先尝试 Redis，不可用时显式降级到 SQLite
 - 当前没有异步队列、真实模型 API、向量检索、DockerSandbox、完整前端
 

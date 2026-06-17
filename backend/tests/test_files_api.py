@@ -1,3 +1,6 @@
+from io import BytesIO
+
+import pandas as pd
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -77,6 +80,36 @@ def test_upload_csv_returns_profile(tmp_path):
     assert body["columns"][0]["name"] == "product_category"
 
 
+def test_upload_xlsx_returns_profile():
+    client = TestClient(app)
+    dataframe = pd.DataFrame(
+        [
+            {"product_category": "electronics", "sales_amount": 1200},
+            {"product_category": "office", "sales_amount": 800},
+        ]
+    )
+    payload = BytesIO()
+    dataframe.to_excel(payload, index=False)
+    payload.seek(0)
+
+    response = client.post(
+        "/api/files/upload",
+        files={
+            "file": (
+                "sales_orders.xlsx",
+                payload.getvalue(),
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["filename"] == "sales_orders.xlsx"
+    assert body["row_count"] == 2
+    assert body["column_count"] == 2
+
+
 def test_get_profile_returns_persisted_profile():
     client = TestClient(app)
     upload_response = client.post(
@@ -100,7 +133,7 @@ def test_upload_rejects_non_csv_file():
     )
 
     assert response.status_code == 400
-    assert response.json()["detail"] == "Only CSV files are supported."
+    assert response.json()["detail"] == "Only CSV and Excel files are supported."
 
 
 def test_upload_rejects_empty_file():

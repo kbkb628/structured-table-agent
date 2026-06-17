@@ -2,7 +2,7 @@
 
 ## Scope
 
-- CSV upload
+- CSV and Excel upload
 - File profiling
 - SQLite metadata persistence
 - DuckDB groupby aggregation
@@ -121,6 +121,12 @@ Upload the sample CSV with `curl.exe`:
 
 ```powershell
 curl.exe -X POST -F "file=@data/samples/sales_orders.csv" http://127.0.0.1:8000/api/files/upload
+```
+
+Upload an Excel file with `curl.exe`:
+
+```powershell
+curl.exe -X POST -F "file=@data/samples/sales_orders.xlsx" http://127.0.0.1:8000/api/files/upload
 ```
 
 Create an analysis task:

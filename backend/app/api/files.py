@@ -1,5 +1,8 @@
 import json
+from io import BytesIO
+from pathlib import Path
 
+import pandas as pd
 from fastapi import APIRouter, File, HTTPException, UploadFile
 
 from app.schemas.file_schema import FileProfile
@@ -14,20 +17,36 @@ from app.storage.models import FileRecord
 from app.tools.registry import invoke_tool
 
 router = APIRouter(prefix="/api/files", tags=["files"])
+SUPPORTED_UPLOAD_SUFFIXES = {".csv", ".xlsx", ".xls"}
+
+
+def _normalise_uploaded_content(filename: str, content: bytes) -> tuple[str, bytes]:
+    suffix = Path(filename).suffix.lower()
+    if suffix == ".csv":
+        return filename, content
+
+    try:
+        dataframe = pd.read_excel(BytesIO(content))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Failed to parse Excel file: {exc}") from exc
+
+    normalised_name = f"{Path(filename).stem}.csv"
+    return normalised_name, dataframe.to_csv(index=False).encode("utf-8")
 
 
 @router.post("/upload", response_model=FileProfile)
 async def upload_file(file: UploadFile = File(...)) -> FileProfile:
-    if not file.filename or not file.filename.lower().endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files are supported.")
+    if not file.filename or Path(file.filename).suffix.lower() not in SUPPORTED_UPLOAD_SUFFIXES:
+        raise HTTPException(status_code=400, detail="Only CSV and Excel files are supported.")
 
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
 
+    normalised_filename, normalised_content = _normalise_uploaded_content(file.filename, content)
     file_id = make_file_id()
-    stored_name = f"{file_id}_{file.filename}"
-    full_path = persist_uploaded_file(stored_name, content)
+    stored_name = f"{file_id}_{normalised_filename}"
+    full_path = persist_uploaded_file(stored_name, normalised_content)
     created_at = make_timestamp()
     profile_result = invoke_tool(
         "profile_dataset",
