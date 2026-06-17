@@ -77,7 +77,14 @@ def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
     assert stored["chart_specs"][0]["chart_type"] == "bar"
     assert stored["final_report"]["analysis_goal"] == "compare region sales"
     assert any(event["event_type"] == "task_completed" for event in stored["events"])
-    assert len(get_tool_call_logs(task_id)) == 1
+    tool_logs = get_tool_call_logs(task_id)
+    assert len(tool_logs) == 4
+    assert [item["tool_name"] for item in tool_logs] == [
+        "match_fields",
+        "groupby_aggregate",
+        "generate_chart",
+        "generate_report",
+    ]
 
 
 def test_run_analysis_task_supports_channel_dual_metrics(tmp_path: Path):

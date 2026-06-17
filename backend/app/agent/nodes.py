@@ -39,7 +39,10 @@ def load_task_node(state: AnalysisGraphState) -> AnalysisGraphState:
 
 
 def match_fields_node(state: AnalysisGraphState) -> AnalysisGraphState:
-    field_response = invoke_tool("match_fields", question=state["question"], file_profile=state["file_profile"])
+    tool_request = {"question": state["question"], "file_profile": state["file_profile"]}
+    record_tool_called(state["task_id"], "match_fields", tool_request)
+    field_response = invoke_tool("match_fields", **tool_request)
+    record_tool_call(state["task_id"], "match_fields", tool_request, field_response.model_dump())
     field_result = field_response.data or {}
     state["field_understanding"] = field_result
     record_fields_matched(state["task_id"], field_result)
@@ -116,13 +119,20 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
         rows = tool_result.get("data", {}).get("rows", [])
         metric_label = tool_result.get("metric_label")
         y_field = next(key for key in rows[0].keys() if key != dimension_field)
+        tool_request = {
+            "title": f"{dimension_field} vs {y_field}",
+            "x_field": dimension_field,
+            "y_field": y_field,
+            "rows": rows,
+        }
+        record_tool_called(state["task_id"], "generate_chart", tool_request)
         chart_response = invoke_tool(
             "generate_chart",
-            title=f"{dimension_field} vs {y_field}",
-            x_field=dimension_field,
-            y_field=y_field,
-            rows=rows,
+            **tool_request,
         )
+        chart_response_dict = chart_response.model_dump()
+        chart_response_dict["metric_label"] = metric_label
+        record_tool_call(state["task_id"], "generate_chart", tool_request, chart_response_dict)
         if chart_response.success:
             chart_spec = chart_response.data or {}
             chart_spec["metric_label"] = metric_label
@@ -141,13 +151,15 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
 
 
 def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
-    report_response = invoke_tool(
-        "generate_report",
-        question=state["question"],
-        analysis_goal=state["analysis_goal"],
-        tool_results=state["tool_results"],
-        chart_specs=state["chart_specs"],
-    )
+    tool_request = {
+        "question": state["question"],
+        "analysis_goal": state["analysis_goal"],
+        "tool_results": state["tool_results"],
+        "chart_specs": state["chart_specs"],
+    }
+    record_tool_called(state["task_id"], "generate_report", tool_request)
+    report_response = invoke_tool("generate_report", **tool_request)
+    record_tool_call(state["task_id"], "generate_report", tool_request, report_response.model_dump())
     report = report_response.data or {}
     state["final_report"] = report
     state["completed_steps"].append("generate_report")
