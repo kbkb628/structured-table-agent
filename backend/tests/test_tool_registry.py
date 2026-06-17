@@ -1,4 +1,5 @@
-from app.tools.registry import invoke_tool
+from app.schemas.tool_schema import ToolError, ToolResponse
+from app.tools.registry import invoke_tool, invoke_tool_with_retry
 
 
 def test_invoke_match_fields_returns_tool_response():
@@ -92,3 +93,66 @@ def test_invoke_profile_dataset_returns_tool_response(tmp_path):
     assert result.tool_name == "profile_dataset"
     assert result.data["row_count"] == 2
     assert result.data["column_count"] == 3
+
+
+def test_invoke_tool_with_retry_retries_once_and_marks_metadata(monkeypatch):
+    calls = {"count": 0}
+
+    def flaky_tool(**kwargs):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            return ToolResponse(
+                success=False,
+                tool_name="flaky_tool",
+                data=None,
+                summary="tool execution failed",
+                error=ToolError(code="TEMP_ERROR", message="temporary failure", suggested_fields=[]),
+                metadata={},
+            )
+        return ToolResponse(
+            success=True,
+            tool_name="flaky_tool",
+            data={"rows": [{"region": "East", "sales_amount_sum": 1200}]},
+            summary="retry succeeded",
+            error=None,
+            metadata={},
+        )
+
+    monkeypatch.setattr(
+        "app.tools.registry.get_tool_registry",
+        lambda: {"flaky_tool": flaky_tool},
+    )
+
+    result = invoke_tool_with_retry("flaky_tool", max_retries=1, group_by="region")
+
+    assert result.success is True
+    assert calls["count"] == 2
+    assert result.metadata["retry_attempts"] == 1
+    assert result.metadata["retry_status"] == "recovered"
+
+
+def test_invoke_tool_with_retry_returns_failure_after_retry_exhausted(monkeypatch):
+    calls = {"count": 0}
+
+    def always_fail(**kwargs):
+        calls["count"] += 1
+        return ToolResponse(
+            success=False,
+            tool_name="always_fail",
+            data=None,
+            summary="tool execution failed",
+            error=ToolError(code="TEMP_ERROR", message="temporary failure", suggested_fields=[]),
+            metadata={},
+        )
+
+    monkeypatch.setattr(
+        "app.tools.registry.get_tool_registry",
+        lambda: {"always_fail": always_fail},
+    )
+
+    result = invoke_tool_with_retry("always_fail", max_retries=1, group_by="region")
+
+    assert result.success is False
+    assert calls["count"] == 2
+    assert result.metadata["retry_attempts"] == 1
+    assert result.metadata["retry_status"] == "exhausted"

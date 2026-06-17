@@ -30,6 +30,25 @@ def invoke_tool(tool_name: str, **kwargs) -> ToolResponse:
     return registry[tool_name](**kwargs)
 
 
+def invoke_tool_with_retry(tool_name: str, max_retries: int = 1, **kwargs) -> ToolResponse:
+    attempts = 0
+    response = invoke_tool(tool_name, **kwargs)
+    while attempts < max_retries and not response.success:
+        attempts += 1
+        response = invoke_tool(tool_name, **kwargs)
+
+    merged_metadata = dict(response.metadata or {})
+    merged_metadata["retry_attempts"] = attempts
+    if attempts == 0:
+        merged_metadata["retry_status"] = "not_needed"
+    elif response.success:
+        merged_metadata["retry_status"] = "recovered"
+    else:
+        merged_metadata["retry_status"] = "exhausted"
+    response.metadata = merged_metadata
+    return response
+
+
 def get_tool_registry() -> dict[str, ToolCallable]:
     return {
         "profile_dataset": profile_dataset,

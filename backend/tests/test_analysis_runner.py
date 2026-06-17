@@ -92,6 +92,7 @@ def test_run_analysis_task_updates_state_and_events(tmp_path: Path):
     assert any("node_input_summary" in event["payload"] for event in tool_events)
     assert any("node_output_summary" in event["payload"] for event in tool_events)
     assert any("tool_result_summary" in event["payload"] for event in tool_events)
+    assert any(event["payload"]["tool_result_summary"]["retry_status"] in {"not_needed", "recovered"} for event in tool_events)
     tool_logs = get_tool_call_logs(task_id)
     assert len(tool_logs) == 4
     assert [item["tool_name"] for item in tool_logs] == [

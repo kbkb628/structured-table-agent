@@ -220,7 +220,7 @@ def test_run_analysis_graph_fails_on_empty_tool_rows_during_validation(tmp_path:
         from app.tools.registry import invoke_tool as real_invoke_tool
         return real_invoke_tool(tool_name, **kwargs)
 
-    monkeypatch.setattr("app.agent.nodes.invoke_tool", fake_invoke_tool)
+    monkeypatch.setattr("app.tools.registry.invoke_tool", fake_invoke_tool)
 
     result = run_analysis_graph("task_graph_empty")
 

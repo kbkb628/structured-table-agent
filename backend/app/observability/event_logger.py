@@ -32,9 +32,18 @@ def _summarize_tool_request(payload: dict) -> dict:
     }
 
 
+def _retry_summary(payload: dict) -> dict:
+    metadata = payload.get("metadata") or {}
+    return {
+        "retry_attempts": metadata.get("retry_attempts", 0),
+        "retry_status": metadata.get("retry_status", "not_needed"),
+    }
+
+
 def _summarize_tool_response(payload: dict) -> dict:
     rows = (payload.get("data") or {}).get("rows") or []
     error = payload.get("error") or {}
+    metadata = payload.get("metadata") or {}
     return {
         "output_keys": sorted(payload.keys()),
         "success": payload.get("success"),
@@ -42,6 +51,7 @@ def _summarize_tool_response(payload: dict) -> dict:
         "metric_label": payload.get("metric_label"),
         "error_code": error.get("code"),
         "summary": payload.get("summary", ""),
+        **_retry_summary(payload),
     }
 
 
@@ -136,7 +146,7 @@ def record_tool_called(task_id: str, tool_name: str, payload: dict) -> dict:
         **payload,
         "node_input_summary": _summarize_tool_request(payload),
         "node_output_summary": {"status": "pending"},
-        "tool_result_summary": {"tool_name": tool_name, "status": "called"},
+        "tool_result_summary": {"tool_name": tool_name, "status": "called", **_retry_summary(payload)},
     }
     return record_analysis_event(task_id, TOOL_CALLED, tool_name, f"calling {tool_name}", enriched_payload)
 

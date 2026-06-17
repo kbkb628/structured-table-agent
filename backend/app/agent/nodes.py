@@ -14,6 +14,7 @@ from app.observability.event_logger import record_tool_succeeded
 from app.storage.analysis_store import record_eval_result, record_tool_call
 from app.storage.session_store import SessionStore
 from app.tools.registry import invoke_tool
+from app.tools.registry import invoke_tool_with_retry
 
 
 def _persist_state(state: AnalysisGraphState) -> None:
@@ -86,7 +87,7 @@ def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
         "limit": planned_call["limit"],
     }
     record_tool_called(state["task_id"], tool_name, tool_request)
-    tool_response = invoke_tool(tool_name, **tool_request)
+    tool_response = invoke_tool_with_retry(tool_name, **tool_request)
     tool_response_dict = tool_response.model_dump()
     tool_response_dict["metric_label"] = metric["label"]
     tool_response_dict["selected_tool"] = tool_name
@@ -172,7 +173,7 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
             "rows": rows,
         }
         record_tool_called(state["task_id"], "generate_chart", tool_request)
-        chart_response = invoke_tool(
+        chart_response = invoke_tool_with_retry(
             "generate_chart",
             **tool_request,
         )
@@ -221,7 +222,7 @@ def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
         "chart_specs": state["chart_specs"],
     }
     record_tool_called(state["task_id"], "generate_report", tool_request)
-    report_response = invoke_tool("generate_report", **tool_request)
+    report_response = invoke_tool_with_retry("generate_report", **tool_request)
     record_tool_call(state["task_id"], "generate_report", tool_request, report_response.model_dump())
     report = report_response.data or {}
     state["final_report"] = report
