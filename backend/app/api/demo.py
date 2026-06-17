@@ -149,6 +149,34 @@ def demo_page() -> HTMLResponse:
       white-space: pre-wrap;
     }
     .status strong { color: var(--accent); }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .summary-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fffdf8;
+      padding: 12px 14px;
+      display: grid;
+      gap: 6px;
+    }
+    .summary-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .summary-value {
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .summary-note {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
     .grid {
       display: grid;
       gap: 18px;
@@ -177,6 +205,73 @@ def demo_page() -> HTMLResponse:
       white-space: pre-wrap;
       word-break: break-word;
     }
+    .report-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 10px;
+      color: var(--ink);
+    }
+    .report-list li {
+      line-height: 1.5;
+    }
+    .chart-shell {
+      display: grid;
+      gap: 10px;
+      min-height: 220px;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fffdf8;
+    }
+    .chart-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+    .chart-empty {
+      display: grid;
+      place-items: center;
+      min-height: 160px;
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 12px;
+      background: #fcf7ef;
+      text-align: center;
+      padding: 16px;
+    }
+    .chart-svg {
+      width: 100%;
+      height: 180px;
+      overflow: visible;
+    }
+    .chart-line {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .chart-point {
+      fill: var(--accent-2);
+      stroke: var(--accent);
+      stroke-width: 2;
+    }
+    .chart-bar {
+      fill: var(--accent);
+      opacity: 0.88;
+    }
+    .chart-label {
+      font-size: 10px;
+      fill: var(--muted);
+    }
+    .chart-value {
+      font-size: 10px;
+      fill: var(--ink);
+    }
     .hint {
       color: var(--muted);
       font-size: 0.88rem;
@@ -188,6 +283,7 @@ def demo_page() -> HTMLResponse:
     }
     @media (max-width: 920px) {
       .layout { grid-template-columns: 1fr; }
+      .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
@@ -236,6 +332,28 @@ def demo_page() -> HTMLResponse:
           </div>
 
           <div id="task-status" class="status">No file uploaded yet.</div>
+          <div id="task-summary" class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-label">Task</div>
+              <div class="summary-value">Not started</div>
+              <div class="summary-note">A task ID appears here after creation.</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Status</div>
+              <div class="summary-value">Idle</div>
+              <div class="summary-note">Current backend state.</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Tools</div>
+              <div class="summary-value">0</div>
+              <div class="summary-note">Successful tool results.</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-label">Score</div>
+              <div class="summary-value">-</div>
+              <div class="summary-note">Rule-based overall score.</div>
+            </div>
+          </div>
           <div class="hint">
             The page uses existing APIs only:
             <span class="fine">`/api/files/upload`, `/api/analysis/start`, `/api/analysis/{task_id}/run`, `/api/analysis/{task_id}`, `/events`, `/tool-logs`.</span>
@@ -249,6 +367,21 @@ def demo_page() -> HTMLResponse:
             <h2>Task Outputs</h2>
           </div>
           <div class="panel-body">
+            <div class="output-block">
+              <h3>Chart Preview</h3>
+              <div id="chart-preview" class="chart-shell">
+                <div class="chart-meta">
+                  <span>Chart preview uses the persisted `chart_specs` output.</span>
+                </div>
+                <div id="chart-empty-state" class="chart-empty">No chart is available until a completed task returns chart specs.</div>
+              </div>
+            </div>
+            <div class="output-block">
+              <h3>Report Highlights</h3>
+              <ol id="report-list" class="report-list">
+                <li>No report findings yet.</li>
+              </ol>
+            </div>
             <div class="output-block">
               <h3>Final Report</h3>
               <pre id="report-output">Waiting for a completed task.</pre>
@@ -288,7 +421,10 @@ def demo_page() -> HTMLResponse:
 
     const statusEl = document.getElementById("task-status");
     const reportEl = document.getElementById("report-output");
+    const reportListEl = document.getElementById("report-list");
     const taskEl = document.getElementById("task-output");
+    const taskSummaryEl = document.getElementById("task-summary");
+    const chartPreviewEl = document.getElementById("chart-preview");
     const eventsEl = document.getElementById("events-output");
     const toolLogsEl = document.getElementById("tool-logs-output");
     const fileInput = document.getElementById("file-input");
@@ -303,6 +439,130 @@ def demo_page() -> HTMLResponse:
 
     function stringify(value) {
       return JSON.stringify(value, null, 2);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function renderTaskSummary(task) {
+      const toolCount = (task.tool_results || []).filter((item) => item.success).length;
+      const overallScore = task.eval_result && typeof task.eval_result.overall_score !== "undefined"
+        ? task.eval_result.overall_score
+        : "-";
+      taskSummaryEl.innerHTML = `
+        <div class="summary-card">
+          <div class="summary-label">Task</div>
+          <div class="summary-value">${escapeHtml(task.task_id || "Unknown")}</div>
+          <div class="summary-note">${escapeHtml(task.analysis_goal || "No analysis goal")}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Status</div>
+          <div class="summary-value">${escapeHtml(task.status || "unknown")}</div>
+          <div class="summary-note">${escapeHtml(task.current_step || "No current step")}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Tools</div>
+          <div class="summary-value">${toolCount}</div>
+          <div class="summary-note">${(task.chart_specs || []).length} chart specs recorded</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Score</div>
+          <div class="summary-value">${escapeHtml(overallScore)}</div>
+          <div class="summary-note">${escapeHtml((task.llm_judgement || {}).supported_by_tools === true ? "LLM judged as supported" : "LLM judgement pending or mixed")}</div>
+        </div>
+      `;
+    }
+
+    function renderReportHighlights(report) {
+      const findings = report && Array.isArray(report.key_findings) ? report.key_findings : [];
+      if (!findings.length) {
+        reportListEl.innerHTML = "<li>No report findings yet.</li>";
+        return;
+      }
+      reportListEl.innerHTML = findings.map((item) => `
+        <li>
+          <strong>${escapeHtml(item.finding || "Finding")}</strong><br>
+          <span>${escapeHtml(item.evidence || "No evidence")}</span><br>
+          <span class="fine">Source: ${escapeHtml(item.source_tool || "unknown")}</span>
+        </li>
+      `).join("");
+    }
+
+    function renderChartPreview(chartSpecs) {
+      const chartSpec = Array.isArray(chartSpecs) && chartSpecs.length ? chartSpecs[0] : null;
+      if (!chartSpec || !chartSpec.plotly_spec || !Array.isArray(chartSpec.plotly_spec.data) || !chartSpec.plotly_spec.data.length) {
+        chartPreviewEl.innerHTML = `
+          <div class="chart-meta">
+            <span>Chart preview uses the persisted `chart_specs` output.</span>
+          </div>
+          <div id="chart-empty-state" class="chart-empty">No chart is available until a completed task returns chart specs.</div>
+        `;
+        return;
+      }
+
+      const trace = chartSpec.plotly_spec.data[0] || {};
+      const xs = Array.isArray(trace.x) ? trace.x : [];
+      const ys = Array.isArray(trace.y) ? trace.y.map((value) => Number(value) || 0) : [];
+      const maxY = ys.length ? Math.max(...ys, 1) : 1;
+      const width = 520;
+      const height = 180;
+      const leftPad = 26;
+      const baseY = 146;
+      const usableHeight = 110;
+
+      let graphic = "";
+      if (chartSpec.chart_type === "line") {
+        const step = xs.length > 1 ? (width - 70) / (xs.length - 1) : 0;
+        const points = ys.map((value, index) => {
+          const x = 24 + index * step;
+          const y = baseY - (value / maxY) * usableHeight;
+          return { x, y, label: xs[index], value };
+        });
+        const path = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+        graphic = `
+          <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Line chart preview">
+            <line x1="${leftPad}" y1="${baseY}" x2="${width - 18}" y2="${baseY}" stroke="#d8ccb8" />
+            <path class="chart-line" d="${path}"></path>
+            ${points.map((point) => `
+              <circle class="chart-point" cx="${point.x}" cy="${point.y}" r="4"></circle>
+              <text class="chart-label" x="${point.x}" y="${baseY + 16}" text-anchor="middle">${escapeHtml(point.label)}</text>
+              <text class="chart-value" x="${point.x}" y="${point.y - 8}" text-anchor="middle">${escapeHtml(point.value)}</text>
+            `).join("")}
+          </svg>
+        `;
+      } else {
+        const barWidth = xs.length ? Math.max(24, Math.min(64, (width - 80) / xs.length - 12)) : 36;
+        const gap = xs.length ? ((width - 70) - barWidth * xs.length) / Math.max(xs.length - 1, 1) : 10;
+        graphic = `
+          <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Bar chart preview">
+            <line x1="${leftPad}" y1="${baseY}" x2="${width - 18}" y2="${baseY}" stroke="#d8ccb8" />
+            ${ys.map((value, index) => {
+              const x = 28 + index * (barWidth + gap);
+              const barHeight = (value / maxY) * usableHeight;
+              const y = baseY - barHeight;
+              return `
+                <rect class="chart-bar" x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" rx="6"></rect>
+                <text class="chart-label" x="${x + barWidth / 2}" y="${baseY + 16}" text-anchor="middle">${escapeHtml(xs[index])}</text>
+                <text class="chart-value" x="${x + barWidth / 2}" y="${y - 8}" text-anchor="middle">${escapeHtml(value)}</text>
+              `;
+            }).join("")}
+          </svg>
+        `;
+      }
+
+      chartPreviewEl.innerHTML = `
+        <div class="chart-meta">
+          <span>Type: ${escapeHtml(chartSpec.chart_type || "unknown")}</span>
+          <span>Metric label: ${escapeHtml(chartSpec.metric_label || "n/a")}</span>
+        </div>
+        ${graphic}
+      `;
     }
 
     async function apiFetch(url, options = {}) {
@@ -351,6 +611,9 @@ def demo_page() -> HTMLResponse:
         llm_judgement: task.llm_judgement,
       });
       reportEl.textContent = stringify(task.final_report || {});
+      renderTaskSummary(task);
+      renderReportHighlights(task.final_report || {});
+      renderChartPreview(task.chart_specs || []);
       eventsEl.textContent = stringify(events.events || []);
       toolLogsEl.textContent = stringify(toolLogs.tool_call_logs || []);
       setStatus(`Task ${task.task_id} status: ${task.status}`);
@@ -389,6 +652,9 @@ def demo_page() -> HTMLResponse:
         analysis_plan: runPayload.analysis_plan,
         eval_result: runPayload.eval_result,
       });
+      renderTaskSummary(runPayload);
+      renderReportHighlights(runPayload.final_report || {});
+      renderChartPreview(runPayload.chart_specs || []);
 
       await loadTaskArtifacts(state.taskId);
       startPolling();

@@ -23,6 +23,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'id="question-input"' in content
     assert 'id="run-analysis-button"' in content
     assert 'id="task-status"' in content
+    assert 'id="task-summary"' in content
+    assert 'id="chart-preview"' in content
+    assert 'id="chart-empty-state"' in content
+    assert 'id="report-list"' in content
     assert 'id="report-output"' in content
     assert 'id="events-output"' in content
     assert 'id="tool-logs-output"' in content
