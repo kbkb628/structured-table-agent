@@ -32,6 +32,23 @@ class SessionStore:
             "task_lock": f"task_lock:{task_id}",
         }
 
+    def _build_context_checkpoint(self, state: dict) -> dict:
+        business_context = state.get("business_context", []) or []
+        intermediate_findings = state.get("intermediate_findings", []) or []
+        draft_report = state.get("draft_report", {}) or {}
+        latest_error = (state.get("errors") or [])[-1] if state.get("errors") else {}
+        checkpoint = {
+            "analysis_goal": state.get("analysis_goal", ""),
+            "current_step": state.get("current_step", ""),
+            "status": state.get("status", ""),
+            "pending_metric_count": len(state.get("pending_metrics", []) or []),
+            "finding_count": len(intermediate_findings),
+            "business_context_titles": [item.get("title") for item in business_context if item.get("title")],
+            "draft_report_status": "available" if draft_report else "empty",
+            "latest_error_code": latest_error.get("code", ""),
+        }
+        return checkpoint
+
     def _connect(self):
         if redis is None:
             return None
@@ -57,7 +74,10 @@ class SessionStore:
                 if intermediate_findings:
                     state["intermediate_findings"] = json.loads(intermediate_findings)
                 if latest_context:
-                    state["business_context"] = json.loads(latest_context)
+                    state["context_checkpoint"] = json.loads(latest_context)
+                    state["business_context"] = state["context_checkpoint"].get("business_context", state.get("business_context", []))
+                else:
+                    state["context_checkpoint"] = self._build_context_checkpoint(state)
             return (state, True)
         logger.warning("Redis unavailable; falling back to SQLite-backed session state for task %s", task_id)
         return get_task_state(task_id), False
@@ -72,7 +92,9 @@ class SessionStore:
                 keys["intermediate_findings"],
                 json.dumps(state.get("intermediate_findings", []), ensure_ascii=False),
             )
-            client.set(keys["latest_context"], json.dumps(state.get("business_context", []), ensure_ascii=False))
+            context_checkpoint = self._build_context_checkpoint(state)
+            state["context_checkpoint"] = context_checkpoint
+            client.set(keys["latest_context"], json.dumps(context_checkpoint, ensure_ascii=False))
             update_task_state(task_id, state)
             return True
         logger.warning("Redis unavailable; persisting session state to SQLite for task %s", task_id)

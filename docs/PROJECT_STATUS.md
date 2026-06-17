@@ -68,7 +68,7 @@
 - Redis 边界已收口一致：
   - 代码实现 `SessionStore` 优先尝试 Redis
   - Redis 不可用时显式降级到 SQLite，并记录 `session_store_warning`
-  - Redis 可用时会额外保存 `draft_report:{task_id}`、`intermediate_findings:{task_id}`、`latest_context:{task_id}`、`task_lock:{task_id}`
+  - Redis 可用时会额外保存 `draft_report:{task_id}`、`intermediate_findings:{task_id}`、`latest_context:{task_id}`（压缩后的 `context_checkpoint`）、`task_lock:{task_id}`
   - 同一任务重复调用 `/api/analysis/{task_id}/run` 时，当前实现会因任务锁冲突返回 `409`
   - README、架构说明、面试稿已经同步到同一表述
 

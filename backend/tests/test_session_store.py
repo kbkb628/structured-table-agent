@@ -270,6 +270,65 @@ def test_session_store_persists_granular_redis_keys(monkeypatch):
     assert f"draft_report:{task_id}" in fake_client.values
     assert f"intermediate_findings:{task_id}" in fake_client.values
     assert f"latest_context:{task_id}" in fake_client.values
+    latest_context = json.loads(fake_client.values[f"latest_context:{task_id}"])
+    assert latest_context["analysis_goal"] == "compare region sales"
+    assert latest_context["current_step"] == "report"
+    assert latest_context["draft_report_status"] == "available"
+    assert latest_context["business_context_titles"] == ["Sales Amount"]
+    assert latest_context["finding_count"] == 1
+    assert "business_context" not in latest_context
+
+
+def test_session_store_load_state_hydrates_context_checkpoint_from_redis(monkeypatch):
+    task_id = f"task_session_checkpoint_{uuid.uuid4().hex[:8]}"
+    fake_client = FakeRedisClient()
+    fake_client.values[f"analysis_state:{task_id}"] = json.dumps(
+        {
+            "task_id": task_id,
+            "file_id": "file_session_checkpoint",
+            "question": "analyse sales by region",
+            "analysis_goal": "compare region sales",
+            "file_profile": {},
+            "field_understanding": {},
+            "business_context": [{"id": "metric_sales_amount", "title": "Sales Amount"}],
+            "analysis_plan": ["match fields", "aggregate"],
+            "current_step": "report",
+            "completed_steps": ["match fields"],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "running",
+        },
+        ensure_ascii=False,
+    )
+    fake_client.values[f"draft_report:{task_id}"] = json.dumps({"title": "Draft report"}, ensure_ascii=False)
+    fake_client.values[f"intermediate_findings:{task_id}"] = json.dumps(
+        [{"summary": "East leads."}],
+        ensure_ascii=False,
+    )
+    fake_client.values[f"latest_context:{task_id}"] = json.dumps(
+        {
+            "analysis_goal": "compare region sales",
+            "current_step": "report",
+            "draft_report_status": "available",
+            "finding_count": 1,
+        },
+        ensure_ascii=False,
+    )
+    monkeypatch.setattr(SessionStore, "_connect", lambda self: fake_client)
+
+    state, used_redis = SessionStore().load_state(task_id)
+
+    assert used_redis is True
+    assert state is not None
+    assert state["draft_report"]["title"] == "Draft report"
+    assert state["intermediate_findings"][0]["summary"] == "East leads."
+    assert state["context_checkpoint"]["draft_report_status"] == "available"
 
 
 def test_session_store_task_lock_blocks_duplicate_acquire():
