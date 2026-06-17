@@ -3,7 +3,7 @@ import uuid
 
 from app.agent.graph import run_analysis_graph
 from app.core.config import SAMPLE_DIR
-from app.storage.analysis_store import record_event
+from app.observability.event_logger import record_startup_events
 from app.storage.analysis_store import create_task
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
@@ -95,28 +95,7 @@ def _build_case_task(case: dict, file_profile: dict) -> dict:
         "status": "created",
     }
     create_task(task_id, file_profile["file_id"], question, state)
-    record_event(task_id, "task_created", "eval_cases", "task created", {"status": "created"})
-    record_event(
-        task_id,
-        "rag_retrieved",
-        "eval_cases",
-        "business context retrieved",
-        {"item_count": len(business_context), "item_ids": [item["id"] for item in business_context]},
-    )
-    record_event(
-        task_id,
-        "goal_understood",
-        "eval_cases",
-        "analysis goal generated",
-        {"analysis_goal": analysis_goal},
-    )
-    record_event(
-        task_id,
-        "plan_generated",
-        "eval_cases",
-        "analysis plan generated",
-        {"analysis_plan": analysis_plan},
-    )
+    record_startup_events(task_id, "eval_cases", business_context, analysis_goal, analysis_plan)
     return state
 
 

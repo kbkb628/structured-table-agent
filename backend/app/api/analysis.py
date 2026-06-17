@@ -4,11 +4,13 @@ import uuid
 from fastapi import APIRouter, HTTPException
 
 from app.llm.mock_client import MockLLMClient
+from app.observability.event_logger import list_analysis_events
+from app.observability.event_logger import record_startup_events
 from app.rag.keyword_retriever import retrieve_business_context
 from app.schemas.analysis_schema import AnalysisStartRequest, AnalysisStartResponse, AnalysisTaskState
 from app.schemas.event_schema import AnalysisEventList
 from app.services.analysis_runner import run_analysis_task
-from app.storage.analysis_store import create_task, get_task_state, list_task_events, record_event
+from app.storage.analysis_store import create_task, get_task_state
 from app.storage.file_store import get_file_record
 
 router = APIRouter(prefix="/api/analysis", tags=["analysis"])
@@ -55,28 +57,7 @@ def start_analysis(request: AnalysisStartRequest) -> AnalysisStartResponse:
         "status": "created",
     }
     create_task(task_id, request.file_id, request.question, state)
-    record_event(task_id, "task_created", "start_analysis", "task created", {"status": "created"})
-    record_event(
-        task_id,
-        "rag_retrieved",
-        "start_analysis",
-        "business context retrieved",
-        {"item_count": len(business_context), "item_ids": [item["id"] for item in business_context]},
-    )
-    record_event(
-        task_id,
-        "goal_understood",
-        "start_analysis",
-        "analysis goal generated",
-        {"analysis_goal": analysis_goal},
-    )
-    record_event(
-        task_id,
-        "plan_generated",
-        "start_analysis",
-        "analysis plan generated",
-        {"analysis_plan": analysis_plan},
-    )
+    record_startup_events(task_id, "start_analysis", business_context, analysis_goal, analysis_plan)
     return AnalysisStartResponse(
         task_id=task_id,
         status="created",
@@ -99,7 +80,7 @@ def get_analysis(task_id: str) -> AnalysisTaskState:
     state = get_task_state(task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
-    state["events"] = list_task_events(task_id)
+    state["events"] = list_analysis_events(task_id)
     return AnalysisTaskState(**state)
 
 
@@ -108,4 +89,4 @@ def get_analysis_events(task_id: str) -> AnalysisEventList:
     state = get_task_state(task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
-    return AnalysisEventList(task_id=task_id, events=list_task_events(task_id))
+    return AnalysisEventList(task_id=task_id, events=list_analysis_events(task_id))

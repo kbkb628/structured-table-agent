@@ -1,3 +1,6 @@
+from app.observability.trace_models import CHART_GENERATED
+from app.observability.trace_models import REQUIRED_TRACE_EVENTS
+
 REQUIRED_REPORT_FIELDS = (
     "title",
     "analysis_goal",
@@ -7,15 +10,6 @@ REQUIRED_REPORT_FIELDS = (
     "data_limitations",
     "next_steps",
 )
-
-REQUIRED_TRACE_EVENTS = (
-    "task_created",
-    "fields_matched",
-    "tool_succeeded",
-    "report_generated",
-    "task_completed",
-)
-
 
 def _as_bool_score(value: bool) -> float:
     return 1.0 if value else 0.0
@@ -71,7 +65,7 @@ def score_task_state(state: dict) -> dict:
     event_types = {item.get("event_type") for item in events}
     required_trace_events = set(REQUIRED_TRACE_EVENTS)
     if chart_specs:
-        required_trace_events.add("chart_generated")
+        required_trace_events.add(CHART_GENERATED)
     trace_completeness = len(event_types & required_trace_events) / len(required_trace_events)
     if trace_completeness < 1.0:
         issues.append("Trace is incomplete for the current task lifecycle.")

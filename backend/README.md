@@ -83,6 +83,8 @@ The runner executes the three currently supported case families on `data/samples
 5. Query event timeline with `/api/analysis/{task_id}/events`
 6. Re-run evaluation with `/api/eval/run`
 
+The persisted timeline returned by `/api/analysis/{task_id}/events` is now routed through `app/observability/event_logger.py`, while SQLite remains the storage backend.
+
 `/api/analysis/start` now returns:
 
 - `analysis_goal`

@@ -1,12 +1,17 @@
 from app.agent.state import AnalysisGraphState
 from app.eval.rule_scorer import score_task_state
-from app.storage.analysis_store import (
-    list_task_events,
-    record_eval_result,
-    record_event,
-    record_tool_call,
-    update_task_state,
-)
+from app.observability.event_logger import hydrate_state_events
+from app.observability.event_logger import record_chart_failed
+from app.observability.event_logger import record_chart_generated
+from app.observability.event_logger import record_eval_finished
+from app.observability.event_logger import record_fields_matched
+from app.observability.event_logger import record_report_generated
+from app.observability.event_logger import record_task_completed
+from app.observability.event_logger import record_task_failed
+from app.observability.event_logger import record_tool_called
+from app.observability.event_logger import record_tool_failed
+from app.observability.event_logger import record_tool_succeeded
+from app.storage.analysis_store import record_eval_result, record_tool_call, update_task_state
 from app.tools.chart_tool import generate_chart
 from app.tools.duckdb_tools import groupby_aggregate
 from app.tools.match_fields import match_fields
@@ -18,8 +23,8 @@ def fail_task(state: AnalysisGraphState, code: str, message: str, payload: dict 
     state["errors"].append(error)
     state["status"] = "failed"
     state["current_step"] = "failed"
-    record_event(state["task_id"], "task_failed", "langgraph", message, error)
-    state["events"] = list_task_events(state["task_id"])
+    record_task_failed(state["task_id"], "langgraph", message, error)
+    hydrate_state_events(state)
     update_task_state(state["task_id"], state)
     return state
 
@@ -34,7 +39,7 @@ def load_task_node(state: AnalysisGraphState) -> AnalysisGraphState:
 def match_fields_node(state: AnalysisGraphState) -> AnalysisGraphState:
     field_result = match_fields(state["question"], state["file_profile"])
     state["field_understanding"] = field_result
-    record_event(state["task_id"], "fields_matched", "match_fields", "matched analysis fields", field_result)
+    record_fields_matched(state["task_id"], field_result)
     metrics = field_result.get("metrics", [])
 
     if field_result.get("dimension_field") is None or not metrics:
@@ -63,7 +68,7 @@ def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
             "sort_order": "desc",
             "limit": 5,
         }
-        record_event(state["task_id"], "tool_called", "groupby_aggregate", "calling groupby_aggregate", tool_request)
+        record_tool_called(state["task_id"], "groupby_aggregate", tool_request)
         tool_response = groupby_aggregate(**tool_request)
         tool_response_dict = tool_response.model_dump()
         tool_response_dict["metric_label"] = metric["label"]
@@ -71,7 +76,7 @@ def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
 
         if not tool_response.success:
             state["tool_results"].append(tool_response_dict)
-            record_event(state["task_id"], "tool_failed", "groupby_aggregate", "groupby_aggregate failed", tool_response_dict)
+            record_tool_failed(state["task_id"], "groupby_aggregate", tool_response_dict)
             return fail_task(
                 state,
                 tool_response_dict["error"]["code"],
@@ -97,7 +102,7 @@ def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
                 "top_row": rows[0],
             }
         )
-        record_event(state["task_id"], "tool_succeeded", "groupby_aggregate", "groupby_aggregate succeeded", tool_response_dict)
+        record_tool_succeeded(state["task_id"], "groupby_aggregate", tool_response_dict)
     return state
 
 
@@ -118,7 +123,7 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
             chart_spec["metric_label"] = metric_label
             state["chart_specs"].append(chart_spec)
             state["completed_steps"].append(f"generate_chart:{metric_label}")
-            record_event(state["task_id"], "chart_generated", "generate_chart", "generated bar chart", chart_spec)
+            record_chart_generated(state["task_id"], chart_spec)
         except ValueError as exc:
             chart_error = {
                 "code": "CHART_GENERATION_FAILED",
@@ -126,7 +131,7 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
                 "details": {"metric_label": metric_label},
             }
             state["errors"].append(chart_error)
-            record_event(state["task_id"], "chart_failed", "generate_chart", "chart generation degraded", chart_error)
+            record_chart_failed(state["task_id"], chart_error)
     return state
 
 
@@ -139,18 +144,18 @@ def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
     )
     state["final_report"] = report
     state["completed_steps"].append("generate_report")
-    record_event(state["task_id"], "report_generated", "generate_report", "generated final report", report)
+    record_report_generated(state["task_id"], report)
     return state
 
 
 def evaluate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
     state["current_step"] = "completed"
     state["status"] = "completed"
-    record_event(state["task_id"], "task_completed", "langgraph", "analysis task completed", {"status": "completed"})
-    state["events"] = list_task_events(state["task_id"])
+    record_task_completed(state["task_id"], "langgraph")
+    hydrate_state_events(state)
     state["eval_result"] = score_task_state(state)
     record_eval_result(state["task_id"], state["eval_result"])
-    record_event(state["task_id"], "eval_finished", "langgraph", "rule evaluation completed", state["eval_result"])
-    state["events"] = list_task_events(state["task_id"])
+    record_eval_finished(state["task_id"], "langgraph", state["eval_result"])
+    hydrate_state_events(state)
     update_task_state(state["task_id"], state)
     return state
