@@ -120,6 +120,7 @@
 - 当前 SessionStore 会优先尝试 Redis，不可用时显式降级到 SQLite
 - 当前已经实现 `draft_report`、`final_report`、`llm_judgement`、`business_context`、`intermediate_findings` 和 `context_checkpoint` 的 Redis 细粒度持久化与回填
 - 即使 Redis 的主 `analysis_state` 快照缺失，也可以基于 SQLite 状态和细粒度 Redis key 恢复任务视图
+- 这类恢复不会静默发生，而是会写入 `session_state_recovered` 事件，进入任务时间线
 - 当前已经实现基于 FastAPI 返回的极简 `/demo` 演示页，用于串联上传、任务执行和过程展示
 - 当前没有实现 embedding / 向量检索 / rerank、DockerSandbox、完整 React 前端、异步队列
 

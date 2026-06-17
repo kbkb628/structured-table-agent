@@ -653,3 +653,6 @@ def test_get_analysis_uses_granular_redis_recovery_when_snapshot_is_missing(tmp_
     assert body["llm_judgement"]["supported_by_tools"] is True
     assert body["intermediate_findings"][0]["summary"] == "Redis says East leads."
     assert body["business_context"][0]["title"] == "Redis Sales Amount"
+    recovery_events = client.get(f"/api/analysis/{task_id}/events").json()["events"]
+    recovery_types = [event["event_type"] for event in recovery_events]
+    assert "session_state_recovered" in recovery_types

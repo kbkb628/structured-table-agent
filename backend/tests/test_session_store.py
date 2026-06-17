@@ -281,6 +281,10 @@ def test_session_store_hydrates_from_granular_redis_keys_when_snapshot_is_missin
     assert loaded_state["intermediate_findings"][0]["summary"] == "Redis says East leads."
     assert loaded_state["business_context"][0]["title"] == "Redis Sales Amount"
     assert loaded_state["context_checkpoint"]["draft_report_status"] == "available"
+    recovered_events = [event for event in list_task_events(task_id) if event["event_type"] == "session_state_recovered"]
+    assert recovered_events
+    assert recovered_events[-1]["payload"]["recovery_source"] == "sqlite_plus_granular_redis"
+    assert "final_report" in recovered_events[-1]["payload"]["recovered_segments"]
 
 
 def test_run_analysis_task_records_session_store_warning_when_redis_is_unavailable(tmp_path):

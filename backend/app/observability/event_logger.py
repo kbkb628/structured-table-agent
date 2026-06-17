@@ -223,3 +223,13 @@ def record_session_store_warning(task_id: str, payload: dict) -> dict:
         "session store downgraded to SQLite",
         payload,
     )
+
+
+def record_session_state_recovered(task_id: str, payload: dict) -> dict:
+    return record_analysis_event(
+        task_id,
+        "session_state_recovered",
+        "session_store",
+        "session state recovered from granular Redis keys",
+        payload,
+    )

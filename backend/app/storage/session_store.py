@@ -6,6 +6,7 @@ import uuid
 from contextlib import contextmanager
 
 from app.observability.event_logger import record_analysis_event
+from app.observability.event_logger import record_session_state_recovered
 from app.storage.analysis_store import get_task_state
 from app.storage.analysis_store import update_task_state
 
@@ -62,6 +63,15 @@ class SessionStore:
             checkpoint,
         )
 
+    def _record_session_state_recovered(self, task_id: str, recovered_segments: list[str]) -> None:
+        record_session_state_recovered(
+            task_id,
+            {
+                "recovery_source": "sqlite_plus_granular_redis",
+                "recovered_segments": recovered_segments,
+            },
+        )
+
     def _connect(self):
         if redis is None:
             return None
@@ -72,7 +82,12 @@ class SessionStore:
         except Exception:
             return None
 
-    def _hydrate_state_from_granular_keys(self, client, task_id: str, base_state: dict | None = None) -> dict | None:
+    def _hydrate_state_from_granular_keys(
+        self,
+        client,
+        task_id: str,
+        base_state: dict | None = None,
+    ) -> tuple[dict | None, list[str]]:
         keys = self._build_keys(task_id)
         state = dict(base_state) if base_state is not None else None
 
@@ -84,13 +99,14 @@ class SessionStore:
             "business_context": client.get(keys["business_context"]),
             "context_checkpoint": client.get(keys["latest_context"]),
         }
-        if not any(granular_payloads.values()):
-            return None
+        recovered_segments = [name for name, payload in granular_payloads.items() if payload]
+        if not recovered_segments:
+            return None, []
 
         if state is None:
             state = get_task_state(task_id)
             if state is None:
-                return None
+                return None, []
 
         if granular_payloads["draft_report"]:
             state["draft_report"] = json.loads(granular_payloads["draft_report"])
@@ -106,7 +122,7 @@ class SessionStore:
             state["context_checkpoint"] = json.loads(granular_payloads["context_checkpoint"])
         else:
             state["context_checkpoint"] = self._build_context_checkpoint(state)
-        return state
+        return state, recovered_segments
 
     def load_state(self, task_id: str) -> tuple[dict | None, bool]:
         client = self._connect()
@@ -114,15 +130,16 @@ class SessionStore:
             payload = client.get(self._build_keys(task_id)["analysis_state"])
             if payload:
                 state = json.loads(payload)
-                hydrated_state = self._hydrate_state_from_granular_keys(client, task_id, base_state=state)
+                hydrated_state, _ = self._hydrate_state_from_granular_keys(client, task_id, base_state=state)
                 return hydrated_state or state, True
 
-            hydrated_state = self._hydrate_state_from_granular_keys(client, task_id)
+            hydrated_state, recovered_segments = self._hydrate_state_from_granular_keys(client, task_id)
             if hydrated_state is not None:
                 logger.warning(
                     "Redis analysis_state missing; rebuilding task %s from SQLite state plus granular Redis keys",
                     task_id,
                 )
+                self._record_session_state_recovered(task_id, recovered_segments)
                 return hydrated_state, True
         logger.warning("Redis unavailable; falling back to SQLite-backed session state for task %s", task_id)
         state = get_task_state(task_id)
