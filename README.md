@@ -89,6 +89,14 @@ docs/
   当前阶段开发边界与策略来源
 - [docs/PROJECT_STATUS.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/PROJECT_STATUS.md)
   当前项目状态、MVP 边界与收口清单
+- [docs/API_REFERENCE.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/API_REFERENCE.md)
+  后端接口说明与示例
+- [docs/ARCHITECTURE_OVERVIEW.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/ARCHITECTURE_OVERVIEW.md)
+  当前 MVP 架构文字说明
+- [docs/RESUME_PROJECT_DESCRIPTION.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/RESUME_PROJECT_DESCRIPTION.md)
+  简历项目描述与可复用表达
+- [docs/INTERVIEW_GUIDE.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/INTERVIEW_GUIDE.md)
+  面试讲解稿与边界表述
 - [backend/README.md](/e:/bgagent1/.worktrees/day1-mvp-backend/backend/README.md)
   后端启动、测试、Windows API 示例
 - [scripts/demo_mvp.ps1](/e:/bgagent1/.worktrees/day1-mvp-backend/scripts/demo_mvp.ps1)
