@@ -1,5 +1,6 @@
 import json
 import uuid
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 
@@ -7,6 +8,33 @@ from app.main import app
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
 from app.storage.session_store import SessionStore
+
+
+class FakeRedisClient:
+    def __init__(self):
+        self.values: dict[str, str] = {}
+
+    def get(self, key: str):
+        return self.values.get(key)
+
+    def set(self, key: str, value: str, nx: bool = False, ex: int | None = None):
+        if nx and key in self.values:
+            return False
+        self.values[key] = value
+        return True
+
+    def delete(self, key: str):
+        return 1 if self.values.pop(key, None) is not None else 0
+
+    def eval(self, script: str, numkeys: int, key: str, token: str):
+        del script, numkeys
+        if self.values.get(key) == token:
+            self.values.pop(key, None)
+            return 1
+        return 0
+
+    def ping(self):
+        return True
 
 
 def test_start_analysis_creates_task(tmp_path):
@@ -282,3 +310,41 @@ def test_run_analysis_returns_409_when_task_is_already_locked(tmp_path):
 
     assert run.status_code == 409
     assert run.json()["detail"] == f"Task {task_id} is already running."
+
+
+def test_get_analysis_falls_back_to_sqlite_when_redis_is_available_but_task_key_is_missing(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text("region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n", encoding="utf-8")
+    file_id = f"file_api_redis_miss_{uuid.uuid4().hex[:8]}"
+    save_file_record(
+        FileRecord(
+            file_id=file_id,
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=2,
+            column_count=3,
+            columns_json=json.dumps(
+                [
+                    {"name": "region", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                ]
+            ),
+            created_at="2026-06-09T00:00:00+00:00",
+        )
+    )
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": file_id, "question": "analyse sales by region"},
+    )
+    task_id = start.json()["task_id"]
+
+    fake_client = FakeRedisClient()
+    with patch.object(SessionStore, "_connect", lambda self: fake_client):
+        response = client.get(f"/api/analysis/{task_id}")
+
+    assert response.status_code == 200
+    assert response.json()["task_id"] == task_id
+    assert response.json()["business_context"]

@@ -167,6 +167,49 @@ def test_session_store_save_state_updates_sqlite_when_redis_is_unavailable():
     assert stored["current_step"] == "completed"
 
 
+def test_session_store_falls_back_to_sqlite_when_redis_is_available_but_task_key_is_missing():
+    task_id = f"task_session_redis_miss_{uuid.uuid4().hex[:8]}"
+    create_task(
+        task_id,
+        "file_session_redis_miss",
+        "analyse sales by region",
+        {
+            "task_id": task_id,
+            "file_id": "file_session_redis_miss",
+            "question": "analyse sales by region",
+            "analysis_goal": "compare region sales",
+            "file_profile": {},
+            "field_understanding": {},
+            "business_context": [{"id": "metric_sales_amount", "title": "Sales Amount"}],
+            "analysis_plan": ["match fields"],
+            "current_step": "created",
+            "completed_steps": [],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "created",
+        },
+    )
+
+    fake_client = FakeRedisClient()
+    store = SessionStore()
+
+    from unittest.mock import patch
+
+    with patch.object(SessionStore, "_connect", lambda self: fake_client):
+        loaded_state, used_redis = store.load_state(task_id)
+
+    assert used_redis is False
+    assert loaded_state is not None
+    assert loaded_state["task_id"] == task_id
+    assert loaded_state["business_context"][0]["title"] == "Sales Amount"
+
+
 def test_run_analysis_task_records_session_store_warning_when_redis_is_unavailable(tmp_path):
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text("region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n", encoding="utf-8")

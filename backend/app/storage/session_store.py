@@ -75,8 +75,8 @@ class SessionStore:
         if client is not None:
             keys = self._build_keys(task_id)
             payload = client.get(keys["analysis_state"])
-            state = json.loads(payload) if payload else None
-            if state is not None:
+            if payload:
+                state = json.loads(payload)
                 draft_report = client.get(keys["draft_report"])
                 intermediate_findings = client.get(keys["intermediate_findings"])
                 business_context = client.get(keys["business_context"])
@@ -91,7 +91,7 @@ class SessionStore:
                     state["context_checkpoint"] = json.loads(latest_context)
                 else:
                     state["context_checkpoint"] = self._build_context_checkpoint(state)
-            return (state, True)
+                return state, True
         logger.warning("Redis unavailable; falling back to SQLite-backed session state for task %s", task_id)
         state = get_task_state(task_id)
         if state is not None and "context_checkpoint" not in state:
