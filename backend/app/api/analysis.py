@@ -28,7 +28,6 @@ def start_analysis(request: AnalysisStartRequest) -> AnalysisStartResponse:
         status="created",
         analysis_goal=state["analysis_goal"],
         analysis_plan=state["analysis_plan"],
-        business_context=state["business_context"],
     )
 
 

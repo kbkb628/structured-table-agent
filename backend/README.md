@@ -90,7 +90,6 @@ The persisted timeline returned by `/api/analysis/{task_id}/events` is now route
 
 - `analysis_goal`
 - `analysis_plan`
-- `business_context`
 
 ## Demo questions
 

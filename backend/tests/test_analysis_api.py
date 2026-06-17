@@ -37,7 +37,7 @@ def test_start_analysis_creates_task(tmp_path):
     assert response.json()["status"] == "created"
     assert response.json()["analysis_goal"] != ""
     assert len(response.json()["analysis_plan"]) > 0
-    assert len(response.json()["business_context"]) > 0
+    assert "business_context" not in response.json()
 
     task_id = response.json()["task_id"]
     client = TestClient(app)

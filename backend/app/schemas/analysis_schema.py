@@ -15,7 +15,6 @@ class AnalysisStartResponse(BaseModel):
     status: str
     analysis_goal: str
     analysis_plan: list[str]
-    business_context: list[dict[str, Any]]
 
 
 class AnalysisTaskState(BaseModel):

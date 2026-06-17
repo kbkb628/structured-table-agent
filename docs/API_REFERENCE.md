@@ -69,7 +69,6 @@
 - `status`
 - `analysis_goal`
 - `analysis_plan`
-- `business_context`
 
 失败：
 
