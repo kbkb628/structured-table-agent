@@ -41,7 +41,7 @@
 
 ## 完成审计证据
 
-- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `61 passed, 2 warnings`
+- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `64 passed, 2 warnings`
 - 最新演示验证：`.\scripts\demo_mvp.ps1 -StartServer`
 - 三个演示问题最近一次结果：
   - `analyse category sales top 5` -> `completed`，`eval_score = 1.0`
@@ -55,6 +55,9 @@
   - `groupby_aggregate`
   - `generate_chart`
   - `generate_report`
+- 固定 case 回归汇总当前会额外输出：
+  - `retried_tool_calls`
+  - `retry_attempts_total`
 - 报告工具输出当前已通过 `FinalReport` Pydantic schema 校验后再返回，结构化输出边界更完整
 - LangGraph 当前已支持最小动态推进边界：
   - `match_fields` 会为多指标问题写入 `pending_metrics`

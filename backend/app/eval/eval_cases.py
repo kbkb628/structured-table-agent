@@ -110,10 +110,18 @@ def run_fixed_eval_cases() -> dict:
     file_profile = _register_sample_file()
     cases = get_fixed_eval_cases()
     results = []
+    retried_tool_calls = 0
+    retry_attempts_total = 0
 
     for case in cases:
         state = _build_case_task(case, file_profile)
         result = run_analysis_graph(state["task_id"])
+        retry_attempts = [
+            int((item.get("metadata") or {}).get("retry_attempts", 0))
+            for item in result.get("tool_results", [])
+        ]
+        retried_tool_calls += sum(1 for attempts in retry_attempts if attempts > 0)
+        retry_attempts_total += sum(retry_attempts)
         results.append(_evaluate_case(case, result))
 
     passed_cases = sum(1 for item in results if item["passed"])
@@ -125,5 +133,7 @@ def run_fixed_eval_cases() -> dict:
         "passed_cases": passed_cases,
         "failed_cases": failed_cases,
         "pass_rate": round(passed_cases / total_cases, 2) if total_cases else 0.0,
+        "retried_tool_calls": retried_tool_calls,
+        "retry_attempts_total": retry_attempts_total,
         "results": results,
     }

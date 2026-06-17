@@ -142,17 +142,19 @@ def record_fields_matched(task_id: str, payload: dict) -> dict:
 
 
 def record_tool_called(task_id: str, tool_name: str, payload: dict) -> dict:
+    tool_summary = {"tool_name": tool_name, "status": "called", **_retry_summary(payload)}
     enriched_payload = {
         **payload,
         "node_input_summary": _summarize_tool_request(payload),
         "node_output_summary": {"status": "pending"},
-        "tool_result_summary": {"tool_name": tool_name, "status": "called", **_retry_summary(payload)},
+        "tool_result_summary": tool_summary,
     }
     return record_analysis_event(task_id, TOOL_CALLED, tool_name, f"calling {tool_name}", enriched_payload)
 
 
 def record_tool_succeeded(task_id: str, tool_name: str, payload: dict) -> dict:
     tool_summary = _summarize_tool_response(payload)
+    retry_summary = _retry_summary(payload)
     enriched_payload = {
         **payload,
         "node_input_summary": {
@@ -160,13 +162,14 @@ def record_tool_succeeded(task_id: str, tool_name: str, payload: dict) -> dict:
             "metric_label": payload.get("metric_label"),
         },
         "node_output_summary": tool_summary,
-        "tool_result_summary": tool_summary,
+        "tool_result_summary": {**tool_summary, **retry_summary},
     }
     return record_analysis_event(task_id, TOOL_SUCCEEDED, tool_name, f"{tool_name} succeeded", enriched_payload)
 
 
 def record_tool_failed(task_id: str, tool_name: str, payload: dict) -> dict:
     tool_summary = _summarize_tool_response(payload)
+    retry_summary = _retry_summary(payload)
     enriched_payload = {
         **payload,
         "node_input_summary": {
@@ -174,7 +177,7 @@ def record_tool_failed(task_id: str, tool_name: str, payload: dict) -> dict:
             "metric_label": payload.get("metric_label"),
         },
         "node_output_summary": tool_summary,
-        "tool_result_summary": tool_summary,
+        "tool_result_summary": {**tool_summary, **retry_summary},
     }
     return record_analysis_event(task_id, TOOL_FAILED, tool_name, f"{tool_name} failed", enriched_payload)
 
