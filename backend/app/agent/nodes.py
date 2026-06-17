@@ -13,10 +13,7 @@ from app.observability.event_logger import record_tool_failed
 from app.observability.event_logger import record_tool_succeeded
 from app.storage.analysis_store import record_eval_result, record_tool_call
 from app.storage.session_store import SessionStore
-from app.tools.chart_tool import generate_chart
-from app.tools.duckdb_tools import groupby_aggregate
-from app.tools.match_fields import match_fields
-from app.tools.report_tool import generate_report
+from app.tools.registry import invoke_tool
 
 
 def _persist_state(state: AnalysisGraphState) -> None:
@@ -42,7 +39,8 @@ def load_task_node(state: AnalysisGraphState) -> AnalysisGraphState:
 
 
 def match_fields_node(state: AnalysisGraphState) -> AnalysisGraphState:
-    field_result = match_fields(state["question"], state["file_profile"])
+    field_response = invoke_tool("match_fields", question=state["question"], file_profile=state["file_profile"])
+    field_result = field_response.data or {}
     state["field_understanding"] = field_result
     record_fields_matched(state["task_id"], field_result)
     metrics = field_result.get("metrics", [])
@@ -74,7 +72,7 @@ def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
             "limit": 5,
         }
         record_tool_called(state["task_id"], "groupby_aggregate", tool_request)
-        tool_response = groupby_aggregate(**tool_request)
+        tool_response = invoke_tool("groupby_aggregate", **tool_request)
         tool_response_dict = tool_response.model_dump()
         tool_response_dict["metric_label"] = metric["label"]
         record_tool_call(state["task_id"], "groupby_aggregate", tool_request, tool_response_dict)
@@ -118,21 +116,23 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
         rows = tool_result.get("data", {}).get("rows", [])
         metric_label = tool_result.get("metric_label")
         y_field = next(key for key in rows[0].keys() if key != dimension_field)
-        try:
-            chart_spec = generate_chart(
-                title=f"{dimension_field} vs {y_field}",
-                x_field=dimension_field,
-                y_field=y_field,
-                rows=rows,
-            )
+        chart_response = invoke_tool(
+            "generate_chart",
+            title=f"{dimension_field} vs {y_field}",
+            x_field=dimension_field,
+            y_field=y_field,
+            rows=rows,
+        )
+        if chart_response.success:
+            chart_spec = chart_response.data or {}
             chart_spec["metric_label"] = metric_label
             state["chart_specs"].append(chart_spec)
             state["completed_steps"].append(f"generate_chart:{metric_label}")
             record_chart_generated(state["task_id"], chart_spec)
-        except ValueError as exc:
+        else:
             chart_error = {
                 "code": "CHART_GENERATION_FAILED",
-                "message": str(exc),
+                "message": chart_response.error.message if chart_response.error else "Chart generation failed.",
                 "details": {"metric_label": metric_label},
             }
             state["errors"].append(chart_error)
@@ -141,12 +141,14 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
 
 
 def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
-    report = generate_report(
+    report_response = invoke_tool(
+        "generate_report",
         question=state["question"],
         analysis_goal=state["analysis_goal"],
         tool_results=state["tool_results"],
         chart_specs=state["chart_specs"],
     )
+    report = report_response.data or {}
     state["final_report"] = report
     state["completed_steps"].append("generate_report")
     record_report_generated(state["task_id"], report)

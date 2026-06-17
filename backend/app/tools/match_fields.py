@@ -1,4 +1,7 @@
-def match_fields(question: str, file_profile: dict) -> dict:
+from app.schemas.tool_schema import ToolResponse
+
+
+def match_fields(question: str, file_profile: dict) -> ToolResponse:
     lowered = question.lower()
     column_names = [column["name"] for column in file_profile["columns"]]
 
@@ -76,12 +79,19 @@ def match_fields(question: str, file_profile: dict) -> dict:
 
     primary_metric = metrics[0] if metrics else {"metric_field": None, "aggregation": "sum"}
 
-    return {
-        "dimension_field": dimension_field,
-        "metric_field": primary_metric["metric_field"],
-        "aggregation": primary_metric["aggregation"],
-        "analysis_type": analysis_type,
-        "metrics": metrics,
-        "candidate_fields": column_names,
-        "warnings": warnings,
-    }
+    return ToolResponse(
+        success=True,
+        tool_name="match_fields",
+        data={
+            "dimension_field": dimension_field,
+            "metric_field": primary_metric["metric_field"],
+            "aggregation": primary_metric["aggregation"],
+            "analysis_type": analysis_type,
+            "metrics": metrics,
+            "candidate_fields": column_names,
+            "warnings": warnings,
+        },
+        summary="matched candidate dimension and metric fields for the requested analysis",
+        error=None,
+        metadata={"column_count": len(column_names), "warning_count": len(warnings)},
+    )

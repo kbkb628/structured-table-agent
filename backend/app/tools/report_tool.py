@@ -1,3 +1,6 @@
+from app.schemas.tool_schema import ToolResponse
+
+
 def _split_top_row(top_row: dict) -> tuple[str, str, object]:
     dimension_key = next(
         (
@@ -55,7 +58,7 @@ def generate_report(
             }
         )
 
-    return {
+    report = {
         "title": f"Analysis Report: {question}",
         "analysis_goal": analysis_goal,
         "key_findings": key_findings,
@@ -68,3 +71,11 @@ def generate_report(
         "data_limitations": ["This report reflects the uploaded CSV and the matched fields only."],
         "next_steps": ["Validate whether additional segmentation is needed for deeper analysis."],
     }
+    return ToolResponse(
+        success=True,
+        tool_name="generate_report",
+        data=report,
+        summary="generated a structured analysis report from tool outputs",
+        error=None,
+        metadata={"tool_result_count": len(resolved_tool_results), "chart_count": len(resolved_chart_specs)},
+    )
