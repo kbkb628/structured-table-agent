@@ -1,18 +1,18 @@
 # Architecture Overview
 
-本文档给出当前 MVP 的文字架构说明，所有模块都必须能在仓库中找到对应实现。
+本文档给出当前后端架构说明，所有模块都必须能在仓库中找到对应实现。
 
 ## 1. 总体链路
 
 当前系统的真实链路是：
 
-1. 用户上传 CSV
+1. 用户上传 CSV / Excel
 2. 服务端生成字段画像并持久化
 3. 用户发起分析任务
 4. 系统执行轻量 JSONL 关键词检索
-5. `MockLLM` 生成分析目标和计划
-6. LangGraph 驱动字段匹配、DuckDB 聚合、`validate_tool_result` 校验、`route_next_step` 显式路由、图表生成、报告生成和规则评分
-7. 任务状态、事件时间线、工具调用日志和评估结果都写入 SQLite
+5. `LLMClient` 生成分析目标和分析计划
+6. LangGraph 驱动字段匹配、DuckDB 聚合、`validate_tool_result` 校验、`route_next_step` 路由、图表生成、报告生成和评估
+7. 任务状态、事件时间线、工具调用日志和评估结果写入 SQLite / SessionStore
 
 ## 2. 模块职责
 
@@ -21,8 +21,8 @@
 负责 HTTP 接口：
 
 - `files.py`：上传文件与查询字段画像
-- `analysis.py`：创建任务、执行任务、查询任务状态和事件
-- `eval.py`：手动重跑规则评估
+- `analysis.py`：创建任务、执行任务、查询任务状态、事件和工具日志
+- `eval.py`：手动重跑规则评估与 fixed cases
 
 ### `app/services`
 
@@ -35,8 +35,8 @@
 
 负责 LangGraph 状态流：
 
-- `graph.py`：定义带 `validate_tool_result` 和 `route_next_step` 的最小状态图
-- `nodes.py`：实现字段匹配、工具执行、工具结果校验、下一步路由、图表生成、报告生成和评估节点
+- `graph.py`：定义带 `validate_tool_result` 与 `route_next_step` 的最小状态图
+- `nodes.py`：实现字段匹配、工具执行、结果校验、下一步路由、图表生成、报告生成和评估节点
 - `state.py`：任务状态结构
 
 ### `app/tools`
@@ -47,7 +47,7 @@
 - `match_fields.py`：字段匹配
 - `duckdb_tools.py`：分组聚合
 - `chart_tool.py`：柱状图配置生成
-- `report_tool.py`：结构化报告生成
+- `report_tool.py`：结构化基础报告生成
 
 ### `app/rag`
 
@@ -63,8 +63,14 @@
 
 - `base.py`：`LLMClient`
 - `mock_client.py`：`MockLLMClient`
+- `qwen_client.py`：`QwenClient`
+- `factory.py`：provider 工厂与配置校验
 
-当前真实运行默认使用 `MockLLMClient`，没有接入外部模型服务。
+当前实现支持：
+
+- `LLM_PROVIDER=qwen`
+- `LLM_PROVIDER=mock`
+- `LLM_ALLOW_FALLBACK=true|false`
 
 ### `app/observability`
 
@@ -80,6 +86,7 @@
 - `database.py`：SQLite 表初始化
 - `file_store.py`：文件元数据存取
 - `analysis_store.py`：任务状态、事件、工具调用和评估结果存取
+- `session_store.py`：Redis 优先 / SQLite 降级的会话状态与任务锁
 
 ## 3. 数据持久化
 
@@ -91,11 +98,11 @@
 - `tool_call_logs`
 - `eval_results`
 
-这与 `DEVELOPMENT_GUIDE.md` 的 MVP 存储边界保持一致。当前代码已经实现 `SessionStore`，会优先尝试 Redis；当 Redis 不可用或本地未安装依赖时，会显式降级到 SQLite 持久化并记录 `session_store_warning` 事件。若 Redis 可用，当前还会把 `draft_report`、`intermediate_findings` 和压缩后的 `context_checkpoint` 分别写入细粒度 key，并使用 `task_lock:{task_id}` 避免同一任务重复执行；Redis 不可用时则降级为进程内任务锁。每次状态持久化还会额外记录一次 `context_checkpoint_refreshed` 事件，用于追踪轻量上下文摘要的刷新时机。
+`SessionStore` 会优先尝试 Redis；当 Redis 不可用时，会显式降级到 SQLite 并记录 `session_store_warning`。若 Redis 可用，系统还会把 `draft_report`、`intermediate_findings`、`business_context`、压缩后的 `context_checkpoint` 和 `task_lock` 分别写入细粒度 key。
 
 ## 4. 运行时状态流
 
-任务启动阶段会构造统一状态字段：
+任务启动阶段统一构造：
 
 - `analysis_goal`
 - `business_context`
@@ -103,7 +110,9 @@
 - `field_understanding`
 - `tool_results`
 - `chart_specs`
+- `draft_report`
 - `final_report`
+- `llm_judgement`
 - `eval_result`
 - `events`
 - `errors`
@@ -111,34 +120,38 @@
 
 运行阶段通过 LangGraph 推进：
 
-- `match_fields` 会写入 `field_understanding` 和待执行的 `pending_metrics`
-- `match_fields` 还会生成 `planned_tool_calls`，把当前分析问题对应的受控工具执行计划写入状态
-- `execute_tools` 每次只消费一个 metric，并把最新结果暂存到状态
-- `validate_tool_result` 会显式校验工具执行成功与结果非空，成功后再写入 `tool_results`
-- `route_next_step` 会根据是否还有待执行 metric，决定回到 `execute_tools` 继续统计，或进入 `generate_charts`
-- `generate_report` 前会先基于 `intermediate_findings` 和 `chart_specs` 生成 `draft_report`
-- `generate_report` 工具返回前会通过 `FinalReport` Pydantic schema 校验最终报告结构
-- 遇到不可执行字段匹配或空结果时会进入失败分支，并写入 `task_failed` 事件
-- 关键事件 payload 当前还会补充 `node_input_summary`、`node_output_summary` 和 `tool_result_summary`，只保存轻量摘要而不写入完整大数据内容
-- 受控工具调用默认支持一次失败重试，重试结果会写入工具摘要中的 `retry_attempts` 和 `retry_status`
+- `match_fields` 写入 `field_understanding`、`pending_metrics` 和 `planned_tool_calls`
+- `execute_tools` 每次只消费一个 metric
+- `validate_tool_result` 显式校验工具执行成功与结果非空
+- `route_next_step` 决定继续执行下一轮统计还是进入图表阶段
+- `generate_report` 先形成 `draft_report`
+- `report_tool.generate_report` 形成工具侧基础结构化报告
+- `LLMClient.generate_report` 形成最终 `final_report`
+- `LLMClient.judge_report` 形成补充型 `llm_judgement`
+- `evaluate_report` 持久化 `eval_result`
 
 ## 5. 真实性边界
 
 当前系统真实提供的是：
 
 - CSV / Excel 上传与画像
-- 规则驱动问题理解
-- DuckDB 聚合
-- Plotly 柱状图配置
+- 轻量 RAG 语义增强
+- LangGraph 多步状态流
+- DuckDB 聚合与 Plotly 配置
 - 结构化报告
-- SQLite 事件和评估持久化
+- 真实 Tongyi Qianwen Provider 接入
+- SQLite / Redis 状态持久化
+- 规则评估与固定 case 回归
 
 当前没有实现：
 
-- 外部真实 LLM API
 - embedding / BM25 / rerank
-- 更完整的 Redis 会话记忆能力
-- 异步队列
 - DockerSandbox
-- LLM-as-Judge
 - 完整前端页面
+- 异步队列
+
+需要特别强调：
+
+- LLM 负责目标理解、计划生成、报告表达和补充 judgement
+- 数值计算仍由确定性工具完成
+- 因此项目是真实接入了 LLM，但不是“让大模型直接算整张表”

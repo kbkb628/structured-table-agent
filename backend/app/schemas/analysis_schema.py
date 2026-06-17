@@ -49,6 +49,7 @@ class AnalysisTaskState(BaseModel):
     chart_specs: list[dict[str, Any]]
     draft_report: dict[str, Any]
     final_report: dict[str, Any]
+    llm_judgement: dict[str, Any] = Field(default_factory=dict)
     eval_result: dict[str, Any]
     events: list[AnalysisEvent]
     errors: list[dict[str, Any]]

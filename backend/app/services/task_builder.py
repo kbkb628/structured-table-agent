@@ -53,6 +53,7 @@ def build_analysis_state(
         "chart_specs": [],
         "draft_report": {},
         "final_report": {},
+        "llm_judgement": {},
         "eval_result": {},
         "events": [],
         "errors": [],

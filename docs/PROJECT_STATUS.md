@@ -1,6 +1,6 @@
 # Project Status
 
-本文件是当前项目状态的唯一收口清单，用于持续对齐 `DEVELOPMENT_GUIDE.md`、README、测试和交付边界。
+本文档是当前项目状态的唯一收口清单，用于持续对齐 `DEVELOPMENT_GUIDE.md`、README、测试和简历表达边界。
 
 ## 已完成
 
@@ -10,53 +10,83 @@
 - 分析任务执行：`POST /api/analysis/{task_id}/run`
 - 任务状态查询：`GET /api/analysis/{task_id}`
 - 事件时间线查询：`GET /api/analysis/{task_id}/events`
+- 工具调用日志查询：`GET /api/analysis/{task_id}/tool-logs`
 - 规则评估重算：`POST /api/eval/run`
+- 固定回归评测：`POST /api/eval/cases/run`
 - SQLite 持久化：`files`、`analysis_tasks`、`analysis_events`、`tool_call_logs`、`eval_results`
 - DuckDB 真实聚合工具：按品类、地区、渠道执行聚合分析
-- MockLLM 目标/计划生成
 - JSONL 关键词业务语义检索
-- LangGraph 显式状态流，已包含工具结果校验节点与多指标继续执行路由
+- LangGraph 显式状态流，包含 `validate_tool_result` 与 `route_next_step`
+- 真实可替换 LLM Provider 接入：
+  - `QwenClient`
+  - `MockLLMClient`
+  - `get_llm_client()` provider 工厂
+- Qwen 驱动的：
+  - 分析目标生成
+  - 分析计划生成
+  - 最终报告生成
+  - 补充型 `llm_judgement`
 - Observability 事件收口：`backend/app/observability`
-- 固定回归评测：3 个真实支持 case
 - Windows 一键演示脚本：`scripts/demo_mvp.ps1`
 
-## 当前真实 MVP 边界
+## 当前真实能力边界
 
-当前可以真实声称已实现：
+当前可以真实声明已实现：
 
-- CSV / Excel 上传与画像
-- 结构化问题到工具执行的完整分析闭环
-- 业务语义增强但非向量化的轻量 RAG
-- 任务状态与事件时间线回放
+- CSV / Excel 上传与字段画像
+- 从自然语言问题到工具执行的完整分析闭环
+- 轻量 RAG 业务语义增强
+- LangGraph 多步状态流与最小动态路由
+- pandas / DuckDB / Plotly 的受控工具链
+- 真实 Tongyi Qianwen Provider 接入
+- SQLite 持久化与 Redis 优先 / SQLite 降级
 - 规则评分与固定 case 回归验证
 
-当前不能声称已实现：
+当前不能声明已实现：
 
 - 异步队列执行
-- 真实外部 LLM Provider
 - embedding / BM25 / rerank
 - DockerSandbox
-- LLM-as-Judge
 - 完整 React 前端
+- 完整生产级多 Provider 调度平台
 
-## 完成审计证据
+说明：
 
-- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `64 passed, 2 warnings`
-- 最新演示验证：`.\scripts\demo_mvp.ps1 -StartServer`
-- 三个演示问题最近一次结果：
-  - `analyse category sales top 5` -> `completed`，`eval_score = 1.0`
-  - `analyse sales by region` -> `completed`，`eval_score = 1.0`
-  - `analyse channel order count and sales performance` -> `completed`，`tool_results = 2`，`chart_specs = 2`，`eval_score = 1.0`
-- 接口契约已按 `DEVELOPMENT_GUIDE.md` 收口：
-  - `POST /api/analysis/start` 仅返回 `task_id`、`status`、`analysis_goal`、`analysis_plan`
-  - `business_context` 继续真实写入任务状态，并通过 `GET /api/analysis/{task_id}` 可见
-- 工具调用链已真实落库到 `tool_call_logs`：
+- 现在已经实现“真实外部 LLM Provider 接入”，因此旧的“未实现真实 LLM Provider”边界已经失效。
+- 但不能把项目表述成“所有分析都由 LLM 完成”。数值计算仍然由确定性工具完成，LLM 主要负责目标理解、计划组织、报告表达和补充评审。
+
+## 已完成审计证据
+
+- 最新 provider / task-builder / runner / qwen 定向验证：
+  - `tests/test_llm_provider_factory.py`
+  - `tests/test_task_builder.py`
+  - `tests/test_qwen_client.py`
+  - `tests/test_analysis_runner.py`
+- 最新全量测试：
+  - 以 `cd backend && .\.venv\Scripts\python.exe -m pytest -q` 为准
+- 最新真实 Provider smoke check：
+  - 以 `LLM_PROVIDER=qwen` 环境下 `get_llm_client()` 和最小真实调用结果为准
+
+## 当前实现细节收口
+
+- `POST /api/analysis/start` 返回：
+  - `task_id`
+  - `status`
+  - `analysis_goal`
+  - `analysis_plan`
+- `business_context` 继续真实写入任务状态，并可通过 `GET /api/analysis/{task_id}` 查看
+- `GET /api/analysis/{task_id}` 当前还会返回：
+  - `pending_metrics`
+  - `pending_tool_calls`
+  - `context_checkpoint`
+  - `tool_call_logs`
+  - `llm_judgement`
+- 工具调用链真实落库到 `tool_call_logs`：
   - `match_fields`
   - `groupby_aggregate`
   - `generate_chart`
   - `generate_report`
-  - 当前可通过 `GET /api/analysis/{task_id}/tool-logs` 查询
-- 固定 case 回归汇总当前会额外输出：
+- 固定 case 回归当前额外输出：
   - `retried_tool_calls`
   - `retry_attempts_total`
   - `average_tool_success_rate`
@@ -65,36 +95,26 @@
   - `average_report_completeness`
   - `average_chart_validity`
   - `average_field_validity`
-- 报告工具输出当前已通过 `FinalReport` Pydantic schema 校验后再返回，结构化输出边界更完整
-- LangGraph 当前已支持最小动态推进边界：
-  - `match_fields` 会为多指标问题写入 `pending_metrics`
-  - `match_fields` 会显式产出 `planned_tool_calls`，把本轮准备执行的工具计划写入状态
-  - `execute_tools` 每次处理一个 metric，并把最新工具结果暂存到状态
-  - `validate_tool_result` 会显式校验工具执行成功、结果非空，再决定是否写入 `tool_results` 和 `intermediate_findings`
-  - `route_next_step` 会显式决定继续执行下一轮工具，还是进入图表生成
-  - 关键事件 payload 现在包含 `node_input_summary`、`node_output_summary`、`tool_result_summary` 等轻量摘要字段
-  - 受控工具调用当前支持一次最小失败重试，并在摘要里写入 `retry_attempts`、`retry_status`
-- 报告状态当前已形成最小闭环：
-  - `generate_report` 前会先基于 `intermediate_findings` 和 `chart_specs` 生成真实 `draft_report`
-  - `final_report` 继续由受控报告工具生成，并与 `draft_report` 一起持久化
-- Redis 边界已收口一致：
-  - 代码实现 `SessionStore` 优先尝试 Redis
-  - Redis 不可用时显式降级到 SQLite，并记录 `session_store_warning`
-  - Redis 可用时会额外保存 `draft_report:{task_id}`、`intermediate_findings:{task_id}`、`business_context:{task_id}`、`latest_context:{task_id}`（压缩后的 `context_checkpoint`）、`task_lock:{task_id}`
-  - 每次任务状态保存时都会刷新 `context_checkpoint`，并记录 `context_checkpoint_refreshed` 事件
-  - 同一任务重复调用 `/api/analysis/{task_id}/run` 时，当前实现会因任务锁冲突返回 `409`
-  - README、架构说明、面试稿已经同步到同一表述
+- 报告工具输出与 LLM 报告层最终都受 `FinalReport` schema 约束
+- LangGraph 当前支持：
+  - `match_fields` 生成 `pending_metrics`
+  - `match_fields` 生成 `planned_tool_calls`
+  - `execute_tools` 逐个消费 metric
+  - `validate_tool_result` 校验成功与非空结果
+  - `route_next_step` 决定继续统计还是进入图表阶段
+  - `generate_report` 先形成 `draft_report`，再生成最终 `final_report`
+  - `evaluate_report` 写入 `eval_result` 与 `llm_judgement`
 
 ## 当前结论
 
-- 以 `DEVELOPMENT_GUIDE.md` 定义的第一阶段 MVP 范围看，当前仓库已达到“项目完成”状态
-- 当前剩余未实现项均属于文档明确列出的第二阶段能力，而不是 MVP 缺口
+- 如果按最初 MVP 要求看，项目主链路早已完成。
+- 按当前“贴合简历表达”的目标看，项目现在已经跨过“真实 LLM 接入”这一条关键门槛。
+- 现阶段剩余未实现内容主要是第二阶段增强，而不是当前主链缺口。
 
-## 第二阶段规划
+## 剩余增强方向
 
-- 接入真实 LLM Provider
-- 升级为 embedding / BM25 / rerank 检索
-- 增加更完整的 Redis 会话记忆与异步任务执行
+- 升级到 `embedding + BM25 + rerank`
+- 增强 Redis 会话记忆和异步执行
 - 引入 DockerSandbox
-- 引入 LLM-as-Judge
-- 补完整前端体验
+- 增强前端过程展示
+- 扩展更多分析工具，如趋势分析、异常检测、占比分析

@@ -1,4 +1,4 @@
-# Hardened MVP Backend
+# Hardened Backend With Real Qwen Provider
 
 ## Scope
 
@@ -9,8 +9,9 @@
 - Analysis task creation and execution
 - Event timeline query
 - Rule-based task evaluation
+- Real Tongyi Qianwen provider integration through a replaceable `LLMClient`
 
-## Truthful MVP boundary
+## Truthful project boundary
 
 Currently implemented:
 
@@ -18,8 +19,14 @@ Currently implemented:
 - region sales comparison
 - channel order-count and sales-amount comparison
 - JSONL keyword retrieval for business context
-- replaceable MockLLM goal and plan generation
+- replaceable `LLMClient` abstraction with:
+  - `QwenClient` for real Tongyi Qianwen calls
+  - `MockLLMClient` for explicit fallback and local/offline runs
+- provider factory with configurable `LLM_PROVIDER`, `QWEN_API_KEY`, `QWEN_BASE_URL`, `QWEN_MODEL`, and fallback switch
+- Qwen-driven analysis goal generation and analysis plan generation during task creation
 - LangGraph-based orchestration with explicit `validate_tool_result` and `route_next_step` nodes for `/api/analysis/{task_id}/run`
+- deterministic pandas / DuckDB / chart / report-tool chain kept as the numeric ground truth
+- LLM-assisted final report layer and supplementary `llm_judgement` persistence
 - explicit task failure recording for non-executable field matches
 - automatic `eval_result` persistence after completed runs
 - manual re-run through `POST /api/eval/run`
@@ -27,11 +34,49 @@ Currently implemented:
 Not implemented yet:
 
 - async queue execution
-- real LLM provider integration
 - embedding / BM25 / rerank
+- DockerSandbox
+- full React frontend
+- full production-grade multi-provider management
 
-Redis remains a recommended dependency rather than a hard requirement in the current MVP. When Redis is unavailable, task state explicitly degrades to SQLite-backed storage and the timeline records a `session_store_warning` event.
-When Redis is available, the current implementation also persists `draft_report`, `intermediate_findings`, `business_context`, a compact `context_checkpoint`, and `task_lock` into granular keys alongside the full task snapshot. When Redis is unavailable, duplicate in-process runs of the same task are still blocked by a memory lock.
+## Runtime boundary
+
+The project now supports real external LLM access, but only in the layers that should belong to an LLM:
+
+- goal understanding
+- analysis plan generation
+- final narrative report generation
+- supplementary report judgement
+
+The project still does **not** let the LLM fabricate numeric analysis. Deterministic tool outputs remain the source of truth for:
+
+- field matching execution inputs
+- grouped aggregation
+- chart data
+- numeric evidence quoted in the final report
+
+Redis remains a recommended dependency rather than a hard requirement. When Redis is unavailable, task state explicitly degrades to SQLite-backed storage and the timeline records a `session_store_warning` event. When Redis is available, the current implementation also persists `draft_report`, `intermediate_findings`, `business_context`, a compact `context_checkpoint`, and `task_lock` into granular keys alongside the full task snapshot. When Redis is unavailable, duplicate in-process runs of the same task are still blocked by a memory lock.
+
+## LLM configuration
+
+Environment variables:
+
+- `LLM_PROVIDER=qwen|mock`
+- `LLM_ALLOW_FALLBACK=true|false`
+- `QWEN_API_KEY`
+- `QWEN_BASE_URL`
+- `QWEN_MODEL`
+- `QWEN_TIMEOUT_SECONDS`
+
+Recommended real-provider setup on Windows PowerShell:
+
+```powershell
+$env:LLM_PROVIDER = "qwen"
+$env:QWEN_API_KEY = "your-key"
+$env:QWEN_MODEL = "qwen-plus"
+```
+
+If `LLM_PROVIDER=qwen` and no key is available, the backend raises an explicit configuration error by default. It only falls back to `MockLLMClient` when `LLM_ALLOW_FALLBACK=true`.
 
 ## Setup with uv
 
@@ -54,12 +99,12 @@ py -3.12 -m venv .venv
 
 ```powershell
 cd E:\bgagent1\backend
-.\.venv\Scripts\python.exe -m pytest
+.\.venv\Scripts\python.exe -m pytest -q
 ```
 
 ## Fixed eval cases
 
-Run the predefined regression set against the real MVP flow:
+Run the predefined regression set against the real backend flow:
 
 ```powershell
 cd E:\bgagent1\backend
@@ -76,7 +121,7 @@ The runner executes the three currently supported case families on `data/samples
 - region sales comparison
 - channel order-count and sales performance
 
-The summary now also exposes evaluation aggregates derived from the real `RuleScorer` output:
+The summary also exposes evaluation aggregates derived from the real `RuleScorer` output:
 
 - `average_tool_success_rate`
 - `average_tool_elapsed_ms_total`
@@ -99,14 +144,27 @@ The same regression summary is also available through `POST /api/eval/cases/run`
 6. Query tool call logs with `/api/analysis/{task_id}/tool-logs`
 7. Re-run evaluation with `/api/eval/run`
 
-The persisted timeline returned by `/api/analysis/{task_id}/events` is now routed through `app/observability/event_logger.py`, while SQLite remains the storage backend.
+The persisted timeline returned by `/api/analysis/{task_id}/events` is routed through `app/observability/event_logger.py`, while SQLite remains the storage backend.
 
-The current graph is still intentionally small, but it now includes an explicit `validate_tool_result` node for tool-result failure handling and a `route_next_step` node so multi-metric tasks can continue into another real tool-execution round before chart generation.
+The current graph is still intentionally small, but it now includes:
 
-`/api/analysis/start` now returns:
+- explicit `validate_tool_result` failure handling
+- explicit `route_next_step` multi-metric routing
+- LLM-assisted final report generation
+- supplementary `llm_judgement` persistence
+
+`/api/analysis/start` returns:
 
 - `analysis_goal`
 - `analysis_plan`
+
+`GET /api/analysis/{task_id}` now includes:
+
+- `context_checkpoint`
+- `tool_call_logs`
+- `pending_metrics`
+- `pending_tool_calls`
+- `llm_judgement`
 
 ## Demo questions
 
@@ -134,16 +192,17 @@ cd E:\bgagent1\backend
 .\.venv\Scripts\python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
+Create a real-provider session:
+
+```powershell
+$env:LLM_PROVIDER = "qwen"
+$env:QWEN_API_KEY = "your-key"
+```
+
 Upload the sample CSV with `curl.exe`:
 
 ```powershell
 curl.exe -X POST -F "file=@data/samples/sales_orders.csv" http://127.0.0.1:8000/api/files/upload
-```
-
-Upload an Excel file with `curl.exe`:
-
-```powershell
-curl.exe -X POST -F "file=@data/samples/sales_orders.xlsx" http://127.0.0.1:8000/api/files/upload
 ```
 
 Create an analysis task:
@@ -169,25 +228,10 @@ Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/analysis/task_xxx"
 Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/analysis/task_xxx/events"
 ```
 
-Re-run rule evaluation:
-
-```powershell
-Invoke-RestMethod -Method Post `
-  -Uri "http://127.0.0.1:8000/api/eval/run" `
-  -ContentType "application/json" `
-  -Body '{"task_id":"task_xxx"}'
-```
-
-Run the fixed eval suite:
-
-```powershell
-Invoke-RestMethod -Method Post `
-  -Uri "http://127.0.0.1:8000/api/eval/cases/run"
-```
-
-Expected failure example:
+Expected failure examples:
 
 - if the matched dimension or metric fields do not exist, the task returns `status = failed`
 - the failure reason is written into `errors`
 - the event timeline contains `task_failed`
+- if `LLM_PROVIDER=qwen` but no key is available, provider selection fails explicitly unless fallback is enabled
 - if the same task is already running, `/api/analysis/{task_id}/run` returns `409`
