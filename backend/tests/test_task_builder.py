@@ -80,7 +80,9 @@ def test_create_analysis_task_persists_state_and_startup_events(tmp_path):
     assert len(state["business_context"]) > 0
     assert stored is not None
     assert stored["question"] == "analyse sales by region"
-    assert [event["event_type"] for event in events] == [
+    event_types = [event["event_type"] for event in events]
+    assert "context_checkpoint_refreshed" in event_types
+    assert [event_type for event_type in event_types if event_type != "context_checkpoint_refreshed"] == [
         "task_created",
         "dataset_profiled",
         "rag_retrieved",

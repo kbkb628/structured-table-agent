@@ -41,7 +41,7 @@
 
 ## 完成审计证据
 
-- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `60 passed, 2 warnings`
+- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `61 passed, 2 warnings`
 - 最新演示验证：`.\scripts\demo_mvp.ps1 -StartServer`
 - 三个演示问题最近一次结果：
   - `analyse category sales top 5` -> `completed`，`eval_score = 1.0`
@@ -69,6 +69,7 @@
   - 代码实现 `SessionStore` 优先尝试 Redis
   - Redis 不可用时显式降级到 SQLite，并记录 `session_store_warning`
   - Redis 可用时会额外保存 `draft_report:{task_id}`、`intermediate_findings:{task_id}`、`latest_context:{task_id}`（压缩后的 `context_checkpoint`）、`task_lock:{task_id}`
+  - 每次任务状态保存时都会刷新 `context_checkpoint`，并记录 `context_checkpoint_refreshed` 事件
   - 同一任务重复调用 `/api/analysis/{task_id}/run` 时，当前实现会因任务锁冲突返回 `409`
   - README、架构说明、面试稿已经同步到同一表述
 

@@ -5,6 +5,7 @@ import time
 import uuid
 from contextlib import contextmanager
 
+from app.observability.event_logger import record_analysis_event
 from app.storage.analysis_store import get_task_state
 from app.storage.analysis_store import update_task_state
 
@@ -49,6 +50,15 @@ class SessionStore:
         }
         return checkpoint
 
+    def _record_context_checkpoint_refreshed(self, task_id: str, checkpoint: dict) -> None:
+        record_analysis_event(
+            task_id,
+            "context_checkpoint_refreshed",
+            "session_store",
+            "context checkpoint refreshed",
+            checkpoint,
+        )
+
     def _connect(self):
         if redis is None:
             return None
@@ -80,7 +90,10 @@ class SessionStore:
                     state["context_checkpoint"] = self._build_context_checkpoint(state)
             return (state, True)
         logger.warning("Redis unavailable; falling back to SQLite-backed session state for task %s", task_id)
-        return get_task_state(task_id), False
+        state = get_task_state(task_id)
+        if state is not None and "context_checkpoint" not in state:
+            state["context_checkpoint"] = self._build_context_checkpoint(state)
+        return state, False
 
     def save_state(self, task_id: str, state: dict) -> bool:
         client = self._connect()
@@ -95,9 +108,13 @@ class SessionStore:
             context_checkpoint = self._build_context_checkpoint(state)
             state["context_checkpoint"] = context_checkpoint
             client.set(keys["latest_context"], json.dumps(context_checkpoint, ensure_ascii=False))
+            self._record_context_checkpoint_refreshed(task_id, context_checkpoint)
             update_task_state(task_id, state)
             return True
         logger.warning("Redis unavailable; persisting session state to SQLite for task %s", task_id)
+        context_checkpoint = self._build_context_checkpoint(state)
+        state["context_checkpoint"] = context_checkpoint
+        self._record_context_checkpoint_refreshed(task_id, context_checkpoint)
         update_task_state(task_id, state)
         return False
 
