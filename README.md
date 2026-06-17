@@ -9,13 +9,13 @@
 - 基于 DuckDB 的真实聚合分析
 - 基于 JSONL 的轻量关键词业务语义检索
 - 可替换的 MockLLM 目标与计划生成
+- 基于 LangGraph 的最小分析状态流编排
 - 分析任务创建、执行、事件时间线查询
 - 品类、地区、渠道三类演示问题闭环
 - 规则评分 `eval_result` 自动写回与手动重算
 
 当前明确未实现：
 
-- LangGraph
 - Redis 会话态
 - 异步队列
 - 真实 LLM Provider
@@ -68,10 +68,10 @@ cd E:\bgagent1
 - `MockLLMClient`：基于规则的可替换目标/计划生成器
 - `knowledge_base.jsonl + keyword_retriever`：真实本地 JSONL 检索
 - `business_context`：检索结果会写入任务状态并记录 `rag_retrieved` 事件
+- `LangGraph`：当前 `/api/analysis/{task_id}/run` 已通过最小线性状态流执行
 
 当前仍然没有实现的部分是：
 
-- LangGraph 状态图编排
 - 外部真实 LLM API
 - 向量检索或重排
 - Redis 记忆和异步任务

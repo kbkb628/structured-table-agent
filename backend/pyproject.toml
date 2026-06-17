@@ -9,6 +9,7 @@ dependencies = [
   "python-multipart>=0.0.9,<1.0.0",
   "pandas>=2.2.0,<3.0.0",
   "duckdb>=1.0.0,<2.0.0",
+  "langgraph>=0.2.34,<1.0.0",
 ]
 
 [project.optional-dependencies]

@@ -19,13 +19,13 @@ Currently implemented:
 - channel order-count and sales-amount comparison
 - JSONL keyword retrieval for business context
 - replaceable MockLLM goal and plan generation
+- LangGraph-based linear orchestration for `/api/analysis/{task_id}/run`
 - explicit task failure recording for non-executable field matches
 - automatic `eval_result` persistence after completed runs
 - manual re-run through `POST /api/eval/run`
 
 Not implemented yet:
 
-- LangGraph
 - Redis session state
 - async queue execution
 - real LLM provider integration
