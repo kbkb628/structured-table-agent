@@ -1,4 +1,5 @@
 import json
+import logging
 
 from app.storage.analysis_store import get_task_state
 from app.storage.analysis_store import update_task_state
@@ -7,6 +8,8 @@ try:
     import redis
 except ImportError:  # pragma: no cover
     redis = None
+
+logger = logging.getLogger(__name__)
 
 
 class SessionStore:
@@ -28,6 +31,7 @@ class SessionStore:
         if client is not None:
             payload = client.get(f"analysis_state:{task_id}")
             return (json.loads(payload) if payload else None, True)
+        logger.warning("Redis unavailable; falling back to SQLite-backed session state for task %s", task_id)
         return get_task_state(task_id), False
 
     def save_state(self, task_id: str, state: dict) -> bool:
@@ -36,5 +40,6 @@ class SessionStore:
             client.set(f"analysis_state:{task_id}", json.dumps(state, ensure_ascii=False))
             update_task_state(task_id, state)
             return True
+        logger.warning("Redis unavailable; persisting session state to SQLite for task %s", task_id)
         update_task_state(task_id, state)
         return False

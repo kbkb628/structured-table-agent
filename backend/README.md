@@ -26,7 +26,6 @@ Currently implemented:
 
 Not implemented yet:
 
-- Redis session state
 - async queue execution
 - real LLM provider integration
 - embedding / BM25 / rerank
