@@ -53,7 +53,7 @@
 
 - 基于上传文件创建分析任务
 - 运行轻量 JSONL 关键词检索
-- 用 `MockLLM` 生成 `analysis_goal` 和 `analysis_plan`
+- 用当前配置的 `LLMClient` 生成 `analysis_goal` 和 `analysis_plan`
 - 写入启动事件时间线
 
 请求体：
@@ -75,6 +75,8 @@
 失败：
 
 - 文件不存在时返回 `404`
+- `LLM_PROVIDER=qwen` 但缺少可用 key 时返回 `503`
+- 外部 Provider 调用失败时返回 `502`
 
 ## 4. 执行分析任务
 
@@ -208,7 +210,7 @@
 
 用途：
 
-- 运行当前 3 个真实支持 case 的固定回归评测
+- 运行当前 6 个真实支持 case 的固定回归评测
 - 返回整体通过率、重试统计和平均质量指标
 - 复用真实 `run_fixed_eval_cases()` 链路，不依赖额外 mock
 
@@ -228,7 +230,38 @@
 - `average_field_validity`
 - `results`
 
-## 10. 相关验证命令
+当前 6 个真实支持 case 包括：
+
+- `analyse category sales top 5`
+- `analyse category sales share`
+- `analyse category sales anomalies`
+- `analyse sales by region`
+- `analyse sales trend by order date`
+- `analyse channel order count and sales performance`
+
+## 10. 本地演示页
+
+### `GET /demo`
+
+用途：
+
+- 作为极简本地演示页复用现有真实后端接口
+- 串联文件上传、分析任务创建、任务执行、结果轮询和过程展示
+
+页面当前能力：
+
+- 上传 CSV / Excel
+- 选择或填写当前支持的分析问题
+- 展示任务摘要
+- 预览基于 `chart_specs` 的图表结果
+- 展示最终报告、事件时间线和工具日志
+
+说明：
+
+- 该页面由 FastAPI 直接返回 HTML
+- 它不是 React 前端，也不是独立前端工程
+
+## 11. 相关验证命令
 
 全量测试：
 
