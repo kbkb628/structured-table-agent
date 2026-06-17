@@ -11,11 +11,16 @@ from app.observability.event_logger import record_task_failed
 from app.observability.event_logger import record_tool_called
 from app.observability.event_logger import record_tool_failed
 from app.observability.event_logger import record_tool_succeeded
-from app.storage.analysis_store import record_eval_result, record_tool_call, update_task_state
+from app.storage.analysis_store import record_eval_result, record_tool_call
+from app.storage.session_store import SessionStore
 from app.tools.chart_tool import generate_chart
 from app.tools.duckdb_tools import groupby_aggregate
 from app.tools.match_fields import match_fields
 from app.tools.report_tool import generate_report
+
+
+def _persist_state(state: AnalysisGraphState) -> None:
+    SessionStore().save_state(state["task_id"], state)
 
 
 def fail_task(state: AnalysisGraphState, code: str, message: str, payload: dict | None = None) -> AnalysisGraphState:
@@ -25,14 +30,14 @@ def fail_task(state: AnalysisGraphState, code: str, message: str, payload: dict 
     state["current_step"] = "failed"
     record_task_failed(state["task_id"], "langgraph", message, error)
     hydrate_state_events(state)
-    update_task_state(state["task_id"], state)
+    _persist_state(state)
     return state
 
 
 def load_task_node(state: AnalysisGraphState) -> AnalysisGraphState:
     state["status"] = "running"
     state["current_step"] = "match_fields"
-    update_task_state(state["task_id"], state)
+    _persist_state(state)
     return state
 
 
@@ -157,5 +162,5 @@ def evaluate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
     record_eval_result(state["task_id"], state["eval_result"])
     record_eval_finished(state["task_id"], "langgraph", state["eval_result"])
     hydrate_state_events(state)
-    update_task_state(state["task_id"], state)
+    _persist_state(state)
     return state

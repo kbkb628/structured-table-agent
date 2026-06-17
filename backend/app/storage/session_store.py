@@ -34,6 +34,7 @@ class SessionStore:
         client = self._connect()
         if client is not None:
             client.set(f"analysis_state:{task_id}", json.dumps(state, ensure_ascii=False))
+            update_task_state(task_id, state)
             return True
         update_task_state(task_id, state)
         return False

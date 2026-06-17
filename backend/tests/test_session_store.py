@@ -3,6 +3,7 @@ import uuid
 
 from app.services.analysis_runner import run_analysis_task
 from app.storage.analysis_store import create_task
+from app.storage.analysis_store import get_task_state
 from app.storage.analysis_store import list_task_events
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
@@ -75,6 +76,68 @@ def test_session_store_falls_back_to_sqlite_when_redis_unavailable(tmp_path):
     assert used_redis is False
     assert loaded_state is not None
     assert loaded_state["task_id"] == task_id
+
+
+def test_session_store_save_state_updates_sqlite_when_redis_is_unavailable():
+    task_id = f"task_session_save_{uuid.uuid4().hex[:8]}"
+    create_task(
+        task_id,
+        "file_session_save",
+        "analyse sales by region",
+        {
+            "task_id": task_id,
+            "file_id": "file_session_save",
+            "question": "analyse sales by region",
+            "analysis_goal": "compare region sales",
+            "file_profile": {},
+            "field_understanding": {},
+            "business_context": [],
+            "analysis_plan": ["match fields"],
+            "current_step": "created",
+            "completed_steps": [],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "created",
+        },
+    )
+
+    store = SessionStore()
+    saved_with_redis = store.save_state(
+        task_id,
+        {
+            "task_id": task_id,
+            "file_id": "file_session_save",
+            "question": "analyse sales by region",
+            "analysis_goal": "compare region sales",
+            "file_profile": {},
+            "field_understanding": {},
+            "business_context": [],
+            "analysis_plan": ["match fields"],
+            "current_step": "completed",
+            "completed_steps": ["match fields"],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "completed",
+        },
+    )
+    stored = get_task_state(task_id)
+
+    assert saved_with_redis is False
+    assert stored is not None
+    assert stored["status"] == "completed"
+    assert stored["current_step"] == "completed"
 
 
 def test_run_analysis_task_records_session_store_warning_when_redis_is_unavailable(tmp_path):

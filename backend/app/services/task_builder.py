@@ -7,6 +7,7 @@ from app.observability.event_logger import record_startup_events
 from app.rag.keyword_retriever import retrieve_business_context
 from app.storage.analysis_store import create_task
 from app.storage.file_store import get_file_record
+from app.storage.session_store import SessionStore
 
 
 def build_file_profile_from_record(file_id: str) -> dict | None:
@@ -77,6 +78,7 @@ def create_analysis_task(
         llm_client=llm_client,
     )
     create_task(resolved_task_id, file_id, question, state)
+    SessionStore().save_state(resolved_task_id, state)
     record_startup_events(
         resolved_task_id,
         source_node,

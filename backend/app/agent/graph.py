@@ -9,7 +9,7 @@ from app.agent.nodes import (
     match_fields_node,
 )
 from app.agent.state import AnalysisGraphState
-from app.storage.analysis_store import get_task_state
+from app.storage.session_store import SessionStore
 
 
 def route_on_task_status(state: AnalysisGraphState) -> str:
@@ -51,7 +51,8 @@ def build_analysis_graph():
 
 
 def run_analysis_graph(task_id: str) -> dict:
-    state = get_task_state(task_id)
+    session_store = SessionStore()
+    state, _ = session_store.load_state(task_id)
     if state is None:
         raise ValueError(f"Task {task_id} not found")
 
