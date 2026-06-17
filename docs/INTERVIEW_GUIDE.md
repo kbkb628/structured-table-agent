@@ -119,6 +119,7 @@
 - 当前 RAG 是 `knowledge_base.jsonl + keyword_retriever` 的本地混合检索实现，不是纯关键词版本
 - 当前 SessionStore 会优先尝试 Redis，不可用时显式降级到 SQLite
 - 当前已经实现 `draft_report`、`final_report`、`llm_judgement`、`context_checkpoint`
+- 当前已经实现基于 FastAPI 返回的极简 `/demo` 演示页，用于串联上传、任务执行和过程展示
 - 当前没有实现 embedding / 向量检索 / rerank、DockerSandbox、完整 React 前端、异步队列
 
 如果把没做的能力说成已经完成，会直接破坏项目可信度。

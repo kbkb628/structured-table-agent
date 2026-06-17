@@ -31,6 +31,7 @@
   - 补充型 `llm_judgement`
 - Observability 事件收口：`backend/app/observability`
 - Windows 一键演示脚本：`scripts/demo_mvp.ps1`
+- 极简本地演示页：`GET /demo`
 
 ## 当前真实能力边界
 
@@ -48,6 +49,7 @@
 - 真实 Tongyi Qianwen Provider 接入
 - SQLite 持久化与 Redis 优先 / SQLite 降级
 - 规则评分与固定 case 回归验证
+- 基于真实 API 的极简页面演示闭环
 
 当前不能声明已实现：
 

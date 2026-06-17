@@ -33,6 +33,7 @@ Currently implemented:
 - explicit task failure recording for non-executable field matches
 - automatic `eval_result` persistence after completed runs
 - manual re-run through `POST /api/eval/run`
+- minimal local demo page at `/demo` over the real backend APIs
 
 Not implemented yet:
 
@@ -161,6 +162,8 @@ The current graph is still intentionally small, but it now includes:
 - LLM-assisted final report generation
 - supplementary `llm_judgement` persistence
 
+There is also a lightweight local demo page at `/demo`. It is not a separate frontend project or a React app. It is a single FastAPI-served HTML page that reuses the existing upload, analysis, task-state, event, and tool-log APIs for local demos.
+
 `/api/analysis/start` returns:
 
 - `analysis_goal`
@@ -182,6 +185,21 @@ The current graph is still intentionally small, but it now includes:
 - `analyse sales by region`
 - `analyse sales trend by order date`
 - `analyse channel order count and sales performance`
+
+## Local demo page
+
+After the backend starts, open:
+
+```text
+http://127.0.0.1:8000/demo
+```
+
+The page supports:
+
+- uploading a CSV or Excel file
+- entering or choosing a supported analysis question
+- running the real analysis task flow
+- viewing final report output, task snapshot, event timeline, and tool logs
 
 ## One-command demo
 
