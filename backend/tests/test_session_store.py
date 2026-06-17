@@ -290,6 +290,11 @@ def test_session_store_hydrates_from_granular_redis_keys_when_snapshot_is_missin
     assert stored_state["draft_report"]["title"] == "Redis draft report"
     assert stored_state["final_report"]["title"] == "Redis final report"
     assert stored_state["llm_judgement"]["supported_by_tools"] is True
+    assert f"analysis_state:{task_id}" in fake_client.values
+    restored_snapshot = json.loads(fake_client.values[f"analysis_state:{task_id}"])
+    assert restored_snapshot["draft_report"]["title"] == "Redis draft report"
+    assert restored_snapshot["final_report"]["title"] == "Redis final report"
+    assert restored_snapshot["llm_judgement"]["supported_by_tools"] is True
 
 
 def test_run_analysis_task_records_session_store_warning_when_redis_is_unavailable(tmp_path):

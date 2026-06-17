@@ -139,6 +139,10 @@ class SessionStore:
                     "Redis analysis_state missing; rebuilding task %s from SQLite state plus granular Redis keys",
                     task_id,
                 )
+                client.set(
+                    self._build_keys(task_id)["analysis_state"],
+                    json.dumps(hydrated_state, ensure_ascii=False),
+                )
                 update_task_state(task_id, hydrated_state)
                 self._record_session_state_recovered(task_id, recovered_segments)
                 return hydrated_state, True
