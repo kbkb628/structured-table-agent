@@ -41,8 +41,8 @@
 
 ## 待收口项
 
-- 根 `README.md`、`backend/README.md` 与 `DEVELOPMENT_GUIDE.md` 保持持续同步
-- 继续以真实验证为准推进，不新增第二阶段能力
+- 保持 README、演示脚本、测试和文档边界持续一致
+- 如果要宣称“项目完成”，必须先按 `DEVELOPMENT_GUIDE.md` 做逐项完成度审计并保留验证证据
 
 ## 第二阶段规划
 

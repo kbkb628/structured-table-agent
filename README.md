@@ -127,6 +127,30 @@ py -3.12 -m venv .venv
 当前没有额外环境变量要求；MVP 默认走本地 `MockLLM` 和 SQLite。
 如果本地额外安装并启动 Redis，可作为推荐的会话状态层；未安装或不可用时，当前版本会降级到 SQLite。
 
+## 样例数据说明
+
+当前样例数据文件是 `backend/data/samples/sales_orders.csv`，用于覆盖开发文档要求的三类演示问题。
+
+当前样例字段包括：
+
+- `order_id`
+- `customer_id`
+- `order_date`
+- `region`
+- `channel`
+- `product_category`
+- `product_name`
+- `quantity`
+- `sales_amount`
+- `discount`
+- `order_status`
+
+样例数据可支持：
+
+- 品类销售额 TopN
+- 地区销售额对比
+- 渠道订单数与销售额对比
+
 ## 一键演示
 
 如果本地已经建好 `backend/.venv`，可以直接运行：
@@ -154,6 +178,30 @@ cd E:\bgagent1
 - `GET /api/analysis/{task_id}`
 - `GET /api/analysis/{task_id}/events`
 - `POST /api/eval/run`
+
+API 使用示例：
+
+```powershell
+cd E:\bgagent1\backend
+curl.exe -X POST -F "file=@data/samples/sales_orders.csv" http://127.0.0.1:8000/api/files/upload
+```
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/analysis/start" `
+  -ContentType "application/json" `
+  -Body '{"file_id":"file_xxx","question":"analyse sales by region"}'
+```
+
+```powershell
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/analysis/task_xxx/run"
+Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/analysis/task_xxx/events"
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/eval/run" `
+  -ContentType "application/json" `
+  -Body '{"task_id":"task_xxx"}'
+```
 
 全量测试：
 
@@ -188,6 +236,7 @@ print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
 - 外部真实 LLM API
 - 向量检索或重排
 - Redis 记忆和异步任务
+- DockerSandbox 受控代码执行
 
 ## 已知限制
 
@@ -204,6 +253,8 @@ print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
 - 引入 DockerSandbox
 - 引入 LLM-as-Judge
 - 补完整 React 前端
+
+其中 `DockerSandbox` 明确属于第二阶段扩展，不在当前 MVP 已实现能力内。
 
 ## 面试讲解要点
 
