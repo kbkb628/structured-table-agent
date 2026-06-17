@@ -91,7 +91,7 @@
 - `tool_call_logs`
 - `eval_results`
 
-这与 `DEVELOPMENT_GUIDE.md` 的 MVP 存储边界保持一致。当前代码已经实现 `SessionStore`，会优先尝试 Redis；当 Redis 不可用或本地未安装依赖时，会显式降级到 SQLite 持久化并记录 `session_store_warning` 事件。
+这与 `DEVELOPMENT_GUIDE.md` 的 MVP 存储边界保持一致。当前代码已经实现 `SessionStore`，会优先尝试 Redis；当 Redis 不可用或本地未安装依赖时，会显式降级到 SQLite 持久化并记录 `session_store_warning` 事件。若 Redis 可用，当前还会把 `draft_report`、`intermediate_findings`、`business_context` 分别写入细粒度 key。
 
 ## 4. 运行时状态流
 

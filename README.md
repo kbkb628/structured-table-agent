@@ -17,6 +17,7 @@
 
 当前默认使用 `MockLLM` 和本地 JSONL 关键词检索，所有数值结论都必须来自真实工具结果，不依赖模型臆造。
 Redis 在当前 MVP 中属于推荐依赖而非强制依赖；如果 Redis 不可用，系统会显式降级到 SQLite 并记录 `session_store_warning` 事件。
+当 Redis 可用时，当前版本会额外把 `draft_report`、`intermediate_findings` 和 `business_context` 分 key 保存，用于更细粒度的会话状态保留。
 
 当前主线已经打通：
 
@@ -126,6 +127,7 @@ py -3.12 -m venv .venv
 
 当前没有额外环境变量要求；MVP 默认走本地 `MockLLM` 和 SQLite。
 如果本地额外安装并启动 Redis，可作为推荐的会话状态层；未安装或不可用时，当前版本会降级到 SQLite。
+如果 Redis 可用，当前版本还会同步保存 `draft_report:{task_id}`、`intermediate_findings:{task_id}`、`latest_context:{task_id}` 等细粒度 key。
 
 ## 样例数据说明
 
@@ -228,6 +230,7 @@ print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
 - `MockLLMClient`：基于规则的可替换目标/计划生成器
 - `knowledge_base.jsonl + keyword_retriever`：真实本地 JSONL 检索
 - `business_context`：检索结果会写入任务状态并记录 `rag_retrieved` 事件
+- `SessionStore`：当 Redis 可用时，会把总状态之外的 `draft_report`、`intermediate_findings`、`business_context` 拆分到独立 key 保存
 - `LangGraph`：当前 `/api/analysis/{task_id}/run` 已通过最小线性状态流执行
 - `RuleScorer + fixed eval cases`：规则评分与固定 case 回归
 

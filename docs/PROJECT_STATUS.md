@@ -58,6 +58,7 @@
 - Redis 边界已收口一致：
   - 代码实现 `SessionStore` 优先尝试 Redis
   - Redis 不可用时显式降级到 SQLite，并记录 `session_store_warning`
+  - Redis 可用时会额外保存 `draft_report:{task_id}`、`intermediate_findings:{task_id}`、`latest_context:{task_id}`
   - README、架构说明、面试稿已经同步到同一表述
 
 ## 当前结论

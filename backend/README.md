@@ -31,6 +31,7 @@ Not implemented yet:
 - embedding / BM25 / rerank
 
 Redis remains a recommended dependency rather than a hard requirement in the current MVP. When Redis is unavailable, task state explicitly degrades to SQLite-backed storage and the timeline records a `session_store_warning` event.
+When Redis is available, the current implementation also persists `draft_report`, `intermediate_findings`, and `business_context` into granular keys alongside the full task snapshot.
 
 ## Setup with uv
 

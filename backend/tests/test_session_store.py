@@ -10,6 +10,20 @@ from app.storage.models import FileRecord
 from app.storage.session_store import SessionStore
 
 
+class FakeRedisClient:
+    def __init__(self):
+        self.values: dict[str, str] = {}
+
+    def get(self, key: str):
+        return self.values.get(key)
+
+    def set(self, key: str, value: str):
+        self.values[key] = value
+
+    def ping(self):
+        return True
+
+
 def test_session_store_falls_back_to_sqlite_when_redis_unavailable(tmp_path):
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text("region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n", encoding="utf-8")
@@ -201,3 +215,45 @@ def test_run_analysis_task_records_session_store_warning_when_redis_is_unavailab
 
     assert result["status"] == "completed"
     assert any(event["event_type"] == "session_store_warning" for event in events)
+
+
+def test_session_store_persists_granular_redis_keys(monkeypatch):
+    task_id = f"task_session_granular_{uuid.uuid4().hex[:8]}"
+    create_task(
+        task_id,
+        "file_session_granular",
+        "analyse sales by region",
+        {
+            "task_id": task_id,
+            "file_id": "file_session_granular",
+            "question": "analyse sales by region",
+            "analysis_goal": "compare region sales",
+            "file_profile": {},
+            "field_understanding": {"dimension_field": "region"},
+            "business_context": [{"id": "metric_sales_amount", "title": "Sales Amount"}],
+            "analysis_plan": ["match fields", "aggregate"],
+            "current_step": "report",
+            "completed_steps": ["match fields"],
+            "intermediate_findings": [{"summary": "East leads."}],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {"title": "Draft report"},
+            "final_report": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "running",
+        },
+    )
+
+    fake_client = FakeRedisClient()
+    monkeypatch.setattr(SessionStore, "_connect", lambda self: fake_client)
+
+    store = SessionStore()
+    saved_with_redis = store.save_state(task_id, get_task_state(task_id))
+
+    assert saved_with_redis is True
+    assert f"analysis_state:{task_id}" in fake_client.values
+    assert f"draft_report:{task_id}" in fake_client.values
+    assert f"intermediate_findings:{task_id}" in fake_client.values
+    assert f"latest_context:{task_id}" in fake_client.values
