@@ -55,6 +55,25 @@ cd E:\bgagent1\backend
 .\.venv\Scripts\python.exe -m pytest
 ```
 
+## Fixed eval cases
+
+Run the predefined regression set against the real MVP flow:
+
+```powershell
+cd E:\bgagent1\backend
+@'
+from app.eval.eval_cases import run_fixed_eval_cases
+import json
+print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
+'@ | .\.venv\Scripts\python.exe -
+```
+
+The runner executes the three currently supported case families on `data/samples/sales_orders.csv`:
+
+- category sales TopN
+- region sales comparison
+- channel order-count and sales performance
+
 ## Analysis flow
 
 1. Upload a CSV file with `/api/files/upload`
