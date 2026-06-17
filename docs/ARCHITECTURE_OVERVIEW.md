@@ -11,7 +11,7 @@
 3. 用户发起分析任务
 4. 系统执行轻量 JSONL 关键词检索
 5. `MockLLM` 生成分析目标和计划
-6. LangGraph 驱动字段匹配、DuckDB 聚合、`route_next_step` 显式路由、图表生成、报告生成和规则评分
+6. LangGraph 驱动字段匹配、DuckDB 聚合、`validate_tool_result` 校验、`route_next_step` 显式路由、图表生成、报告生成和规则评分
 7. 任务状态、事件时间线、工具调用日志和评估结果都写入 SQLite
 
 ## 2. 模块职责
@@ -35,8 +35,8 @@
 
 负责 LangGraph 状态流：
 
-- `graph.py`：定义带 `route_next_step` 的最小状态图
-- `nodes.py`：实现字段匹配、工具执行、下一步路由、图表生成、报告生成和评估节点
+- `graph.py`：定义带 `validate_tool_result` 和 `route_next_step` 的最小状态图
+- `nodes.py`：实现字段匹配、工具执行、工具结果校验、下一步路由、图表生成、报告生成和评估节点
 - `state.py`：任务状态结构
 
 ### `app/tools`
@@ -113,7 +113,8 @@
 
 - `match_fields` 会写入 `field_understanding` 和待执行的 `pending_metrics`
 - `match_fields` 还会生成 `planned_tool_calls`，把当前分析问题对应的受控工具执行计划写入状态
-- `execute_tools` 每次只消费一个 metric，并把结果写入 `tool_results`
+- `execute_tools` 每次只消费一个 metric，并把最新结果暂存到状态
+- `validate_tool_result` 会显式校验工具执行成功与结果非空，成功后再写入 `tool_results`
 - `route_next_step` 会根据是否还有待执行 metric，决定回到 `execute_tools` 继续统计，或进入 `generate_charts`
 - `generate_report` 前会先基于 `intermediate_findings` 和 `chart_specs` 生成 `draft_report`
 - `generate_report` 工具返回前会通过 `FinalReport` Pydantic schema 校验最终报告结构

@@ -8,6 +8,7 @@ from app.agent.nodes import (
     load_task_node,
     match_fields_node,
     route_next_step_node,
+    validate_tool_result_node,
 )
 from app.agent.state import AnalysisGraphState
 from app.storage.session_store import SessionStore
@@ -26,6 +27,7 @@ def build_analysis_graph():
     graph.add_node("load_task", load_task_node)
     graph.add_node("match_fields", match_fields_node)
     graph.add_node("execute_tools", execute_tools_node)
+    graph.add_node("validate_tool_result", validate_tool_result_node)
     graph.add_node("route_next_step", route_next_step_node)
     graph.add_node("generate_charts", generate_charts_node)
     graph.add_node("generate_report", generate_report_node)
@@ -43,6 +45,14 @@ def build_analysis_graph():
     )
     graph.add_conditional_edges(
         "execute_tools",
+        route_on_task_status,
+        {
+            "continue": "validate_tool_result",
+            "failed": END,
+        },
+    )
+    graph.add_conditional_edges(
+        "validate_tool_result",
         route_on_task_status,
         {
             "continue": "route_next_step",

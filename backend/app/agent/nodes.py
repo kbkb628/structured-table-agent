@@ -91,38 +91,55 @@ def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
     tool_response_dict["metric_label"] = metric["label"]
     tool_response_dict["selected_tool"] = tool_name
     record_tool_call(state["task_id"], tool_name, tool_request, tool_response_dict)
+    state["_latest_tool_result"] = tool_response_dict
+    state["_latest_tool_request"] = tool_request
+    state["_latest_metric"] = metric
+    return state
 
-    if not tool_response.success:
-        state["tool_results"].append(tool_response_dict)
-        record_tool_failed(state["task_id"], tool_name, tool_response_dict)
+
+def validate_tool_result_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    tool_result = state.get("_latest_tool_result") or {}
+    metric = state.get("_latest_metric") or {}
+    tool_name = str(tool_result.get("selected_tool") or tool_result.get("tool_name") or "unknown_tool")
+    state["completed_steps"].append("validate_tool_result")
+
+    if not tool_result.get("success"):
+        state["tool_results"].append(tool_result)
+        record_tool_failed(state["task_id"], tool_name, tool_result)
+        error = tool_result.get("error") or {}
         return fail_task(
             state,
-            tool_response_dict["error"]["code"],
-            tool_response_dict["error"]["message"],
-            {"metric_label": metric["label"]},
+            str(error.get("code") or "TOOL_EXECUTION_FAILED"),
+            str(error.get("message") or "Tool execution failed."),
+            {"metric_label": metric.get("label")},
         )
 
-    rows = tool_response.data["rows"]
+    rows = (tool_result.get("data") or {}).get("rows") or []
     if not rows:
+        state["tool_results"].append(tool_result)
+        record_tool_failed(state["task_id"], tool_name, tool_result)
         return fail_task(
             state,
             "EMPTY_RESULT",
             "The aggregation returned no rows.",
-            {"metric_label": metric["label"]},
+            {"metric_label": metric.get("label")},
         )
 
-    state["tool_results"].append(tool_response_dict)
+    state["tool_results"].append(tool_result)
     state["completed_steps"].append(f"{tool_name}:{metric['label']}")
     state["intermediate_findings"].append(
         {
             "metric_label": metric["label"],
-            "summary": tool_response.summary,
+            "summary": tool_result.get("summary", ""),
             "top_row": rows[0],
         }
     )
-    state["pending_metrics"] = metrics[1:]
-    state["pending_tool_calls"] = pending_tool_calls[1:]
-    record_tool_succeeded(state["task_id"], tool_name, tool_response_dict)
+    state["pending_metrics"] = (state.get("pending_metrics") or [])[1:]
+    state["pending_tool_calls"] = (state.get("pending_tool_calls") or [])[1:]
+    state.pop("_latest_tool_result", None)
+    state.pop("_latest_tool_request", None)
+    state.pop("_latest_metric", None)
+    record_tool_succeeded(state["task_id"], tool_name, tool_result)
     return state
 
 

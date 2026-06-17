@@ -15,7 +15,7 @@
 - DuckDB 真实聚合工具：按品类、地区、渠道执行聚合分析
 - MockLLM 目标/计划生成
 - JSONL 关键词业务语义检索
-- LangGraph 显式路由状态流，支持多指标任务继续下一轮工具执行
+- LangGraph 显式状态流，已包含工具结果校验节点与多指标继续执行路由
 - Observability 事件收口：`backend/app/observability`
 - 固定回归评测：3 个真实支持 case
 - Windows 一键演示脚本：`scripts/demo_mvp.ps1`
@@ -41,7 +41,7 @@
 
 ## 完成审计证据
 
-- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `54 passed, 2 warnings`
+- 最新全量测试：`cd backend && .\.venv\Scripts\python.exe -m pytest -v`，结果 `60 passed, 2 warnings`
 - 最新演示验证：`.\scripts\demo_mvp.ps1 -StartServer`
 - 三个演示问题最近一次结果：
   - `analyse category sales top 5` -> `completed`，`eval_score = 1.0`
@@ -59,7 +59,8 @@
 - LangGraph 当前已支持最小动态推进边界：
   - `match_fields` 会为多指标问题写入 `pending_metrics`
   - `match_fields` 会显式产出 `planned_tool_calls`，把本轮准备执行的工具计划写入状态
-  - `execute_tools` 每次处理一个 metric
+  - `execute_tools` 每次处理一个 metric，并把最新工具结果暂存到状态
+  - `validate_tool_result` 会显式校验工具执行成功、结果非空，再决定是否写入 `tool_results` 和 `intermediate_findings`
   - `route_next_step` 会显式决定继续执行下一轮工具，还是进入图表生成
 - 报告状态当前已形成最小闭环：
   - `generate_report` 前会先基于 `intermediate_findings` 和 `chart_specs` 生成真实 `draft_report`
