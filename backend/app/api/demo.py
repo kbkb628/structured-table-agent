@@ -475,6 +475,14 @@ def demo_page() -> HTMLResponse:
                 <div id="latest-task-report-meta" class="provider-meta">Latest report richness summary will appear here.</div>
                 <div id="latest_task_report_output" class="provider-diag">No latest task report summary loaded yet.</div>
               </div>
+              <div class="provider-card">
+                <div class="provider-card-head">
+                  <div class="provider-title">Latest Task Context</div>
+                  <div id="latest-task-context-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="latest-task-context-meta" class="provider-meta">Latest RAG and checkpoint summary will appear here.</div>
+                <div id="latest_task_context_output" class="provider-diag">No latest task context summary loaded yet.</div>
+              </div>
               <div id="project-status-summary" class="summary-grid">
                 <div class="summary-card">
                   <div class="summary-label">Demo</div>
@@ -620,6 +628,9 @@ def demo_page() -> HTMLResponse:
     const latestTaskReportPillEl = document.getElementById("latest-task-report-pill");
     const latestTaskReportMetaEl = document.getElementById("latest-task-report-meta");
     const latestTaskReportOutputEl = document.getElementById("latest_task_report_output");
+    const latestTaskContextPillEl = document.getElementById("latest-task-context-pill");
+    const latestTaskContextMetaEl = document.getElementById("latest-task-context-meta");
+    const latestTaskContextOutputEl = document.getElementById("latest_task_context_output");
     const projectStatusSummaryEl = document.getElementById("project-status-summary");
     const projectStatusOutputEl = document.getElementById("project-status-output");
     const evalSummaryEl = document.getElementById("eval-summary");
@@ -873,6 +884,9 @@ def demo_page() -> HTMLResponse:
         latestTaskReportPillEl.textContent = "Not loaded";
         latestTaskReportMetaEl.textContent = "Latest report richness summary will appear here.";
         latestTaskReportOutputEl.textContent = "No latest task report summary loaded yet.";
+        latestTaskContextPillEl.textContent = "Not loaded";
+        latestTaskContextMetaEl.textContent = "Latest RAG and checkpoint summary will appear here.";
+        latestTaskContextOutputEl.textContent = "No latest task context summary loaded yet.";
         projectStatusOutputEl.textContent = "No project runtime overview loaded yet.";
         return;
       }
@@ -888,6 +902,7 @@ def demo_page() -> HTMLResponse:
       const latestTaskEvaluation = latestTask ? (latestTask.evaluation || {}) : {};
       const latestTaskProcess = latestTask ? (latestTask.process || {}) : {};
       const latestTaskReport = latestTask ? (latestTask.report || {}) : {};
+      const latestTaskContext = latestTask ? (latestTask.context || {}) : {};
       const files = tables.files || { exists: false, row_count: 0 };
       const tasks = tables.analysis_tasks || { exists: false, row_count: 0 };
       const events = tables.analysis_events || { exists: false, row_count: 0 };
@@ -962,6 +977,17 @@ def demo_page() -> HTMLResponse:
         `data_limitation_count: ${latestTaskReport.data_limitation_count ?? 0}`,
         `next_step_count: ${latestTaskReport.next_step_count ?? 0}`,
       ].join("\n") : "No latest task report summary loaded yet.";
+      latestTaskContextPillEl.textContent = latestTask ? "Context ready" : "No tasks";
+      latestTaskContextMetaEl.textContent = latestTask
+        ? [`task_id: ${latestTask.task_id}`, `checkpoint_step: ${latestTaskContext.checkpoint_current_step || "none"}`].join(" | ")
+        : "No persisted task found yet.";
+      latestTaskContextOutputEl.textContent = latestTask ? [
+        `business_context_count: ${latestTaskContext.business_context_count ?? 0}`,
+        `top_business_context_title: ${latestTaskContext.top_business_context_title || "none"}`,
+        `checkpoint_current_step: ${latestTaskContext.checkpoint_current_step || "none"}`,
+        `checkpoint_draft_report_status: ${latestTaskContext.checkpoint_draft_report_status || "none"}`,
+        `checkpoint_latest_error_code: ${latestTaskContext.checkpoint_latest_error_code || "none"}`,
+      ].join("\n") : "No latest task context summary loaded yet.";
 
       projectStatusSummaryEl.innerHTML = `
         <div class="summary-card">

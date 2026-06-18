@@ -53,6 +53,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'chart_spec_count' in content
     assert 'key_finding_count' in content
     assert 'business_suggestion_count' in content
+    assert 'latest_task_context_output' in content
+    assert 'business_context_count' in content
+    assert 'top_business_context_title' in content
+    assert 'checkpoint_current_step' in content
     assert 'id="project-status-summary"' in content
     assert 'id="project-status-output"' in content
     assert 'id="eval-summary"' in content

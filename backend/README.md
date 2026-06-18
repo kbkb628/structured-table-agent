@@ -234,6 +234,8 @@ Key summary fields exposed by the script include:
 - `project_status_latest_task_latest_event_type`
 - `project_status_latest_task_chart_spec_count`
 - `project_status_latest_task_key_finding_count`
+- `project_status_latest_task_business_context_count`
+- `project_status_latest_task_checkpoint_current_step`
 - `provider_smoke_error_message`
 - `fixed_eval_average_trace_completeness`
 - `fixed_eval_average_report_completeness`

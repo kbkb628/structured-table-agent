@@ -123,6 +123,8 @@ def _latest_task_info() -> dict | None:
     llm_judgement = state.get("llm_judgement") or {}
     final_report = state.get("final_report") or {}
     chart_specs = state.get("chart_specs") or []
+    context_checkpoint = state.get("context_checkpoint") or {}
+    business_context = state.get("business_context") or []
     return {
         "task_id": task_id,
         "status": status,
@@ -155,6 +157,13 @@ def _latest_task_info() -> dict | None:
             "business_suggestion_count": len(final_report.get("business_suggestions") or []),
             "data_limitation_count": len(final_report.get("data_limitations") or []),
             "next_step_count": len(final_report.get("next_steps") or []),
+        },
+        "context": {
+            "business_context_count": len(business_context),
+            "top_business_context_title": business_context[0].get("title") if business_context else None,
+            "checkpoint_current_step": context_checkpoint.get("current_step"),
+            "checkpoint_draft_report_status": context_checkpoint.get("draft_report_status"),
+            "checkpoint_latest_error_code": context_checkpoint.get("latest_error_code", ""),
         },
     }
 

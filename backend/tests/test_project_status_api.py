@@ -210,3 +210,8 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["report"]["business_suggestion_count"] == 1
     assert latest_task["report"]["data_limitation_count"] == 1
     assert latest_task["report"]["next_step_count"] == 1
+    assert latest_task["context"]["business_context_count"] == 1
+    assert latest_task["context"]["top_business_context_title"] == "Sales Amount"
+    assert latest_task["context"]["checkpoint_current_step"] == "report"
+    assert latest_task["context"]["checkpoint_draft_report_status"] == "available"
+    assert latest_task["context"]["checkpoint_latest_error_code"] == ""

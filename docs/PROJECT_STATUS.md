@@ -182,6 +182,10 @@
   - `project_status_latest_task_key_finding_count`
   - `project_status_latest_task_business_suggestion_count`
   - `project_status_latest_task_data_limitation_count`
+  - `project_status_latest_task_business_context_count`
+  - `project_status_latest_task_top_business_context_title`
+  - `project_status_latest_task_checkpoint_current_step`
+  - `project_status_latest_task_checkpoint_draft_report_status`
   - `project_status_latest_task_has_llm_judgement`
   - `project_status_latest_task_tool_call_log_count`
   - `project_status_files`
