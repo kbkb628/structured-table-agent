@@ -684,6 +684,44 @@ def test_run_analysis_returns_409_when_task_is_already_locked(tmp_path):
     assert run.json()["detail"] == f"Task {task_id} is already running."
 
 
+def test_run_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():
+    task_id = f"task_run_redis_only_{uuid.uuid4().hex[:8]}"
+    redis_only_state = {
+        "task_id": task_id,
+        "file_id": "file_run_redis_only",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [],
+        "analysis_plan": ["match fields", "aggregate"],
+        "current_step": "created",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "created",
+    }
+
+    fake_client = FakeRedisClient()
+    fake_client.values[f"analysis_state:{task_id}"] = json.dumps(redis_only_state, ensure_ascii=False)
+
+    client = TestClient(app)
+    with patch.object(SessionStore, "_connect", lambda self: fake_client):
+        with patch("app.api.analysis.run_analysis_task", return_value={**redis_only_state, "status": "completed"}):
+            response = client.post(f"/api/analysis/{task_id}/run")
+
+    assert response.status_code == 200
+    assert response.json()["task_id"] == task_id
+    assert response.json()["status"] == "completed"
+
+
 def test_get_analysis_falls_back_to_sqlite_when_redis_is_available_but_task_key_is_missing(tmp_path):
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text("region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n", encoding="utf-8")
@@ -778,6 +816,53 @@ def test_get_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():
     assert body["llm_judgement"]["supported_by_tools"] is True
     assert body["business_context"][0]["title"] == "Redis Sales Amount"
     assert body["events"][0]["event_type"] == "task_created"
+
+
+def test_get_analysis_events_uses_redis_snapshot_when_sqlite_timeline_is_missing():
+    task_id = f"task_events_redis_only_{uuid.uuid4().hex[:8]}"
+    redis_only_state = {
+        "task_id": task_id,
+        "file_id": "file_events_redis_only",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [],
+        "analysis_plan": ["match fields", "aggregate"],
+        "current_step": "created",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [
+            {
+                "event_id": "evt_redis_events_1",
+                "event_type": "task_created",
+                "node": "start_analysis",
+                "message": "task created",
+                "payload": {"status": "created"},
+                "created_at": "2026-06-18T10:00:00+00:00",
+            }
+        ],
+        "errors": [],
+        "status": "created",
+    }
+
+    fake_client = FakeRedisClient()
+    fake_client.values[f"analysis_state:{task_id}"] = json.dumps(redis_only_state, ensure_ascii=False)
+
+    client = TestClient(app)
+    with patch.object(SessionStore, "_connect", lambda self: fake_client):
+        response = client.get(f"/api/analysis/{task_id}/events")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["task_id"] == task_id
+    assert payload["events"][0]["event_type"] == "task_created"
 
 
 def test_get_analysis_uses_granular_redis_recovery_when_snapshot_is_missing(tmp_path):
