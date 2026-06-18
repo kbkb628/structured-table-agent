@@ -169,13 +169,17 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
     for tool_result in state["tool_results"]:
         rows = tool_result.get("data", {}).get("rows", [])
         metric_label = tool_result.get("metric_label")
-        y_field = next(key for key in rows[0].keys() if key != dimension_field)
+        tool_name = tool_result.get("tool_name")
+        if tool_name == "calculate_share" and "share_percent" in rows[0]:
+            y_field = "share_percent"
+        else:
+            y_field = next(key for key in rows[0].keys() if key != dimension_field)
         tool_request = {
             "title": f"{dimension_field} vs {y_field}",
             "x_field": dimension_field,
             "y_field": y_field,
             "rows": rows,
-            "chart_type": "line" if tool_result.get("tool_name") == "trend_analysis" else "bar",
+            "chart_type": "line" if tool_name == "trend_analysis" else "bar",
         }
         record_tool_called(state["task_id"], "generate_chart", tool_request)
         chart_response = invoke_tool_with_retry(

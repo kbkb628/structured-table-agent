@@ -309,6 +309,8 @@ def test_run_share_analysis_returns_share_rows(tmp_path):
     assert run.json()["status"] == "completed"
     assert run.json()["tool_results"][0]["tool_name"] == "calculate_share"
     assert "share_percent" in run.json()["tool_results"][0]["data"]["rows"][0]
+    assert run.json()["chart_specs"][0]["plotly_spec"]["layout"]["yaxis"]["title"] == "share_percent"
+    assert run.json()["chart_specs"][0]["plotly_spec"]["data"][0]["y"] == [73.33, 26.67]
 
 
 def test_run_trend_analysis_returns_line_chart(tmp_path):

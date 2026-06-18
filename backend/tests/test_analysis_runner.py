@@ -337,6 +337,9 @@ def test_run_analysis_task_supports_category_sales_share_question(tmp_path: Path
     assert result["tool_results"][0]["tool_name"] == "calculate_share"
     assert result["tool_results"][0]["data"]["rows"][0]["product_category"] == "electronics"
     assert "share_ratio" in result["tool_results"][0]["data"]["rows"][0]
+    assert result["chart_specs"][0]["chart_type"] == "bar"
+    assert result["chart_specs"][0]["plotly_spec"]["layout"]["yaxis"]["title"] == "share_percent"
+    assert result["chart_specs"][0]["plotly_spec"]["data"][0]["y"] == [73.33, 26.67]
 
 
 def test_run_analysis_task_supports_sales_trend_question(tmp_path: Path):
