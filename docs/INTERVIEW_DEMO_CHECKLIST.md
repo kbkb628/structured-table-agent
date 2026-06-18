@@ -38,6 +38,7 @@
 - `Latest Task Artifacts / Evaluation / Judgement / Context / Tools / Errors`
 - `Fixed Eval Cases` 区块里的 case coverage 列表，可直接看到三条中文 MVP 验收问句
 - 问题输入框下方的中文快捷按钮，可一键填入三条中文 MVP 验收问句
+- 问题输入框下方也覆盖六条英文演示问题快捷按钮，其中包含 `analyse sales by region`
 
 ## Step 2：打开 `GET /api/llm/provider-status`
 

@@ -194,7 +194,7 @@ cd E:\bgagent1
 - 调用 `GET /api/project-status` 获取当前项目运行总览
 - 在 project runtime overview 中直接查看 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available` 和 `degraded_to_sqlite`
 - 上传 `backend/data/samples/sales_orders.csv`
-- 依次运行六个当前支持的英文演示问题
+- 依次运行六个当前支持的英文演示问题（页面快捷按钮已覆盖其中 6 条）
 - `/demo` 页面同时提供三条中文 MVP 验收问句的快捷按钮，便于直接演示指导文档定义的中文验收口径
 - 输出 project status 摘要、任务状态、图表数量、工具调用数量和评估分数摘要
 - 输出 `project_status_provider` 作为 project runtime overview 的 provider 摘要字段
