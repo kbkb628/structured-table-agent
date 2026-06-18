@@ -284,6 +284,7 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["process"]["latest_route_decision"] == "finish"
     assert latest_task["report"]["chart_spec_count"] == 1
     assert latest_task["report"]["key_finding_count"] == 1
+    assert latest_task["report"]["top_key_finding"] == "East leads."
     assert latest_task["report"]["business_suggestion_count"] == 1
     assert latest_task["report"]["data_limitation_count"] == 1
     assert latest_task["report"]["next_step_count"] == 1
@@ -309,6 +310,7 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["semantics"]["current_step"] == "report"
     assert latest_task["semantics"]["completed_step_count"] == 4
     assert latest_task["semantics"]["finding_count"] == 1
+    assert latest_task["semantics"]["latest_finding_summary"] == "East leads."
     assert latest_task["semantics"]["dimension_field"] == "region"
     assert latest_task["semantics"]["metric_count"] == 1
     assert latest_task["semantics"]["match_analysis_type"] == "single_metric"

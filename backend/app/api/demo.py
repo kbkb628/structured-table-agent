@@ -1097,6 +1097,7 @@ def demo_page() -> HTMLResponse:
       latestTaskReportOutputEl.textContent = latestTask ? [
         `chart_spec_count: ${latestTaskReport.chart_spec_count ?? 0}`,
         `key_finding_count: ${latestTaskReport.key_finding_count ?? 0}`,
+        `top_key_finding: ${latestTaskReport.top_key_finding || "none"}`,
         `business_suggestion_count: ${latestTaskReport.business_suggestion_count ?? 0}`,
         `data_limitation_count: ${latestTaskReport.data_limitation_count ?? 0}`,
         `next_step_count: ${latestTaskReport.next_step_count ?? 0}`,
@@ -1134,6 +1135,7 @@ def demo_page() -> HTMLResponse:
         `current_step: ${latestTaskSemantics.current_step || "none"}`,
         `completed_step_count: ${latestTaskSemantics.completed_step_count ?? 0}`,
         `finding_count: ${latestTaskSemantics.finding_count ?? 0}`,
+        `latest_finding_summary: ${latestTaskSemantics.latest_finding_summary || "none"}`,
         `dimension_field: ${latestTaskSemantics.dimension_field || "none"}`,
         `match_analysis_type: ${latestTaskSemantics.match_analysis_type || "none"}`,
         `candidate_field_count: ${latestTaskSemantics.candidate_field_count ?? 0}`,

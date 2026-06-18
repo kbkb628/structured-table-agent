@@ -161,6 +161,8 @@ def _latest_task_info() -> dict | None:
         for item in tool_results
         if int((item.get("metadata") or {}).get("retry_attempts", 0) or 0) > 0
     ]
+    top_key_finding = ((final_report.get("key_findings") or [{}])[0] if final_report.get("key_findings") else {}).get("finding")
+    latest_finding_summary = (intermediate_findings[-1] if intermediate_findings else {}).get("summary")
     latest_error = errors[-1] if errors else {}
     return {
         "task_id": task_id,
@@ -208,6 +210,7 @@ def _latest_task_info() -> dict | None:
         "report": {
             "chart_spec_count": len(chart_specs),
             "key_finding_count": len(final_report.get("key_findings") or []),
+            "top_key_finding": top_key_finding,
             "business_suggestion_count": len(final_report.get("business_suggestions") or []),
             "data_limitation_count": len(final_report.get("data_limitations") or []),
             "next_step_count": len(final_report.get("next_steps") or []),
@@ -237,6 +240,7 @@ def _latest_task_info() -> dict | None:
             "current_step": state.get("current_step"),
             "completed_step_count": len(completed_steps),
             "finding_count": len(intermediate_findings),
+            "latest_finding_summary": latest_finding_summary,
             "dimension_field": field_understanding.get("dimension_field"),
             "match_analysis_type": field_understanding.get("analysis_type"),
             "candidate_field_count": len(field_understanding.get("candidate_fields") or []),

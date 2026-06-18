@@ -70,6 +70,7 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'latest_task_report_output' in content
     assert 'chart_spec_count' in content
     assert 'key_finding_count' in content
+    assert 'top_key_finding' in content
     assert 'business_suggestion_count' in content
     assert 'latest_task_context_output' in content
     assert 'business_context_count' in content
@@ -92,6 +93,7 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'analysis_plan_count' in content
     assert 'completed_step_count' in content
     assert 'dimension_field' in content
+    assert 'latest_finding_summary' in content
     assert 'match_analysis_type' in content
     assert 'candidate_field_count' in content
     assert 'match_warning_count' in content
