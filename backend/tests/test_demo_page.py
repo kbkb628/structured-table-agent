@@ -111,6 +111,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'id="project-status-output"' in content
     assert 'id="eval-summary"' in content
     assert 'id="eval-results-output"' in content
+    assert 'retried_tool_calls' in content
+    assert 'average_tool_elapsed_ms_total' in content
+    assert 'average_chart_validity' in content
+    assert 'average_field_validity' in content
     assert 'id="chart-preview"' in content
     assert 'id="chart-empty-state"' in content
     assert 'id="report-list"' in content

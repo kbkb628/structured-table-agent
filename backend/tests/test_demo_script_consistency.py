@@ -126,8 +126,13 @@ def test_demo_script_mentions_provider_and_eval_summary_output():
     assert "fixed_eval_pass_rate" in script
     assert "provider_smoke_error_type" in script
     assert "provider_smoke_error_message" in script
+    assert "fixed_eval_retried_tool_calls" in script
+    assert "fixed_eval_retry_attempts_total" in script
+    assert "fixed_eval_average_tool_elapsed_ms_total" in script
     assert "fixed_eval_average_trace_completeness" in script
     assert "fixed_eval_average_report_completeness" in script
+    assert "fixed_eval_average_chart_validity" in script
+    assert "fixed_eval_average_field_validity" in script
 
 
 def test_demo_script_contract_matches_pscustomobject_output_shape():

@@ -196,9 +196,14 @@ try {
         fixed_eval_pass_rate = $fixedEval.pass_rate
         fixed_eval_passed_cases = $fixedEval.passed_cases
         fixed_eval_total_cases = $fixedEval.total_cases
+        fixed_eval_retried_tool_calls = $fixedEval.retried_tool_calls
+        fixed_eval_retry_attempts_total = $fixedEval.retry_attempts_total
+        fixed_eval_average_tool_elapsed_ms_total = $fixedEval.average_tool_elapsed_ms_total
         fixed_eval_average_trace_completeness = $fixedEval.average_trace_completeness
         fixed_eval_average_report_completeness = $fixedEval.average_report_completeness
         fixed_eval_average_tool_success_rate = $fixedEval.average_tool_success_rate
+        fixed_eval_average_chart_validity = $fixedEval.average_chart_validity
+        fixed_eval_average_field_validity = $fixedEval.average_field_validity
         runs = $runs
         rerun_eval_task = $rerunEval.task_id
         rerun_eval_score = $rerunEval.eval_result.overall_score

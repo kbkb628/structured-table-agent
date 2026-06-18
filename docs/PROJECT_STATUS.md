@@ -252,9 +252,14 @@
   - `fixed_eval_pass_rate`
   - `fixed_eval_passed_cases`
   - `fixed_eval_total_cases`
+  - `fixed_eval_retried_tool_calls`
+  - `fixed_eval_retry_attempts_total`
+  - `fixed_eval_average_tool_elapsed_ms_total`
   - `fixed_eval_average_trace_completeness`
   - `fixed_eval_average_report_completeness`
   - `fixed_eval_average_tool_success_rate`
+  - `fixed_eval_average_chart_validity`
+  - `fixed_eval_average_field_validity`
   - 六个固定 demo 问题的任务结果摘要
 
 ## 当前结论

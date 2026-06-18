@@ -382,8 +382,13 @@ cd E:\bgagent1
 - `project_status_latest_task_error_count`
 - `project_status_latest_task_has_degradation`
 - `provider_smoke_error_message`
+- `fixed_eval_retried_tool_calls`
+- `fixed_eval_retry_attempts_total`
+- `fixed_eval_average_tool_elapsed_ms_total`
 - `fixed_eval_average_trace_completeness`
 - `fixed_eval_average_report_completeness`
+- `fixed_eval_average_chart_validity`
+- `fixed_eval_average_field_validity`
 - 以及六个固定 demo 问题的执行摘要
 
 项目运行总览：

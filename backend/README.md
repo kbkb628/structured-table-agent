@@ -283,8 +283,13 @@ Key summary fields exposed by the script include:
 - `project_status_latest_task_error_count`
 - `project_status_latest_task_has_degradation`
 - `provider_smoke_error_message`
+- `fixed_eval_retried_tool_calls`
+- `fixed_eval_retry_attempts_total`
+- `fixed_eval_average_tool_elapsed_ms_total`
 - `fixed_eval_average_trace_completeness`
 - `fixed_eval_average_report_completeness`
+- `fixed_eval_average_chart_validity`
+- `fixed_eval_average_field_validity`
 
 These `project_status_latest_task_match_analysis_type`, `project_status_latest_task_candidate_field_count`, `project_status_latest_task_match_warning_count`, and `project_status_latest_task_planned_tool_sequence` fields come from the persisted `field_understanding` block produced by `match_fields`. They show real structured matching and schema-bounded planning evidence rather than any automatic schema repair capability.
 

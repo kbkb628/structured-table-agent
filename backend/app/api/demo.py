@@ -881,6 +881,26 @@ def demo_page() -> HTMLResponse:
             <div class="summary-value">-</div>
             <div class="summary-note">Average report completeness.</div>
           </div>
+          <div class="summary-card">
+            <div class="summary-label">Retries</div>
+            <div class="summary-value">0</div>
+            <div class="summary-note">retried_tool_calls / retry_attempts_total.</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Latency</div>
+            <div class="summary-value">-</div>
+            <div class="summary-note">average_tool_elapsed_ms_total.</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Chart</div>
+            <div class="summary-value">-</div>
+            <div class="summary-note">average_chart_validity.</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Field</div>
+            <div class="summary-value">-</div>
+            <div class="summary-note">average_field_validity.</div>
+          </div>
         `;
         return;
       }
@@ -905,6 +925,26 @@ def demo_page() -> HTMLResponse:
           <div class="summary-label">Report</div>
           <div class="summary-value">${escapeHtml(summary.average_report_completeness)}</div>
           <div class="summary-note">Average report completeness</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Retries</div>
+          <div class="summary-value">${escapeHtml(summary.retried_tool_calls ?? 0)}</div>
+          <div class="summary-note">${escapeHtml(summary.retry_attempts_total ?? 0)} total retry attempts</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Latency</div>
+          <div class="summary-value">${escapeHtml(summary.average_tool_elapsed_ms_total ?? 0)}</div>
+          <div class="summary-note">average_tool_elapsed_ms_total</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Chart</div>
+          <div class="summary-value">${escapeHtml(summary.average_chart_validity ?? "none")}</div>
+          <div class="summary-note">average_chart_validity</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Field</div>
+          <div class="summary-value">${escapeHtml(summary.average_field_validity ?? "none")}</div>
+          <div class="summary-note">average_field_validity</div>
         </div>
       `;
     }
