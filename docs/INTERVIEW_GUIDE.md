@@ -42,8 +42,10 @@
 - `QwenClient` 真实实现
 - `MockLLMClient` 本地回退实现
 - `get_llm_client()` provider 工厂
+- `GET /api/llm/provider-status`
+- `POST /api/llm/provider-smoke`
 
-这能支撑一个真实、可信的表达：项目已经接入 Tongyi Qianwen，但仍保留显式 mock 回退路径。
+这能支撑一个真实、可验证的表达：项目已经接入 Tongyi Qianwen，并且可以通过接口和脚本检查当前 provider 解析结果、key 来源和最小 smoke 状态。
 
 ## 4. 为什么 RAG 只做增强，不做计算
 
@@ -57,7 +59,7 @@
 
 - 关键词重叠打分
 - 短语命中加权
-- related_fields 字段加权
+- `related_fields` 字段加权
 - BM25 风格归一化评分
 
 它不负责：
@@ -121,12 +123,32 @@
 - 当前已经实现 `draft_report`、`final_report`、`llm_judgement`、`business_context`、`intermediate_findings` 和 `context_checkpoint` 的 Redis 细粒度持久化与回填
 - 即使 Redis 的主 `analysis_state` 快照缺失，也可以基于 SQLite 状态和细粒度 Redis key 恢复任务视图
 - 这类恢复不会静默发生，而是会写入 `session_state_recovered` 事件，进入任务时间线
-- 当前已经实现基于 FastAPI 返回的极简 `/demo` 演示页，用于串联上传、任务执行和过程展示
+- 当前已经实现基于 FastAPI 返回的极简 `/demo` 演示页，用于串联上传、任务执行、Provider 诊断、固定评测和 project runtime overview
+- 当前已经实现 `GET /api/project-status`，用于聚合 provider 解析、demo 可用性和 SQLite 表行数
+- `scripts/demo_mvp.ps1` 会跑真实演示链路，并输出 project status 摘要
 - 当前没有实现 embedding / 向量检索 / rerank、DockerSandbox、完整 React 前端、异步队列
 
 如果把没做的能力说成已经完成，会直接破坏项目可信度。
 
-## 8. 后续迭代方向
+## 8. 如何证明这些说法不是纸面能力
+
+当前仓库里已经有可直接展示的验证入口：
+
+- `GET /demo`
+- `GET /api/llm/provider-status`
+- `POST /api/llm/provider-smoke`
+- `GET /api/project-status`
+- `POST /api/eval/cases/run`
+- `scripts/demo_mvp.ps1`
+- `scripts/qwen_provider_smoke.ps1`
+
+讲解时可以强调：
+
+- provider 能力不只停留在代码抽象上，还能通过接口和脚本做运行时诊断
+- demo 不只是静态页面，而是基于真实后端接口拉取任务状态、事件和工具日志
+- project runtime overview 能直接展示 SQLite 表行数和 provider 状态，便于演示当前系统状态
+
+## 9. 后续迭代方向
 
 当前代码最合理的后续方向是：
 

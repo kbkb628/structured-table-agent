@@ -4,19 +4,20 @@
 
 ## 一句话版本
 
-基于 FastAPI、LangGraph、DuckDB、SQLite 和 Tongyi Qianwen Provider 构建结构化表格分析 Agent，打通“CSV / Excel 上传 - 字段画像 - 业务语义检索 - 分析计划 - 受控工具执行 - 图表与报告生成 - 规则评估 - 过程追踪”的真实后端闭环。
+基于 FastAPI、LangGraph、DuckDB、SQLite 和 Tongyi Qianwen Provider 构建结构化表格分析 Agent，打通“CSV / Excel 上传 - 字段画像 - 业务语义检索 - 分析计划 - 受控工具执行 - 图表与报告生成 - 规则评估 - 过程追踪”的真实后端闭环，并提供 `/demo`、`/api/project-status` 与 `demo_mvp.ps1` 作为可验证的演示交付入口。
 
 ## 简历项目描述版本
 
 - 基于 FastAPI 设计并实现结构化表格分析后端，支持 CSV / Excel 上传、字段画像生成、任务创建、任务执行与分析结果查询。
 - 使用 LangGraph 编排“字段匹配 - 工具执行 - 结果校验 - 下一步路由 - 图表生成 - 报告生成 - 规则评估”的最小状态流，并通过 `route_next_step` 支持多指标问题的最小动态推进。
-- 封装 pandas / DuckDB / Plotly 受控分析工具，通过统一 `ToolResponse` 与 Pydantic schema 约束参数、返回值和错误信息，降低字段错配和结构漂移风险。
+- 封装 pandas / DuckDB / Plotly 受控分析工具，通过统一 `ToolResponse` 和 Pydantic schema 约束参数、返回值和错误信息，降低字段错配和结构漂移风险。
 - 在受控工具链中补齐占比分析、趋势分析和基于 z-score 的异常检测能力，持续保持数值结论来自确定性聚合结果而非模型臆断。
 - 设计可替换 `LLMClient` 抽象，完成 `QwenClient` 与 `MockLLMClient` 双实现，并通过 provider 工厂支持真实 Tongyi Qianwen 接入、显式降级与本地回退。
 - 将真实 LLM 接入到分析目标生成、分析计划生成、最终报告组织和补充型 `llm_judgement`，同时保持数值计算仍由 DuckDB / 工具链完成，避免模型直接编造结果。
 - 构建本地混合检索模块，基于 JSONL 知识库实现关键词、短语命中、字段加权和 BM25 风格评分，为字段语义理解和分析计划生成提供轻量业务上下文增强。
 - 设计 Redis 优先、SQLite 降级的会话状态存储方案，并将 `draft_report`、中间发现、业务上下文和 `context_checkpoint` 拆分为细粒度 key，增强过程恢复和追踪能力。
 - 使用 SQLite 持久化文件元数据、任务状态、事件时间线、工具调用日志和评估结果，并通过固定 case 回归输出工具成功率、Trace 完整度、报告完整度与执行耗时等质量指标。
+- 增加运行时可观测与交付能力，通过 `GET /api/llm/provider-status`、`POST /api/llm/provider-smoke`、`GET /api/project-status`、`GET /demo` 和 `scripts/demo_mvp.ps1` 支撑真实演示、provider 诊断与项目运行总览展示。
 
 ## 面试中可展开的工程点
 
@@ -25,11 +26,11 @@
 - 为什么要通过 `LLMClient` 抽象和 provider 工厂实现真实模型接入，而不是把模型调用写死在节点中
 - 为什么 RAG 只负责语义增强而不替代 CSV 明细计算
 - 为什么先做本地混合检索 / BM25 风格增强，而不是直接引入完整向量库
-- 为什么要把事件时间线、规则评估和工具日志一起纳入主链，支撑可追踪、可验证的工程表达
+- 为什么要把事件时间线、规则评估、工具日志、provider 状态和 project-status 一起纳入主链，支撑可追踪、可验证的工程表达
 
 ## 当前不能过度声称的点
 
-- 不能说已经实现 embedding / BM25 / rerank
+- 不能说已经实现 embedding / 向量检索 / rerank
 - 不能说已经实现 DockerSandbox
 - 不能说已经实现完整 React 前端
 - 不能说所有分析都由大模型自动完成

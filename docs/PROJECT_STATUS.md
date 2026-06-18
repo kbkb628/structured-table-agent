@@ -13,6 +13,9 @@
 - 工具调用日志查询：`GET /api/analysis/{task_id}/tool-logs`
 - 规则评估重算：`POST /api/eval/run`
 - 固定回归评测：`POST /api/eval/cases/run`
+- LLM provider 诊断：`GET /api/llm/provider-status`
+- LLM provider smoke：`POST /api/llm/provider-smoke`
+- 项目运行总览：`GET /api/project-status`
 - SQLite 持久化：`files`、`analysis_tasks`、`analysis_events`、`tool_call_logs`、`eval_results`
 - DuckDB 真实聚合工具：按品类、地区、渠道执行聚合分析
 - Share 分析工具：按维度计算指标占比、贡献率和百分比
@@ -31,6 +34,7 @@
   - 补充型 `llm_judgement`
 - Observability 事件收口：`backend/app/observability`
 - Windows 一键演示脚本：`scripts/demo_mvp.ps1`
+- provider smoke 脚本：`scripts/qwen_provider_smoke.ps1`
 - 极简本地演示页：`GET /demo`
 
 ## 当前真实能力边界
@@ -50,6 +54,8 @@
 - SQLite 持久化与 Redis 优先 / SQLite 降级
 - 规则评分与固定 case 回归验证
 - 基于真实 API 的极简页面演示闭环
+- 基于 `GET /api/project-status` 的项目运行总览接口
+- 基于 `scripts/demo_mvp.ps1` 的一键演示交付链路
 
 当前不能声明已实现：
 
@@ -71,6 +77,11 @@
   - `tests/test_task_builder.py`
   - `tests/test_qwen_client.py`
   - `tests/test_analysis_runner.py`
+- 最新 demo / 交付文档 / project-status 相关验证：
+  - `tests/test_demo_page.py`
+  - `tests/test_demo_script_consistency.py`
+  - `tests/test_project_status_api.py`
+  - `tests/test_delivery_docs.py`
 - 最新全量测试：
   - 以 `cd backend && .\.venv\Scripts\python.exe -m pytest -q` 为准
 - 最新真实 Provider smoke check：
@@ -83,7 +94,7 @@
   - `status`
   - `analysis_goal`
   - `analysis_plan`
-- `business_context` 继续真实写入任务状态，并可通过 `GET /api/analysis/{task_id}` 查看
+- `business_context` 会真实写入任务状态，并可通过 `GET /api/analysis/{task_id}` 查看
 - `GET /api/analysis/{task_id}` 当前还会返回：
   - `pending_metrics`
   - `pending_tool_calls`
@@ -107,7 +118,7 @@
   - `average_report_completeness`
   - `average_chart_validity`
   - `average_field_validity`
-- 报告工具输出与 LLM 报告层最终都受 `FinalReport` schema 约束
+- 报告工具输出和 LLM 报告层最终都受 `FinalReport` schema 约束
 - LangGraph 当前支持：
   - `match_fields` 生成 `pending_metrics`
   - `match_fields` 生成 `planned_tool_calls`
@@ -132,14 +143,35 @@
 - `keyword_retriever` 当前已升级为本地混合检索：
   - 关键词重叠打分
   - 短语命中加权
-  - related_fields 字段加权
+  - `related_fields` 字段加权
   - BM25 风格归一化评分
   - `score_breakdown` 检索打分明细
+- `/demo` 当前支持：
+  - 上传或加载样例数据
+  - 创建并执行真实分析任务
+  - 查看任务摘要、图表预览、最终报告、事件时间线和工具日志
+  - 查看 provider status / smoke
+  - 查看 project runtime overview
+  - 运行 fixed eval cases
+- `GET /api/project-status` 当前聚合：
+  - provider 解析与 diagnostics
+  - demo 可用性与路径
+  - `files`
+  - `analysis_tasks`
+  - `analysis_events`
+  - `tool_call_logs`
+  - `eval_results`
+- `scripts/demo_mvp.ps1` 当前输出：
+  - `project_status_provider`
+  - `project_status_demo_available`
+  - `project_status_files`
+  - `project_status_tasks`
+  - 六个固定 demo 问题的任务结果摘要
 
 ## 当前结论
 
 - 如果按最初 MVP 要求看，项目主链路早已完成。
-- 按当前“贴合简历表达”的目标看，项目现在已经跨过“真实 LLM 接入”这一条关键门槛。
+- 按当前“贴合简历表达”的目标看，项目现在已经跨过“真实 LLM 接入”和“可验证演示交付”这两个关键门槛。
 - 现阶段剩余未实现内容主要是第二阶段增强，而不是当前主链缺口。
 
 ## 剩余增强方向
@@ -149,18 +181,24 @@
 - 引入 DockerSandbox
 - 增强前端过程展示
 - 扩展更多分析工具，如更细粒度趋势分析、更多异常检测策略
+
 ## Latest Increment
 
 - Added backend provider observability endpoint: `GET /api/llm/provider-status`
 - Added backend provider smoke endpoint: `POST /api/llm/provider-smoke`
 - Added repo-level smoke script: `scripts/qwen_provider_smoke.ps1`
+- Added backend runtime overview endpoint: `GET /api/project-status`
+- Surfaced runtime overview in `/demo`
+- Surfaced runtime overview in `scripts/demo_mvp.ps1`
 
-These additions turn real Tongyi Qianwen integration into a runtime-verifiable capability instead of only a code-level capability:
+These additions turn real Tongyi Qianwen integration and demo delivery into runtime-verifiable capabilities instead of only code-level capabilities:
 
 - inspect the resolved `provider`
 - inspect whether a usable key is detected
 - inspect the current `api_key_source`
 - run one minimal real provider call without creating a business task
+- inspect whether `/demo` is available
+- inspect SQLite row counts for core runtime tables
 
 Latest real smoke evidence on this machine:
 
