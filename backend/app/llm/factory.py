@@ -57,6 +57,42 @@ def describe_llm_provider_resolution() -> dict:
     }
 
 
+def describe_llm_provider_diagnostics(resolution: dict | None = None) -> dict:
+    resolved = resolution or describe_llm_provider_resolution()
+    provider = str(resolved.get("provider") or "").lower()
+    has_api_key = bool(resolved.get("has_api_key"))
+    api_key_source = resolved.get("api_key_source")
+    key_source_kind = "missing"
+    if api_key_source:
+        key_source_kind = "qwen" if api_key_source in {"QWEN_API_KEY", "DASHSCOPE_API_KEY"} else "openai_compatible"
+
+    provider_supported = provider in {"qwen", "mock"}
+    smoke_ready = provider_supported and (provider == "mock" or has_api_key)
+
+    warnings: list[str] = []
+    recommendations: list[str] = []
+
+    if not provider_supported:
+        warnings.append(f"Unsupported provider: {provider}.")
+        recommendations.append("Set LLM_PROVIDER to qwen or mock.")
+    if provider == "qwen" and not has_api_key:
+        warnings.append("No API key was detected for qwen provider.")
+        recommendations.append("Set QWEN_API_KEY or DASHSCOPE_API_KEY before calling the real provider.")
+    if provider == "qwen" and key_source_kind == "openai_compatible":
+        warnings.append(f"Using compatible key source: {api_key_source}.")
+        recommendations.append("If DashScope rejects the request, verify this key is a real Qwen-compatible credential.")
+    if provider == "mock":
+        recommendations.append("Mock provider is suitable for offline or local development runs.")
+
+    return {
+        "provider_supported": provider_supported,
+        "key_source_kind": key_source_kind,
+        "smoke_ready": smoke_ready,
+        "warnings": warnings,
+        "recommendations": recommendations,
+    }
+
+
 def get_llm_client():
     resolution = describe_llm_provider_resolution()
     provider = resolution["provider"]

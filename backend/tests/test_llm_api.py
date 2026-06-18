@@ -19,6 +19,10 @@ def test_get_llm_provider_status_reports_resolution(monkeypatch):
     assert payload["api_key_source"] == "OPENAI_API_KEY_0011AI"
     assert payload["model"] == "qwen-plus"
     assert payload["base_url"].startswith("https://")
+    assert "diagnostics" in payload
+    assert payload["diagnostics"]["provider_supported"] is True
+    assert payload["diagnostics"]["key_source_kind"] == "openai_compatible"
+    assert payload["diagnostics"]["recommendations"]
 
 
 def test_post_llm_provider_smoke_returns_runtime_failure_details(monkeypatch):
@@ -44,6 +48,8 @@ def test_post_llm_provider_smoke_returns_runtime_failure_details(monkeypatch):
     assert payload["provider_resolution"]["api_key_source"] == "OPENAI_API_KEY_0011AI"
     assert payload["error_type"] == "RuntimeError"
     assert payload["error_message"] == "provider smoke failed"
+    assert payload["diagnostics"]["key_source_kind"] == "openai_compatible"
+    assert payload["diagnostics"]["smoke_ready"] is True
 
 
 def test_post_llm_provider_smoke_returns_analysis_goal_when_provider_is_healthy(monkeypatch):
@@ -67,3 +73,34 @@ def test_post_llm_provider_smoke_returns_analysis_goal_when_provider_is_healthy(
     assert payload["ok"] is True
     assert payload["client_type"] == "HealthyClient"
     assert payload["analysis_goal"] == "Compare regional sales performance"
+    assert payload["diagnostics"]["provider_supported"] is True
+    assert payload["diagnostics"]["smoke_ready"] is True
+
+
+def test_get_llm_provider_status_marks_unsupported_provider(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "unsupported_provider")
+
+    client = TestClient(app)
+    response = client.get("/api/llm/provider-status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["provider"] == "unsupported_provider"
+    assert payload["diagnostics"]["provider_supported"] is False
+    assert any("Unsupported provider" in item for item in payload["diagnostics"]["warnings"])
+
+
+def test_get_llm_provider_status_marks_missing_key_when_qwen_selected(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "qwen")
+    monkeypatch.delenv("QWEN_API_KEY", raising=False)
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.delenv("OPENAI_API_KEY_0011AI", raising=False)
+
+    client = TestClient(app)
+    response = client.get("/api/llm/provider-status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["has_api_key"] is False
+    assert payload["diagnostics"]["smoke_ready"] is False
+    assert any("No API key" in item for item in payload["diagnostics"]["warnings"])

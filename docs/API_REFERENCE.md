@@ -334,3 +334,11 @@ Invoke-RestMethod -Method Post `
 cd E:\bgagent1
 .\scripts\qwen_provider_smoke.ps1
 ```
+
+`diagnostics` 字段说明：
+
+- `provider_supported`：当前 provider 是否属于项目已支持集合
+- `key_source_kind`：当前 key 来源类别，可能为 `qwen`、`openai_compatible` 或 `missing`
+- `smoke_ready`：当前配置是否满足最小 smoke 调用前置条件
+- `warnings`：当前配置下的风险提示
+- `recommendations`：建议的下一步排查或配置动作

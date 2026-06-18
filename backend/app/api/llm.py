@@ -1,21 +1,33 @@
 from fastapi import APIRouter
 
+from app.llm.factory import describe_llm_provider_diagnostics
 from app.llm.factory import describe_llm_provider_resolution
 from app.llm.factory import get_llm_client
+from app.schemas.analysis_schema import LLMProviderSmokeResponse
+from app.schemas.analysis_schema import LLMProviderStatusResponse
 
 router = APIRouter(prefix="/api/llm", tags=["llm"])
 
 
-@router.get("/provider-status")
-def get_provider_status() -> dict:
-    return describe_llm_provider_resolution()
-
-
-@router.post("/provider-smoke")
-def run_provider_smoke() -> dict:
+@router.get("/provider-status", response_model=LLMProviderStatusResponse)
+def get_provider_status() -> LLMProviderStatusResponse:
     resolution = describe_llm_provider_resolution()
+    return LLMProviderStatusResponse(
+        **resolution,
+        diagnostics=describe_llm_provider_diagnostics(resolution),
+    )
+
+
+@router.post("/provider-smoke", response_model=LLMProviderSmokeResponse)
+def run_provider_smoke() -> LLMProviderSmokeResponse:
+    resolution = describe_llm_provider_resolution()
+    diagnostics = describe_llm_provider_diagnostics(resolution)
     payload = {
-        "provider_resolution": resolution,
+        "provider_resolution": LLMProviderStatusResponse(
+            **resolution,
+            diagnostics=diagnostics,
+        ),
+        "diagnostics": diagnostics,
     }
 
     try:
@@ -53,4 +65,4 @@ def run_provider_smoke() -> dict:
         payload["error_type"] = type(exc).__name__
         payload["error_message"] = str(exc)
 
-    return payload
+    return LLMProviderSmokeResponse(**payload)

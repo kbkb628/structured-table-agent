@@ -83,3 +83,32 @@ class EvalCasesRunResponse(BaseModel):
     average_chart_validity: float
     average_field_validity: float
     results: list[dict[str, Any]]
+
+
+class LLMProviderDiagnostics(BaseModel):
+    provider_supported: bool
+    key_source_kind: str
+    smoke_ready: bool
+    warnings: list[str] = Field(default_factory=list)
+    recommendations: list[str] = Field(default_factory=list)
+
+
+class LLMProviderStatusResponse(BaseModel):
+    provider: str
+    allow_fallback: bool
+    has_api_key: bool
+    api_key_source: str | None
+    base_url: str
+    model: str
+    timeout_seconds: float
+    diagnostics: LLMProviderDiagnostics
+
+
+class LLMProviderSmokeResponse(BaseModel):
+    provider_resolution: LLMProviderStatusResponse
+    client_type: str | None = None
+    ok: bool
+    analysis_goal: str | None = None
+    error_type: str | None = None
+    error_message: str | None = None
+    diagnostics: LLMProviderDiagnostics
