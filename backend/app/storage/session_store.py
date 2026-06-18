@@ -154,6 +154,8 @@ class SessionStore:
 
     def save_state(self, task_id: str, state: dict) -> bool:
         client = self._connect()
+        context_checkpoint = self._build_context_checkpoint(state)
+        state["context_checkpoint"] = context_checkpoint
         if client is not None:
             keys = self._build_keys(task_id)
             client.set(keys["analysis_state"], json.dumps(state, ensure_ascii=False))
@@ -168,15 +170,11 @@ class SessionStore:
                 keys["business_context"],
                 json.dumps(state.get("business_context", []), ensure_ascii=False),
             )
-            context_checkpoint = self._build_context_checkpoint(state)
-            state["context_checkpoint"] = context_checkpoint
             client.set(keys["latest_context"], json.dumps(context_checkpoint, ensure_ascii=False))
             self._record_context_checkpoint_refreshed(task_id, context_checkpoint)
             update_task_state(task_id, state)
             return True
         logger.warning("Redis unavailable; persisting session state to SQLite for task %s", task_id)
-        context_checkpoint = self._build_context_checkpoint(state)
-        state["context_checkpoint"] = context_checkpoint
         self._record_context_checkpoint_refreshed(task_id, context_checkpoint)
         update_task_state(task_id, state)
         return False

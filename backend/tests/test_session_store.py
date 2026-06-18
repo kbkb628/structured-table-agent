@@ -417,6 +417,10 @@ def test_session_store_persists_granular_redis_keys(monkeypatch):
     assert latest_context["business_context_titles"] == ["Sales Amount"]
     assert latest_context["finding_count"] == 1
     assert "business_context" not in latest_context
+    restored_snapshot = json.loads(fake_client.values[f"analysis_state:{task_id}"])
+    assert restored_snapshot["context_checkpoint"]["analysis_goal"] == "compare region sales"
+    assert restored_snapshot["context_checkpoint"]["current_step"] == "report"
+    assert restored_snapshot["context_checkpoint"]["draft_report_status"] == "available"
 
 
 def test_session_store_load_state_hydrates_context_checkpoint_from_redis(monkeypatch):
