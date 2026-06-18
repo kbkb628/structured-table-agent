@@ -512,6 +512,61 @@ def test_eval_run_uses_session_store_state_when_redis_snapshot_is_newer():
     assert payload["eval_result"]["tool_success_rate"] == 1.0
 
 
+def test_eval_run_uses_redis_snapshot_even_when_sqlite_row_is_missing():
+    task_id = f"task_eval_redis_only_{uuid.uuid4().hex[:8]}"
+    redis_only_state = {
+        "task_id": task_id,
+        "file_id": "file_eval_redis_only",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {"dimension_field": "region", "metric_field": "sales_amount"},
+        "business_context": [],
+        "analysis_plan": ["match fields", "aggregate", "chart", "report"],
+        "current_step": "completed",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [
+            {
+                "success": True,
+                "tool_name": "groupby_aggregate",
+                "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]},
+                "summary": "East leads region sales.",
+                "error": None,
+                "metadata": {"elapsed_ms": 12},
+            }
+        ],
+        "chart_specs": [{"chart_type": "bar", "plotly_spec": {"data": [{"type": "bar"}]}}],
+        "draft_report": {},
+        "final_report": {
+            "title": "Analysis Report: analyse sales by region",
+            "analysis_goal": "compare region sales",
+            "key_findings": [{"finding": "East performs best", "evidence": "1200", "source_tool": "groupby_aggregate"}],
+            "chart_explanations": ["Bar chart generated for bar view."],
+            "business_suggestions": ["Focus on East."],
+            "data_limitations": ["Uploaded CSV only."],
+            "next_steps": ["Check by channel."],
+        },
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "completed",
+    }
+
+    fake_client = FakeRedisClient()
+    fake_client.values[f"analysis_state:{task_id}"] = json.dumps(redis_only_state, ensure_ascii=False)
+
+    client = TestClient(app)
+    with patch.object(SessionStore, "_connect", lambda self: fake_client):
+        response = client.post("/api/eval/run", json={"task_id": task_id})
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["task_id"] == task_id
+    assert payload["eval_result"]["overall_score"] > 0
+
+
 def test_eval_run_returns_404_for_missing_task():
     client = TestClient(app)
 
@@ -657,6 +712,54 @@ def test_get_analysis_falls_back_to_sqlite_when_redis_is_available_but_task_key_
     assert response.status_code == 200
     assert response.json()["task_id"] == task_id
     assert response.json()["business_context"]
+
+
+def test_get_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():
+    task_id = f"task_api_redis_only_{uuid.uuid4().hex[:8]}"
+    redis_only_state = {
+        "task_id": task_id,
+        "file_id": "file_api_redis_only",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {"dimension_field": "region", "metric_field": "sales_amount"},
+        "business_context": [{"id": "redis_metric", "title": "Redis Sales Amount"}],
+        "analysis_plan": ["match fields", "aggregate"],
+        "current_step": "report",
+        "completed_steps": ["match fields"],
+        "intermediate_findings": [{"summary": "Redis says East leads."}],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {"title": "Redis draft report"},
+        "final_report": {"title": "Redis final report", "analysis_goal": "compare region sales"},
+        "llm_judgement": {"supported_by_tools": True, "issue_count": 0},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "running",
+        "context_checkpoint": {
+            "analysis_goal": "compare region sales",
+            "current_step": "report",
+            "status": "running",
+            "draft_report_status": "available",
+            "finding_count": 1,
+        },
+    }
+
+    fake_client = FakeRedisClient()
+    fake_client.values[f"analysis_state:{task_id}"] = json.dumps(redis_only_state, ensure_ascii=False)
+
+    client = TestClient(app)
+    with patch.object(SessionStore, "_connect", lambda self: fake_client):
+        response = client.get(f"/api/analysis/{task_id}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["task_id"] == task_id
+    assert body["draft_report"]["title"] == "Redis draft report"
+    assert body["final_report"]["title"] == "Redis final report"
+    assert body["llm_judgement"]["supported_by_tools"] is True
+    assert body["business_context"][0]["title"] == "Redis Sales Amount"
 
 
 def test_get_analysis_uses_granular_redis_recovery_when_snapshot_is_missing(tmp_path):

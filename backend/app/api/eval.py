@@ -6,7 +6,7 @@ from app.observability.event_logger import hydrate_state_events
 from app.observability.event_logger import record_eval_finished
 from app.schemas.analysis_schema import EvalCasesRunResponse
 from app.schemas.analysis_schema import EvalRunRequest, EvalRunResponse
-from app.storage.analysis_store import get_task_state, record_eval_result
+from app.storage.analysis_store import record_eval_result
 from app.storage.session_store import SessionStore
 
 router = APIRouter(prefix="/api/eval", tags=["eval"])
@@ -14,9 +14,6 @@ router = APIRouter(prefix="/api/eval", tags=["eval"])
 
 @router.post("/run", response_model=EvalRunResponse)
 def run_eval(request: EvalRunRequest) -> EvalRunResponse:
-    persisted_state = get_task_state(request.task_id)
-    if persisted_state is None:
-        raise HTTPException(status_code=404, detail="Task not found.")
     state, _ = SessionStore().load_state(request.task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")

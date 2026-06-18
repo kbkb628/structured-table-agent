@@ -53,9 +53,6 @@ def run_analysis(task_id: str) -> AnalysisTaskState:
 
 @router.get("/{task_id}", response_model=AnalysisTaskState)
 def get_analysis(task_id: str) -> AnalysisTaskState:
-    state = get_task_state(task_id)
-    if state is None:
-        raise HTTPException(status_code=404, detail="Task not found.")
     state, _ = SessionStore().load_state(task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
@@ -70,6 +67,8 @@ def get_analysis(task_id: str) -> AnalysisTaskState:
 def get_analysis_events(task_id: str) -> AnalysisEventList:
     state = get_task_state(task_id)
     if state is None:
+        state, _ = SessionStore().load_state(task_id)
+    if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
     return AnalysisEventList(task_id=task_id, events=list_analysis_events(task_id))
 
@@ -77,6 +76,8 @@ def get_analysis_events(task_id: str) -> AnalysisEventList:
 @router.get("/{task_id}/tool-logs", response_model=AnalysisToolLogList)
 def get_analysis_tool_logs(task_id: str) -> AnalysisToolLogList:
     state = get_task_state(task_id)
+    if state is None:
+        state, _ = SessionStore().load_state(task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
     return AnalysisToolLogList(task_id=task_id, tool_call_logs=get_tool_call_logs(task_id))
