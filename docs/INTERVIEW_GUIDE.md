@@ -147,7 +147,7 @@
 - provider 能力不只停留在代码抽象上，还能通过接口和脚本做运行时诊断
 - demo 不只是静态页面，而是基于真实后端接口拉取任务状态、事件和工具日志
 - project runtime overview 能直接展示 SQLite 表行数和 provider 状态，便于演示当前系统状态
-- `demo_mvp.ps1` 还能直接输出 provider smoke failed 时的错误字段，以及 fixed eval 的质量指标，便于当场说明系统当前可用性和结果质量
+- `demo_mvp.ps1` 还能直接输出 `project_status_provider`、`provider_smoke_error_message`、`fixed_eval_average_trace_completeness`、`fixed_eval_average_report_completeness` 等字段，作为 fixed eval 质量指标和运行时诊断证据，便于当场说明系统当前可用性和结果质量
 
 ## 9. 后续迭代方向
 

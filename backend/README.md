@@ -221,6 +221,13 @@ cd E:\bgagent1
 
 The script uploads the sample CSV, queries `GET /api/project-status`, checks `GET /api/llm/provider-status` and `POST /api/llm/provider-smoke`, runs the current supported demo question set, and prints a compact JSON summary including provider diagnostics, smoke failure details when present, and fixed-eval quality metrics.
 
+Key summary fields exposed by the script include:
+
+- `project_status_provider`
+- `provider_smoke_error_message`
+- `fixed_eval_average_trace_completeness`
+- `fixed_eval_average_report_completeness`
+
 ## Windows API examples
 
 Start the server:

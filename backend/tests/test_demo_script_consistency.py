@@ -1,19 +1,35 @@
+import json
+import re
 from pathlib import Path
 
 
-def test_demo_script_questions_match_readme_demo_questions():
-    repo_root = Path(__file__).resolve().parents[2]
-    readme = (repo_root / "backend" / "README.md").read_text(encoding="utf-8")
-    script = (repo_root / "scripts" / "demo_mvp.ps1").read_text(encoding="utf-8")
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
 
-    expected_questions = [
-        "analyse category sales top 5",
-        "analyse category sales share",
-        "analyse category sales anomalies",
-        "analyse sales by region",
-        "analyse sales trend by order date",
-        "analyse channel order count and sales performance",
+
+def _load_demo_contract() -> dict:
+    contract_path = _repo_root() / "scripts" / "demo_mvp_contract.json"
+    return json.loads(contract_path.read_text(encoding="utf-8"))
+
+
+def _read_demo_script() -> str:
+    return (_repo_root() / "scripts" / "demo_mvp.ps1").read_text(encoding="utf-8")
+
+
+def _extract_pscustomobject_fields(script: str) -> list[list[str]]:
+    blocks = re.findall(r"\[pscustomobject\]@\{(.*?)\n\s*\}", script, flags=re.DOTALL)
+    return [
+        re.findall(r"^\s*([A-Za-z0-9_]+)\s*=", block, flags=re.MULTILINE)
+        for block in blocks
     ]
+
+
+def test_demo_script_questions_match_readme_demo_questions():
+    repo_root = _repo_root()
+    readme = (repo_root / "backend" / "README.md").read_text(encoding="utf-8")
+    script = _read_demo_script()
+    contract = _load_demo_contract()
+    expected_questions = contract["questions"]
 
     for question in expected_questions:
         assert f"- `{question}`" in readme
@@ -21,8 +37,7 @@ def test_demo_script_questions_match_readme_demo_questions():
 
 
 def test_demo_script_mentions_project_status_summary_output():
-    repo_root = Path(__file__).resolve().parents[2]
-    script = (repo_root / "scripts" / "demo_mvp.ps1").read_text(encoding="utf-8")
+    script = _read_demo_script()
 
     assert "/api/project-status" in script
     assert "project_status_provider" in script
@@ -30,8 +45,7 @@ def test_demo_script_mentions_project_status_summary_output():
 
 
 def test_demo_script_mentions_provider_and_eval_summary_output():
-    repo_root = Path(__file__).resolve().parents[2]
-    script = (repo_root / "scripts" / "demo_mvp.ps1").read_text(encoding="utf-8")
+    script = _read_demo_script()
 
     assert "/api/llm/provider-status" in script
     assert "/api/llm/provider-smoke" in script
@@ -43,3 +57,28 @@ def test_demo_script_mentions_provider_and_eval_summary_output():
     assert "provider_smoke_error_message" in script
     assert "fixed_eval_average_trace_completeness" in script
     assert "fixed_eval_average_report_completeness" in script
+
+
+def test_demo_script_contract_matches_pscustomobject_output_shape():
+    contract = _load_demo_contract()
+    object_fields = _extract_pscustomobject_fields(_read_demo_script())
+
+    assert object_fields[0] == contract["run_fields"][0]
+    assert object_fields[1] == contract["top_level_fields"][0]
+
+
+def test_demo_script_contract_is_documented_across_delivery_docs():
+    repo_root = _repo_root()
+    contract = _load_demo_contract()
+    root_readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    backend_readme = (repo_root / "backend" / "README.md").read_text(encoding="utf-8")
+    api_reference = (repo_root / "docs" / "API_REFERENCE.md").read_text(encoding="utf-8")
+    project_status = (repo_root / "docs" / "PROJECT_STATUS.md").read_text(encoding="utf-8")
+    interview_guide = (repo_root / "docs" / "INTERVIEW_GUIDE.md").read_text(encoding="utf-8")
+
+    for field in contract["documented_summary_fields"]:
+        assert field in root_readme
+        assert field in backend_readme
+        assert field in api_reference
+        assert field in project_status
+        assert field in interview_guide

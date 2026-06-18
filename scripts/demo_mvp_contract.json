@@ -1,0 +1,53 @@
+{
+  "questions": [
+    "analyse category sales top 5",
+    "analyse category sales share",
+    "analyse category sales anomalies",
+    "analyse sales by region",
+    "analyse sales trend by order date",
+    "analyse channel order count and sales performance"
+  ],
+  "run_fields": [
+    [
+      "question",
+      "task_id",
+      "status",
+      "tool_results",
+      "chart_specs",
+      "eval_score",
+      "key_findings"
+    ]
+  ],
+  "top_level_fields": [
+    [
+      "upload_file_id",
+      "upload_rows",
+      "upload_columns",
+      "project_status_provider",
+      "project_status_demo_available",
+      "project_status_files",
+      "project_status_tasks",
+      "provider_status_key_source",
+      "provider_status_smoke_ready",
+      "provider_smoke_ok",
+      "provider_smoke_client_type",
+      "provider_smoke_error_type",
+      "provider_smoke_error_message",
+      "fixed_eval_pass_rate",
+      "fixed_eval_passed_cases",
+      "fixed_eval_total_cases",
+      "fixed_eval_average_trace_completeness",
+      "fixed_eval_average_report_completeness",
+      "fixed_eval_average_tool_success_rate",
+      "runs",
+      "rerun_eval_task",
+      "rerun_eval_score"
+    ]
+  ],
+  "documented_summary_fields": [
+    "project_status_provider",
+    "provider_smoke_error_message",
+    "fixed_eval_average_trace_completeness",
+    "fixed_eval_average_report_completeness"
+  ]
+}
