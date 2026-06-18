@@ -258,6 +258,7 @@
   - `project_status_latest_task_has_llm_judgement`
   - `project_status_latest_task_supported_by_tools`
   - `project_status_latest_task_has_findings`
+  - `project_status_latest_task_judgement_issue_count`
   - `project_status_latest_task_tool_call_log_count`
   - `project_status_files`
   - `project_status_tasks`

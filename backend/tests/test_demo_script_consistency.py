@@ -63,6 +63,7 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_has_llm_judgement" in script
     assert "project_status_latest_task_supported_by_tools" in script
     assert "project_status_latest_task_has_findings" in script
+    assert "project_status_latest_task_judgement_issue_count" in script
     assert "project_status_latest_task_tool_call_log_count" in script
     assert "project_status_latest_task_has_eval_result" in script
     assert "project_status_latest_task_eval_overall_score" in script
@@ -140,8 +141,14 @@ def test_demo_script_mentions_provider_and_eval_summary_output():
     assert "/api/llm/provider-smoke" in script
     assert "/api/eval/cases/run" in script
     assert "provider_status_key_source" in script
+    assert "provider_status_smoke_ready" in script
+    assert "provider_smoke_ok" in script
+    assert "provider_smoke_client_type" in script
+    assert "provider_smoke_error_type" in script
     assert "provider_smoke_ok" in script
     assert "fixed_eval_pass_rate" in script
+    assert "fixed_eval_passed_cases" in script
+    assert "fixed_eval_total_cases" in script
     assert "provider_smoke_error_type" in script
     assert "provider_smoke_error_message" in script
     assert "fixed_eval_retried_tool_calls" in script
@@ -149,6 +156,7 @@ def test_demo_script_mentions_provider_and_eval_summary_output():
     assert "fixed_eval_average_tool_elapsed_ms_total" in script
     assert "fixed_eval_average_trace_completeness" in script
     assert "fixed_eval_average_report_completeness" in script
+    assert "fixed_eval_average_tool_success_rate" in script
     assert "fixed_eval_average_chart_validity" in script
     assert "fixed_eval_average_field_validity" in script
 

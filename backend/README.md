@@ -316,6 +316,7 @@ Additional runtime-summary fields that are also exposed by the script include:
 
 - `project_status_demo_available`
 - `project_status_latest_task_has_llm_judgement`
+- `project_status_latest_task_judgement_issue_count`
 - `project_status_latest_task_tool_call_log_count`
 - `project_status_latest_task_eval_issue_count`
 - `project_status_latest_task_planned_tool_call_count`
@@ -331,6 +332,15 @@ Additional runtime-summary fields that are also exposed by the script include:
 - `project_status_latest_task_latest_error_code`
 - `project_status_files`
 - `project_status_tasks`
+- `provider_status_key_source`
+- `provider_status_smoke_ready`
+- `provider_smoke_ok`
+- `provider_smoke_client_type`
+- `provider_smoke_error_type`
+- `fixed_eval_pass_rate`
+- `fixed_eval_passed_cases`
+- `fixed_eval_total_cases`
+- `fixed_eval_average_tool_success_rate`
 
 These `project_status_latest_task_match_analysis_type`, `project_status_latest_task_candidate_field_count`, `project_status_latest_task_match_warning_count`, and `project_status_latest_task_planned_tool_sequence` fields come from the persisted `field_understanding` block produced by `match_fields`. They show real structured matching and schema-bounded planning evidence rather than any automatic schema repair capability.
 

@@ -43,6 +43,7 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "project_status_session_store_latest_recovered_task_id" in content
     assert "project_status_session_store_latest_recovered_at" in content
     assert "project_status_latest_task_has_llm_judgement" in content
+    assert "project_status_latest_task_judgement_issue_count" in content
     assert "project_status_latest_task_tool_call_log_count" in content
     assert "project_status_latest_task_eval_issue_count" in content
     assert "project_status_latest_task_planned_tool_call_count" in content
@@ -59,10 +60,19 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "project_status_latest_task_latest_error_code" in content
     assert "project_status_files" in content
     assert "project_status_tasks" in content
+    assert "provider_status_key_source" in content
+    assert "provider_status_smoke_ready" in content
+    assert "provider_smoke_ok" in content
+    assert "provider_smoke_client_type" in content
+    assert "provider_smoke_error_type" in content
     assert "fixed_eval_average_trace_completeness" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content
     assert "fixed_eval_average_chart_validity" in content
     assert "fixed_eval_average_field_validity" in content
+    assert "fixed_eval_pass_rate" in content
+    assert "fixed_eval_passed_cases" in content
+    assert "fixed_eval_total_cases" in content
+    assert "fixed_eval_average_tool_success_rate" in content
 
 
 def test_resume_project_description_mentions_qwen_and_project_status_delivery():
@@ -107,6 +117,7 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "project_status_session_store_latest_recovered_task_id" in content
     assert "project_status_session_store_latest_recovered_at" in content
     assert "project_status_latest_task_has_llm_judgement" in content
+    assert "project_status_latest_task_judgement_issue_count" in content
     assert "project_status_latest_task_tool_call_log_count" in content
     assert "project_status_latest_task_eval_issue_count" in content
     assert "project_status_latest_task_planned_tool_call_count" in content
@@ -123,12 +134,21 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "project_status_latest_task_latest_error_code" in content
     assert "project_status_files" in content
     assert "project_status_tasks" in content
+    assert "provider_status_key_source" in content
+    assert "provider_status_smoke_ready" in content
+    assert "provider_smoke_ok" in content
+    assert "provider_smoke_client_type" in content
+    assert "provider_smoke_error_type" in content
     assert "fixed_eval_average_trace_completeness" in content
     assert "fixed_eval_retried_tool_calls" in content
     assert "fixed_eval_retry_attempts_total" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content
     assert "fixed_eval_average_chart_validity" in content
     assert "fixed_eval_average_field_validity" in content
+    assert "fixed_eval_pass_rate" in content
+    assert "fixed_eval_passed_cases" in content
+    assert "fixed_eval_total_cases" in content
+    assert "fixed_eval_average_tool_success_rate" in content
 
 
 def test_root_readme_matches_current_runtime_truth():
@@ -162,6 +182,7 @@ def test_root_readme_matches_current_runtime_truth():
     assert "project_status_session_store_latest_recovered_task_id" in content
     assert "project_status_session_store_latest_recovered_at" in content
     assert "project_status_latest_task_has_llm_judgement" in content
+    assert "project_status_latest_task_judgement_issue_count" in content
     assert "project_status_latest_task_tool_call_log_count" in content
     assert "project_status_latest_task_eval_issue_count" in content
     assert "project_status_latest_task_planned_tool_call_count" in content
@@ -178,10 +199,19 @@ def test_root_readme_matches_current_runtime_truth():
     assert "project_status_latest_task_latest_error_code" in content
     assert "project_status_files" in content
     assert "project_status_tasks" in content
+    assert "provider_status_key_source" in content
+    assert "provider_status_smoke_ready" in content
+    assert "provider_smoke_ok" in content
+    assert "provider_smoke_client_type" in content
+    assert "provider_smoke_error_type" in content
     assert "fixed_eval_average_report_completeness" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content
     assert "fixed_eval_average_chart_validity" in content
     assert "fixed_eval_average_field_validity" in content
+    assert "fixed_eval_pass_rate" in content
+    assert "fixed_eval_passed_cases" in content
+    assert "fixed_eval_total_cases" in content
+    assert "fixed_eval_average_tool_success_rate" in content
     assert "session store" in content.lower() or "Redis 优先" in content
 
 
@@ -229,6 +259,7 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "project_status_session_store_latest_recovered_task_id" in content
     assert "project_status_session_store_latest_recovered_at" in content
     assert "project_status_latest_task_has_llm_judgement" in content
+    assert "project_status_latest_task_judgement_issue_count" in content
     assert "project_status_latest_task_tool_call_log_count" in content
     assert "project_status_latest_task_eval_issue_count" in content
     assert "project_status_latest_task_planned_tool_call_count" in content
@@ -245,9 +276,18 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "project_status_latest_task_latest_error_code" in content
     assert "project_status_files" in content
     assert "project_status_tasks" in content
+    assert "provider_status_key_source" in content
+    assert "provider_status_smoke_ready" in content
+    assert "provider_smoke_ok" in content
+    assert "provider_smoke_client_type" in content
+    assert "provider_smoke_error_type" in content
     assert "fixed_eval_retried_tool_calls" in content
     assert "fixed_eval_retry_attempts_total" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content
     assert "fixed_eval_average_chart_validity" in content
     assert "fixed_eval_average_field_validity" in content
+    assert "fixed_eval_pass_rate" in content
+    assert "fixed_eval_passed_cases" in content
+    assert "fixed_eval_total_cases" in content
+    assert "fixed_eval_average_tool_success_rate" in content
     assert "session store" in content.lower() or "Redis 优先" in content
