@@ -47,7 +47,7 @@
 - 轻量 RAG 业务语义增强
 - 本地混合检索 / BM25 风格语义增强
 - LangGraph 多步状态流与最小动态路由
-- pandas / DuckDB / Plotly 的受控工具链
+- pandas / DuckDB 与 Plotly 风格图表配置（Plotly 配置）的受控工具链
 - 占比分析工具与主链接入
 - 趋势分析工具与主链接入
 - 异常检测工具与主链接入
