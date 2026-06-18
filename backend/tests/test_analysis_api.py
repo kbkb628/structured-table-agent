@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.llm.qwen_client import QwenResponseError
 from app.main import app
-from app.storage.analysis_store import create_task, record_event
+from app.storage.analysis_store import create_task, get_task_state, record_event
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
 from app.storage.session_store import SessionStore
@@ -573,6 +573,9 @@ def test_eval_run_uses_redis_snapshot_even_when_sqlite_row_is_missing():
     assert payload["task_id"] == task_id
     assert payload["eval_result"]["overall_score"] > 0
     assert payload["eval_result"]["trace_completeness"] == 1.0
+    stored = get_task_state(task_id)
+    assert stored is not None
+    assert stored["task_id"] == task_id
 
 
 def test_eval_run_returns_404_for_missing_task():
@@ -720,6 +723,9 @@ def test_run_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():
     assert response.status_code == 200
     assert response.json()["task_id"] == task_id
     assert response.json()["status"] == "completed"
+    stored = get_task_state(task_id)
+    assert stored is not None
+    assert stored["task_id"] == task_id
 
 
 def test_get_analysis_falls_back_to_sqlite_when_redis_is_available_but_task_key_is_missing(tmp_path):
@@ -816,6 +822,9 @@ def test_get_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():
     assert body["llm_judgement"]["supported_by_tools"] is True
     assert body["business_context"][0]["title"] == "Redis Sales Amount"
     assert body["events"][0]["event_type"] == "task_created"
+    stored = get_task_state(task_id)
+    assert stored is not None
+    assert stored["task_id"] == task_id
 
 
 def test_get_analysis_events_uses_redis_snapshot_when_sqlite_timeline_is_missing():
