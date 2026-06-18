@@ -137,6 +137,11 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_analysis_events" in script
     assert "project_status_tool_call_logs" in script
     assert "project_status_eval_results" in script
+    assert "project_status_files_exists" in script
+    assert "project_status_tasks_exists" in script
+    assert "project_status_analysis_events_exists" in script
+    assert "project_status_tool_call_logs_exists" in script
+    assert "project_status_eval_results_exists" in script
 
 
 def test_demo_script_mentions_provider_and_eval_summary_output():
@@ -184,6 +189,11 @@ def test_demo_script_contract_matches_pscustomobject_output_shape():
     assert "project_status_analysis_events" in object_fields[1]
     assert "project_status_tool_call_logs" in object_fields[1]
     assert "project_status_eval_results" in object_fields[1]
+    assert "project_status_files_exists" in object_fields[1]
+    assert "project_status_tasks_exists" in object_fields[1]
+    assert "project_status_analysis_events_exists" in object_fields[1]
+    assert "project_status_tool_call_logs_exists" in object_fields[1]
+    assert "project_status_eval_results_exists" in object_fields[1]
     assert "provider_status_allow_fallback" in object_fields[1]
     assert "provider_status_has_api_key" in object_fields[1]
     assert "provider_status_base_url" in object_fields[1]

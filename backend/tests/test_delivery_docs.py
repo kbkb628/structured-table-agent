@@ -63,6 +63,11 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "project_status_analysis_events" in content
     assert "project_status_tool_call_logs" in content
     assert "project_status_eval_results" in content
+    assert "project_status_files_exists" in content
+    assert "project_status_tasks_exists" in content
+    assert "project_status_analysis_events_exists" in content
+    assert "project_status_tool_call_logs_exists" in content
+    assert "project_status_eval_results_exists" in content
     assert "provider_status_allow_fallback" in content
     assert "provider_status_has_api_key" in content
     assert "provider_status_key_source" in content
@@ -149,6 +154,11 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "project_status_analysis_events" in content
     assert "project_status_tool_call_logs" in content
     assert "project_status_eval_results" in content
+    assert "project_status_files_exists" in content
+    assert "project_status_tasks_exists" in content
+    assert "project_status_analysis_events_exists" in content
+    assert "project_status_tool_call_logs_exists" in content
+    assert "project_status_eval_results_exists" in content
     assert "provider_status_allow_fallback" in content
     assert "provider_status_has_api_key" in content
     assert "provider_status_key_source" in content
@@ -226,6 +236,11 @@ def test_root_readme_matches_current_runtime_truth():
     assert "project_status_analysis_events" in content
     assert "project_status_tool_call_logs" in content
     assert "project_status_eval_results" in content
+    assert "project_status_files_exists" in content
+    assert "project_status_tasks_exists" in content
+    assert "project_status_analysis_events_exists" in content
+    assert "project_status_tool_call_logs_exists" in content
+    assert "project_status_eval_results_exists" in content
     assert "provider_status_allow_fallback" in content
     assert "provider_status_has_api_key" in content
     assert "provider_status_key_source" in content
@@ -315,6 +330,11 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "project_status_analysis_events" in content
     assert "project_status_tool_call_logs" in content
     assert "project_status_eval_results" in content
+    assert "project_status_files_exists" in content
+    assert "project_status_tasks_exists" in content
+    assert "project_status_analysis_events_exists" in content
+    assert "project_status_tool_call_logs_exists" in content
+    assert "project_status_eval_results_exists" in content
     assert "provider_status_allow_fallback" in content
     assert "provider_status_has_api_key" in content
     assert "provider_status_key_source" in content

@@ -204,6 +204,11 @@ try {
         project_status_latest_task_latest_error_code = $projectStatus.summary.latest_task.errors.latest_error_code
         project_status_latest_task_latest_error_message = $projectStatus.summary.latest_task.errors.latest_error_message
         project_status_latest_task_has_degradation = $projectStatus.summary.latest_task.errors.has_degradation
+        project_status_files_exists = $projectStatus.summary.database.tables.files.exists
+        project_status_tasks_exists = $projectStatus.summary.database.tables.analysis_tasks.exists
+        project_status_analysis_events_exists = $projectStatus.summary.database.tables.analysis_events.exists
+        project_status_tool_call_logs_exists = $projectStatus.summary.database.tables.tool_call_logs.exists
+        project_status_eval_results_exists = $projectStatus.summary.database.tables.eval_results.exists
         project_status_files = $projectStatus.summary.database.tables.files.row_count
         project_status_tasks = $projectStatus.summary.database.tables.analysis_tasks.row_count
         project_status_analysis_events = $projectStatus.summary.database.tables.analysis_events.row_count

@@ -308,6 +308,11 @@
   - `project_status_latest_task_failed_tool_result_count`
   - `project_status_latest_task_latest_retry_status`
   - `project_status_latest_task_latest_error_code`
+  - `project_status_files_exists`
+  - `project_status_tasks_exists`
+  - `project_status_analysis_events_exists`
+  - `project_status_tool_call_logs_exists`
+  - `project_status_eval_results_exists`
   - `project_status_files`
   - `project_status_tasks`
   - `project_status_analysis_events`
