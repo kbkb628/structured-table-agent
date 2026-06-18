@@ -269,6 +269,7 @@ Key summary fields exposed by the script include:
 - `project_status_latest_task_latest_route_decision`
 - `project_status_latest_task_chart_spec_count`
 - `project_status_latest_task_key_finding_count`
+- `project_status_latest_task_top_key_finding`
 - `project_status_latest_task_next_step_count`
 - `project_status_latest_task_business_context_count`
 - `project_status_latest_task_top_business_context_title`
@@ -290,6 +291,7 @@ Key summary fields exposed by the script include:
 - `project_status_latest_task_analysis_plan_count`
 - `project_status_latest_task_current_step`
 - `project_status_latest_task_finding_count`
+- `project_status_latest_task_latest_finding_summary`
 - `project_status_latest_task_dimension_field`
 - `project_status_latest_task_match_analysis_type`
 - `project_status_latest_task_candidate_field_count`

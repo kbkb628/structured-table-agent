@@ -259,6 +259,8 @@
   - `project_status_latest_task_latest_error_code`
   - `project_status_latest_task_latest_error_message`
   - `project_status_latest_task_has_degradation`
+  - `project_status_latest_task_top_key_finding`
+  - `project_status_latest_task_latest_finding_summary`
   - `project_status_latest_task_has_llm_judgement`
   - `project_status_latest_task_supported_by_tools`
   - `project_status_latest_task_has_findings`

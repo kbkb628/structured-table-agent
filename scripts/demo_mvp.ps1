@@ -165,6 +165,7 @@ try {
         project_status_latest_task_latest_route_decision = $projectStatus.summary.latest_task.process.latest_route_decision
         project_status_latest_task_chart_spec_count = $projectStatus.summary.latest_task.report.chart_spec_count
         project_status_latest_task_key_finding_count = $projectStatus.summary.latest_task.report.key_finding_count
+        project_status_latest_task_top_key_finding = $projectStatus.summary.latest_task.report.top_key_finding
         project_status_latest_task_business_suggestion_count = $projectStatus.summary.latest_task.report.business_suggestion_count
         project_status_latest_task_data_limitation_count = $projectStatus.summary.latest_task.report.data_limitation_count
         project_status_latest_task_next_step_count = $projectStatus.summary.latest_task.report.next_step_count
@@ -190,6 +191,7 @@ try {
         project_status_latest_task_current_step = $projectStatus.summary.latest_task.semantics.current_step
         project_status_latest_task_completed_step_count = $projectStatus.summary.latest_task.semantics.completed_step_count
         project_status_latest_task_finding_count = $projectStatus.summary.latest_task.semantics.finding_count
+        project_status_latest_task_latest_finding_summary = $projectStatus.summary.latest_task.semantics.latest_finding_summary
         project_status_latest_task_dimension_field = $projectStatus.summary.latest_task.semantics.dimension_field
         project_status_latest_task_metric_count = $projectStatus.summary.latest_task.semantics.metric_count
         project_status_latest_task_match_analysis_type = $projectStatus.summary.latest_task.semantics.match_analysis_type

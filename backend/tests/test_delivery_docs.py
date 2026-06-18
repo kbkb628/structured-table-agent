@@ -30,7 +30,9 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "project_status_latest_task_checkpoint_latest_error_code" in content
     assert "project_status_latest_task_current_step" in content
     assert "project_status_latest_task_finding_count" in content
+    assert "project_status_latest_task_latest_finding_summary" in content
     assert "project_status_latest_task_latest_tool_name" in content
+    assert "project_status_latest_task_top_key_finding" in content
     assert "project_status_latest_task_latest_error_message" in content
     assert "project_status_demo_available" in content
     assert "project_status_session_store_preferred_backend" in content
@@ -215,7 +217,9 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "project_status_latest_task_checkpoint_latest_error_code" in content
     assert "project_status_latest_task_current_step" in content
     assert "project_status_latest_task_finding_count" in content
+    assert "project_status_latest_task_latest_finding_summary" in content
     assert "project_status_latest_task_latest_tool_name" in content
+    assert "project_status_latest_task_top_key_finding" in content
     assert "project_status_latest_task_latest_error_message" in content
     assert "project_status_demo_available" in content
     assert "project_status_session_store_preferred_backend" in content
@@ -301,7 +305,9 @@ def test_root_readme_matches_current_runtime_truth():
     assert "project_status_latest_task_checkpoint_latest_error_code" in content
     assert "project_status_latest_task_current_step" in content
     assert "project_status_latest_task_finding_count" in content
+    assert "project_status_latest_task_latest_finding_summary" in content
     assert "project_status_latest_task_latest_tool_name" in content
+    assert "project_status_latest_task_top_key_finding" in content
     assert "project_status_latest_task_latest_error_message" in content
     assert "project_status_demo_available" in content
     assert "project_status_session_store_preferred_backend" in content
@@ -399,7 +405,9 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "project_status_latest_task_checkpoint_latest_error_code" in content
     assert "project_status_latest_task_current_step" in content
     assert "project_status_latest_task_finding_count" in content
+    assert "project_status_latest_task_latest_finding_summary" in content
     assert "project_status_latest_task_latest_tool_name" in content
+    assert "project_status_latest_task_top_key_finding" in content
     assert "project_status_latest_task_latest_error_message" in content
     assert "project_status_demo_available" in content
     assert "project_status_session_store_preferred_backend" in content

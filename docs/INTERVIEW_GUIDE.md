@@ -1,5 +1,7 @@
 # Interview Guide
 
+Runtime finding summary fields for demo diagnostics: `project_status_latest_task_top_key_finding`, `project_status_latest_task_latest_finding_summary`
+
 本文档用于面试时讲解当前项目，所有说法都应以仓库中的真实实现为准。
 如果需要把面试表述直接落到代码、接口、脚本和测试证据，可配合 [RESUME_EVIDENCE_MAP.md](./RESUME_EVIDENCE_MAP.md) 一起使用。
 如果需要按最短顺序做 2-5 分钟现场演示，可直接打开 [INTERVIEW_DEMO_CHECKLIST.md](./INTERVIEW_DEMO_CHECKLIST.md)。

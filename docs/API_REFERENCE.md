@@ -458,6 +458,8 @@ cd E:\bgagent1
 - `fixed_eval_pass_rate`
 - `fixed_eval_passed_cases`
 - `fixed_eval_total_cases`
+- `project_status_latest_task_top_key_finding`
+- `project_status_latest_task_latest_finding_summary`
 - `fixed_eval_average_tool_success_rate`
 - 以及六个固定 demo 问题的执行摘要
 

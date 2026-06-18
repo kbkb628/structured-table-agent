@@ -93,6 +93,7 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_latest_route_decision" in script
     assert "project_status_latest_task_chart_spec_count" in script
     assert "project_status_latest_task_key_finding_count" in script
+    assert "project_status_latest_task_top_key_finding" in script
     assert "project_status_latest_task_business_suggestion_count" in script
     assert "project_status_latest_task_data_limitation_count" in script
     assert "project_status_latest_task_next_step_count" in script
@@ -118,6 +119,7 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_current_step" in script
     assert "project_status_latest_task_completed_step_count" in script
     assert "project_status_latest_task_finding_count" in script
+    assert "project_status_latest_task_latest_finding_summary" in script
     assert "project_status_latest_task_dimension_field" in script
     assert "project_status_latest_task_metric_count" in script
     assert "project_status_latest_task_match_analysis_type" in script
@@ -194,6 +196,8 @@ def test_demo_script_contract_matches_pscustomobject_output_shape():
     assert "project_status_latest_task_id" in object_fields[1]
     assert "project_status_latest_task_status" in object_fields[1]
     assert "project_status_latest_task_updated_at" in object_fields[1]
+    assert "project_status_latest_task_top_key_finding" in object_fields[1]
+    assert "project_status_latest_task_latest_finding_summary" in object_fields[1]
     assert "project_status_analysis_events" in object_fields[1]
     assert "project_status_tool_call_logs" in object_fields[1]
     assert "project_status_eval_results" in object_fields[1]
