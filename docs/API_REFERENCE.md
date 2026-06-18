@@ -283,3 +283,54 @@ Invoke-RestMethod -Method Post `
 cd E:\bgagent1
 .\scripts\demo_mvp.ps1 -StartServer
 ```
+
+## 12. LLM Provider 状态与 smoke 检查
+
+### `GET /api/llm/provider-status`
+
+用途：
+
+- 查询当前 LLM provider 解析结果
+- 确认 provider、fallback 开关、key 来源、base URL、model 和 timeout
+
+返回字段：
+
+- `provider`
+- `allow_fallback`
+- `has_api_key`
+- `api_key_source`
+- `base_url`
+- `model`
+- `timeout_seconds`
+
+### `POST /api/llm/provider-smoke`
+
+用途：
+
+- 执行一次最小真实 provider 调用
+- 用于部署前或环境变量切换后的快速验证
+
+返回字段：
+
+- `provider_resolution`
+- `client_type`
+- `ok`
+- `analysis_goal` 或 `error_type`
+- `error_message`
+
+说明：
+
+- 这个接口不会写入业务任务状态
+- 这个接口专用于 provider 诊断
+- 仓库根目录下的 `scripts/qwen_provider_smoke.ps1` 复用同样的最小验证逻辑
+
+相关验证命令：
+
+```powershell
+Invoke-RestMethod -Method Get `
+  -Uri "http://127.0.0.1:8000/api/llm/provider-status"
+Invoke-RestMethod -Method Post `
+  -Uri "http://127.0.0.1:8000/api/llm/provider-smoke"
+cd E:\bgagent1
+.\scripts\qwen_provider_smoke.ps1
+```

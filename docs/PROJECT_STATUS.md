@@ -149,3 +149,21 @@
 - 引入 DockerSandbox
 - 增强前端过程展示
 - 扩展更多分析工具，如更细粒度趋势分析、更多异常检测策略
+## Latest Increment
+
+- Added backend provider observability endpoint: `GET /api/llm/provider-status`
+- Added backend provider smoke endpoint: `POST /api/llm/provider-smoke`
+- Added repo-level smoke script: `scripts/qwen_provider_smoke.ps1`
+
+These additions turn real Tongyi Qianwen integration into a runtime-verifiable capability instead of only a code-level capability:
+
+- inspect the resolved `provider`
+- inspect whether a usable key is detected
+- inspect the current `api_key_source`
+- run one minimal real provider call without creating a business task
+
+Latest real smoke evidence on this machine:
+
+- resolved key source: `OPENAI_API_KEY_0011AI`
+- request reached DashScope successfully
+- provider returned `401 invalid_api_key`

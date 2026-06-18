@@ -26,6 +26,7 @@ Currently implemented:
   - `QwenClient` for real Tongyi Qianwen calls
   - `MockLLMClient` for explicit fallback and local/offline runs
 - provider factory with configurable `LLM_PROVIDER`, `QWEN_API_KEY`, `QWEN_BASE_URL`, `QWEN_MODEL`, and fallback switch
+- provider diagnostics through `/api/llm/provider-status`, `/api/llm/provider-smoke`, and `scripts/qwen_provider_smoke.ps1`
 - Qwen-driven analysis goal generation and analysis plan generation during task creation
 - LangGraph-based orchestration with explicit `validate_tool_result` and `route_next_step` nodes for `/api/analysis/{task_id}/run`
 - deterministic pandas / DuckDB / chart / report-tool chain kept as the numeric ground truth
@@ -152,6 +153,8 @@ The same regression summary is also available through `POST /api/eval/cases/run`
 5. Query event timeline with `/api/analysis/{task_id}/events`
 6. Query tool call logs with `/api/analysis/{task_id}/tool-logs`
 7. Re-run evaluation with `/api/eval/run`
+8. Inspect provider resolution with `/api/llm/provider-status`
+9. Run a minimal provider smoke check with `/api/llm/provider-smoke`
 
 The persisted timeline returned by `/api/analysis/{task_id}/events` is routed through `app/observability/event_logger.py`, while SQLite remains the storage backend.
 
@@ -256,6 +259,14 @@ Query task state and event timeline:
 ```powershell
 Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/analysis/task_xxx"
 Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/analysis/task_xxx/events"
+```
+
+Inspect provider resolution and run a smoke check:
+
+```powershell
+Invoke-RestMethod -Method Get -Uri "http://127.0.0.1:8000/api/llm/provider-status"
+Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:8000/api/llm/provider-smoke"
+.\scripts\qwen_provider_smoke.ps1
 ```
 
 Expected failure examples:
