@@ -205,6 +205,7 @@ The page supports:
 - entering or choosing a supported analysis question
 - running the real analysis task flow
 - inspecting live LLM provider status and running a provider smoke check
+- running the fixed eval regression summary from the same demo page
 - viewing final report output, task snapshot, event timeline, and tool logs
 
 ## One-command demo

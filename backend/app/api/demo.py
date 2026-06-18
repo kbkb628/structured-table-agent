@@ -226,6 +226,10 @@ def demo_page() -> HTMLResponse:
       white-space: pre-wrap;
       line-height: 1.5;
     }
+    .eval-shell {
+      display: grid;
+      gap: 12px;
+    }
     .grid {
       display: grid;
       gap: 18px;
@@ -385,6 +389,7 @@ def demo_page() -> HTMLResponse:
             <button id="refresh-button" class="ghost" type="button">Refresh Task</button>
             <button id="provider-status-button" class="ghost" type="button">LLM Status</button>
             <button id="provider-smoke-button" class="ghost" type="button">LLM Smoke</button>
+            <button id="eval-cases-button" class="ghost" type="button">Run Fixed Eval Cases</button>
           </div>
 
           <div id="task-status" class="status">No file uploaded yet.</div>
@@ -474,6 +479,40 @@ def demo_page() -> HTMLResponse:
             </div>
           </div>
         </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <h2>Fixed Eval Cases</h2>
+          </div>
+          <div class="panel-body eval-shell">
+            <div id="eval-summary" class="summary-grid">
+              <div class="summary-card">
+                <div class="summary-label">Pass Rate</div>
+                <div class="summary-value">-</div>
+                <div class="summary-note">Run the fixed regression set to populate metrics.</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-label">Cases</div>
+                <div class="summary-value">0</div>
+                <div class="summary-note">Completed eval case count.</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-label">Trace</div>
+                <div class="summary-value">-</div>
+                <div class="summary-note">Average trace completeness.</div>
+              </div>
+              <div class="summary-card">
+                <div class="summary-label">Report</div>
+                <div class="summary-value">-</div>
+                <div class="summary-note">Average report completeness.</div>
+              </div>
+            </div>
+            <div class="output-block">
+              <h3>Eval Results</h3>
+              <pre id="eval-results-output">No fixed eval summary loaded.</pre>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -493,6 +532,8 @@ def demo_page() -> HTMLResponse:
     const providerPillEl = document.getElementById("provider-pill");
     const providerMetaEl = document.getElementById("provider-meta");
     const providerDiagEl = document.getElementById("provider-diag");
+    const evalSummaryEl = document.getElementById("eval-summary");
+    const evalResultsEl = document.getElementById("eval-results-output");
     const chartPreviewEl = document.getElementById("chart-preview");
     const eventsEl = document.getElementById("events-output");
     const toolLogsEl = document.getElementById("tool-logs-output");
@@ -504,6 +545,7 @@ def demo_page() -> HTMLResponse:
     const refreshButton = document.getElementById("refresh-button");
     const providerStatusButton = document.getElementById("provider-status-button");
     const providerSmokeButton = document.getElementById("provider-smoke-button");
+    const evalCasesButton = document.getElementById("eval-cases-button");
 
     function setStatus(message) {
       statusEl.textContent = message;
@@ -670,6 +712,57 @@ def demo_page() -> HTMLResponse:
       providerDiagEl.textContent = lines.join("\n");
     }
 
+    function renderEvalSummary(summary) {
+      if (!summary) {
+        evalSummaryEl.innerHTML = `
+          <div class="summary-card">
+            <div class="summary-label">Pass Rate</div>
+            <div class="summary-value">-</div>
+            <div class="summary-note">Run the fixed regression set to populate metrics.</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Cases</div>
+            <div class="summary-value">0</div>
+            <div class="summary-note">Completed eval case count.</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Trace</div>
+            <div class="summary-value">-</div>
+            <div class="summary-note">Average trace completeness.</div>
+          </div>
+          <div class="summary-card">
+            <div class="summary-label">Report</div>
+            <div class="summary-value">-</div>
+            <div class="summary-note">Average report completeness.</div>
+          </div>
+        `;
+        return;
+      }
+
+      evalSummaryEl.innerHTML = `
+        <div class="summary-card">
+          <div class="summary-label">Pass Rate</div>
+          <div class="summary-value">${escapeHtml(summary.pass_rate)}</div>
+          <div class="summary-note">${escapeHtml(summary.passed_cases)} passed / ${escapeHtml(summary.total_cases)} total</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Cases</div>
+          <div class="summary-value">${escapeHtml(summary.total_cases)}</div>
+          <div class="summary-note">${escapeHtml(summary.failed_cases)} failed</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Trace</div>
+          <div class="summary-value">${escapeHtml(summary.average_trace_completeness)}</div>
+          <div class="summary-note">Average trace completeness</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Report</div>
+          <div class="summary-value">${escapeHtml(summary.average_report_completeness)}</div>
+          <div class="summary-note">Average report completeness</div>
+        </div>
+      `;
+    }
+
     async function apiFetch(url, options = {}) {
       const response = await fetch(url, options);
       const contentType = response.headers.get("content-type") || "";
@@ -755,6 +848,15 @@ def demo_page() -> HTMLResponse:
         payload.error_message ? `Smoke error: ${payload.error_message}` : `Analysis goal: ${payload.analysis_goal}`,
       ].join("\n");
       setStatus(payload.ok ? "Provider smoke succeeded." : `Provider smoke failed: ${payload.error_message}`);
+      return payload;
+    }
+
+    async function runEvalCases() {
+      setStatus("Running fixed eval cases...");
+      const payload = await apiFetch("/api/eval/cases/run", { method: "POST" });
+      renderEvalSummary(payload);
+      evalResultsEl.textContent = stringify(payload);
+      setStatus(`Fixed eval cases completed: ${payload.passed_cases}/${payload.total_cases} passed.`);
       return payload;
     }
 
@@ -887,6 +989,17 @@ def demo_page() -> HTMLResponse:
         setStatus("Provider smoke failed: " + error.message);
       } finally {
         providerSmokeButton.disabled = false;
+      }
+    });
+
+    evalCasesButton.addEventListener("click", async () => {
+      evalCasesButton.disabled = true;
+      try {
+        await runEvalCases();
+      } catch (error) {
+        setStatus("Fixed eval cases failed: " + error.message);
+      } finally {
+        evalCasesButton.disabled = false;
       }
     });
 
