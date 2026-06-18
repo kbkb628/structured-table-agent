@@ -137,6 +137,11 @@ try {
         project_status_latest_task_top_business_context_title = $projectStatus.summary.latest_task.context.top_business_context_title
         project_status_latest_task_checkpoint_current_step = $projectStatus.summary.latest_task.context.checkpoint_current_step
         project_status_latest_task_checkpoint_draft_report_status = $projectStatus.summary.latest_task.context.checkpoint_draft_report_status
+        project_status_latest_task_analysis_goal = $projectStatus.summary.latest_task.semantics.analysis_goal
+        project_status_latest_task_analysis_plan_count = $projectStatus.summary.latest_task.semantics.analysis_plan_count
+        project_status_latest_task_completed_step_count = $projectStatus.summary.latest_task.semantics.completed_step_count
+        project_status_latest_task_dimension_field = $projectStatus.summary.latest_task.semantics.dimension_field
+        project_status_latest_task_metric_count = $projectStatus.summary.latest_task.semantics.metric_count
         project_status_latest_task_tool_result_count = $projectStatus.summary.latest_task.tools.tool_result_count
         project_status_latest_task_successful_tool_result_count = $projectStatus.summary.latest_task.tools.successful_tool_result_count
         project_status_latest_task_failed_tool_result_count = $projectStatus.summary.latest_task.tools.failed_tool_result_count

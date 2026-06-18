@@ -485,6 +485,14 @@ def demo_page() -> HTMLResponse:
               </div>
               <div class="provider-card">
                 <div class="provider-card-head">
+                  <div class="provider-title">Latest Task Semantics</div>
+                  <div id="latest-task-semantics-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="latest-task-semantics-meta" class="provider-meta">Latest task goal and planning summary will appear here.</div>
+                <div id="latest_task_semantics_output" class="provider-diag">No latest task semantics summary loaded yet.</div>
+              </div>
+              <div class="provider-card">
+                <div class="provider-card-head">
                   <div class="provider-title">Latest Task Tools</div>
                   <div id="latest-task-tools-pill" class="provider-pill">Not loaded</div>
                 </div>
@@ -647,6 +655,9 @@ def demo_page() -> HTMLResponse:
     const latestTaskContextPillEl = document.getElementById("latest-task-context-pill");
     const latestTaskContextMetaEl = document.getElementById("latest-task-context-meta");
     const latestTaskContextOutputEl = document.getElementById("latest_task_context_output");
+    const latestTaskSemanticsPillEl = document.getElementById("latest-task-semantics-pill");
+    const latestTaskSemanticsMetaEl = document.getElementById("latest-task-semantics-meta");
+    const latestTaskSemanticsOutputEl = document.getElementById("latest_task_semantics_output");
     const latestTaskToolsPillEl = document.getElementById("latest-task-tools-pill");
     const latestTaskToolsMetaEl = document.getElementById("latest-task-tools-meta");
     const latestTaskToolsOutputEl = document.getElementById("latest_task_tools_output");
@@ -909,6 +920,9 @@ def demo_page() -> HTMLResponse:
         latestTaskContextPillEl.textContent = "Not loaded";
         latestTaskContextMetaEl.textContent = "Latest RAG and checkpoint summary will appear here.";
         latestTaskContextOutputEl.textContent = "No latest task context summary loaded yet.";
+        latestTaskSemanticsPillEl.textContent = "Not loaded";
+        latestTaskSemanticsMetaEl.textContent = "Latest task goal and planning summary will appear here.";
+        latestTaskSemanticsOutputEl.textContent = "No latest task semantics summary loaded yet.";
         latestTaskToolsPillEl.textContent = "Not loaded";
         latestTaskToolsMetaEl.textContent = "Latest tool execution summary will appear here.";
         latestTaskToolsOutputEl.textContent = "No latest task tool summary loaded yet.";
@@ -931,6 +945,7 @@ def demo_page() -> HTMLResponse:
       const latestTaskProcess = latestTask ? (latestTask.process || {}) : {};
       const latestTaskReport = latestTask ? (latestTask.report || {}) : {};
       const latestTaskContext = latestTask ? (latestTask.context || {}) : {};
+      const latestTaskSemantics = latestTask ? (latestTask.semantics || {}) : {};
       const latestTaskTools = latestTask ? (latestTask.tools || {}) : {};
       const latestTaskErrors = latestTask ? (latestTask.errors || {}) : {};
       const files = tables.files || { exists: false, row_count: 0 };
@@ -1018,6 +1033,19 @@ def demo_page() -> HTMLResponse:
         `checkpoint_draft_report_status: ${latestTaskContext.checkpoint_draft_report_status || "none"}`,
         `checkpoint_latest_error_code: ${latestTaskContext.checkpoint_latest_error_code || "none"}`,
       ].join("\n") : "No latest task context summary loaded yet.";
+      latestTaskSemanticsPillEl.textContent = latestTask ? "Planning ready" : "No tasks";
+      latestTaskSemanticsMetaEl.textContent = latestTask
+        ? [`task_id: ${latestTask.task_id}`, `current_step: ${latestTaskSemantics.current_step || "none"}`].join(" | ")
+        : "No persisted task found yet.";
+      latestTaskSemanticsOutputEl.textContent = latestTask ? [
+        `analysis_goal: ${latestTaskSemantics.analysis_goal || "none"}`,
+        `analysis_plan_count: ${latestTaskSemantics.analysis_plan_count ?? 0}`,
+        `current_step: ${latestTaskSemantics.current_step || "none"}`,
+        `completed_step_count: ${latestTaskSemantics.completed_step_count ?? 0}`,
+        `finding_count: ${latestTaskSemantics.finding_count ?? 0}`,
+        `dimension_field: ${latestTaskSemantics.dimension_field || "none"}`,
+        `metric_count: ${latestTaskSemantics.metric_count ?? 0}`,
+      ].join("\n") : "No latest task semantics summary loaded yet.";
       latestTaskToolsPillEl.textContent = latestTask ? "Tools ready" : "No tasks";
       latestTaskToolsMetaEl.textContent = latestTask
         ? [`task_id: ${latestTask.task_id}`, `latest_tool_name: ${latestTaskTools.latest_tool_name || "none"}`].join(" | ")

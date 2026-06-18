@@ -65,6 +65,11 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_top_business_context_title" in script
     assert "project_status_latest_task_checkpoint_current_step" in script
     assert "project_status_latest_task_checkpoint_draft_report_status" in script
+    assert "project_status_latest_task_analysis_goal" in script
+    assert "project_status_latest_task_analysis_plan_count" in script
+    assert "project_status_latest_task_completed_step_count" in script
+    assert "project_status_latest_task_dimension_field" in script
+    assert "project_status_latest_task_metric_count" in script
     assert "project_status_latest_task_tool_result_count" in script
     assert "project_status_latest_task_successful_tool_result_count" in script
     assert "project_status_latest_task_failed_tool_result_count" in script

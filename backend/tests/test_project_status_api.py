@@ -236,6 +236,13 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["context"]["checkpoint_current_step"] == "report"
     assert latest_task["context"]["checkpoint_draft_report_status"] == "available"
     assert latest_task["context"]["checkpoint_latest_error_code"] == "CHART_DEGRADED"
+    assert latest_task["semantics"]["analysis_goal"] == "compare region sales"
+    assert latest_task["semantics"]["analysis_plan_count"] == 3
+    assert latest_task["semantics"]["current_step"] == "report"
+    assert latest_task["semantics"]["completed_step_count"] == 2
+    assert latest_task["semantics"]["finding_count"] == 1
+    assert latest_task["semantics"]["dimension_field"] == "region"
+    assert latest_task["semantics"]["metric_count"] == 1
     assert latest_task["tools"]["tool_result_count"] == 2
     assert latest_task["tools"]["successful_tool_result_count"] == 1
     assert latest_task["tools"]["failed_tool_result_count"] == 1

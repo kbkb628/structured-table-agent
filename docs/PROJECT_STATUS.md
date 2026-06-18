@@ -186,6 +186,11 @@
   - `project_status_latest_task_top_business_context_title`
   - `project_status_latest_task_checkpoint_current_step`
   - `project_status_latest_task_checkpoint_draft_report_status`
+  - `project_status_latest_task_analysis_goal`
+  - `project_status_latest_task_analysis_plan_count`
+  - `project_status_latest_task_completed_step_count`
+  - `project_status_latest_task_dimension_field`
+  - `project_status_latest_task_metric_count`
   - `project_status_latest_task_tool_result_count`
   - `project_status_latest_task_successful_tool_result_count`
   - `project_status_latest_task_failed_tool_result_count`

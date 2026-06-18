@@ -135,6 +135,10 @@ def _latest_task_info() -> dict | None:
     chart_specs = state.get("chart_specs") or []
     context_checkpoint = state.get("context_checkpoint") or {}
     business_context = state.get("business_context") or []
+    field_understanding = state.get("field_understanding") or {}
+    metrics = field_understanding.get("metrics") or []
+    completed_steps = state.get("completed_steps") or []
+    intermediate_findings = state.get("intermediate_findings") or []
     tool_results = state.get("tool_results") or []
     errors = state.get("errors") or []
     successful_tool_results = [item for item in tool_results if item.get("success") is True]
@@ -179,6 +183,23 @@ def _latest_task_info() -> dict | None:
             "checkpoint_current_step": context_checkpoint.get("current_step"),
             "checkpoint_draft_report_status": context_checkpoint.get("draft_report_status"),
             "checkpoint_latest_error_code": context_checkpoint.get("latest_error_code", ""),
+        },
+        "semantics": {
+            "analysis_goal": state.get("analysis_goal"),
+            "analysis_plan_count": len(state.get("analysis_plan") or []),
+            "current_step": state.get("current_step"),
+            "completed_step_count": len(completed_steps),
+            "finding_count": len(intermediate_findings),
+            "dimension_field": field_understanding.get("dimension_field"),
+            "metric_count": (
+                len(metrics)
+                if metrics
+                else (
+                    len(state.get("pending_metrics") or [])
+                    if state.get("pending_metrics")
+                    else (1 if field_understanding.get("metric_field") else 0)
+                )
+            ),
         },
         "errors": {
             "error_count": len(errors),
