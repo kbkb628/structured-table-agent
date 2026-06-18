@@ -157,6 +157,7 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
             "analysis_goal": "compare region sales",
             "current_step": "report",
             "draft_report_status": "available",
+            "latest_error_code": "CHART_DEGRADED",
         },
         "tool_call_logs": [{"tool_name": "groupby_aggregate"}],
         "events": [
@@ -177,7 +178,12 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
                 "created_at": "2099-12-31T23:59:58+00:00",
             },
         ],
-        "errors": [],
+        "errors": [
+            {
+                "code": "CHART_DEGRADED",
+                "message": "chart generation degraded to empty preview",
+            }
+        ],
         "status": "completed",
     }
     with patch("app.storage.analysis_store._ts", return_value="2099-12-31T23:59:59+00:00"):
@@ -229,9 +235,13 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["context"]["top_business_context_title"] == "Sales Amount"
     assert latest_task["context"]["checkpoint_current_step"] == "report"
     assert latest_task["context"]["checkpoint_draft_report_status"] == "available"
-    assert latest_task["context"]["checkpoint_latest_error_code"] == ""
+    assert latest_task["context"]["checkpoint_latest_error_code"] == "CHART_DEGRADED"
     assert latest_task["tools"]["tool_result_count"] == 2
     assert latest_task["tools"]["successful_tool_result_count"] == 1
     assert latest_task["tools"]["failed_tool_result_count"] == 1
     assert latest_task["tools"]["total_tool_elapsed_ms"] == 19
     assert latest_task["tools"]["latest_tool_name"] == "groupby_aggregate"
+    assert latest_task["errors"]["error_count"] == 1
+    assert latest_task["errors"]["latest_error_code"] == "CHART_DEGRADED"
+    assert latest_task["errors"]["latest_error_message"] == "chart generation degraded to empty preview"
+    assert latest_task["errors"]["has_degradation"] is True

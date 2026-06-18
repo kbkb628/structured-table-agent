@@ -491,6 +491,14 @@ def demo_page() -> HTMLResponse:
                 <div id="latest-task-tools-meta" class="provider-meta">Latest tool execution summary will appear here.</div>
                 <div id="latest_task_tools_output" class="provider-diag">No latest task tool summary loaded yet.</div>
               </div>
+              <div class="provider-card">
+                <div class="provider-card-head">
+                  <div class="provider-title">Latest Task Errors</div>
+                  <div id="latest-task-errors-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="latest-task-errors-meta" class="provider-meta">Latest failure and degradation summary will appear here.</div>
+                <div id="latest_task_errors_output" class="provider-diag">No latest task error summary loaded yet.</div>
+              </div>
               <div id="project-status-summary" class="summary-grid">
                 <div class="summary-card">
                   <div class="summary-label">Demo</div>
@@ -642,6 +650,9 @@ def demo_page() -> HTMLResponse:
     const latestTaskToolsPillEl = document.getElementById("latest-task-tools-pill");
     const latestTaskToolsMetaEl = document.getElementById("latest-task-tools-meta");
     const latestTaskToolsOutputEl = document.getElementById("latest_task_tools_output");
+    const latestTaskErrorsPillEl = document.getElementById("latest-task-errors-pill");
+    const latestTaskErrorsMetaEl = document.getElementById("latest-task-errors-meta");
+    const latestTaskErrorsOutputEl = document.getElementById("latest_task_errors_output");
     const projectStatusSummaryEl = document.getElementById("project-status-summary");
     const projectStatusOutputEl = document.getElementById("project-status-output");
     const evalSummaryEl = document.getElementById("eval-summary");
@@ -901,6 +912,9 @@ def demo_page() -> HTMLResponse:
         latestTaskToolsPillEl.textContent = "Not loaded";
         latestTaskToolsMetaEl.textContent = "Latest tool execution summary will appear here.";
         latestTaskToolsOutputEl.textContent = "No latest task tool summary loaded yet.";
+        latestTaskErrorsPillEl.textContent = "Not loaded";
+        latestTaskErrorsMetaEl.textContent = "Latest failure and degradation summary will appear here.";
+        latestTaskErrorsOutputEl.textContent = "No latest task error summary loaded yet.";
         projectStatusOutputEl.textContent = "No project runtime overview loaded yet.";
         return;
       }
@@ -918,6 +932,7 @@ def demo_page() -> HTMLResponse:
       const latestTaskReport = latestTask ? (latestTask.report || {}) : {};
       const latestTaskContext = latestTask ? (latestTask.context || {}) : {};
       const latestTaskTools = latestTask ? (latestTask.tools || {}) : {};
+      const latestTaskErrors = latestTask ? (latestTask.errors || {}) : {};
       const files = tables.files || { exists: false, row_count: 0 };
       const tasks = tables.analysis_tasks || { exists: false, row_count: 0 };
       const events = tables.analysis_events || { exists: false, row_count: 0 };
@@ -1014,6 +1029,18 @@ def demo_page() -> HTMLResponse:
         `total_tool_elapsed_ms: ${latestTaskTools.total_tool_elapsed_ms ?? 0}`,
         `latest_tool_name: ${latestTaskTools.latest_tool_name || "none"}`,
       ].join("\n") : "No latest task tool summary loaded yet.";
+      latestTaskErrorsPillEl.textContent = latestTask
+        ? (latestTaskErrors.error_count > 0 ? "Errors visible" : "No errors")
+        : "No tasks";
+      latestTaskErrorsMetaEl.textContent = latestTask
+        ? [`task_id: ${latestTask.task_id}`, `latest_error_code: ${latestTaskErrors.latest_error_code || "none"}`].join(" | ")
+        : "No persisted task found yet.";
+      latestTaskErrorsOutputEl.textContent = latestTask ? [
+        `error_count: ${latestTaskErrors.error_count ?? 0}`,
+        `latest_error_code: ${latestTaskErrors.latest_error_code || "none"}`,
+        `latest_error_message: ${latestTaskErrors.latest_error_message || "none"}`,
+        `has_degradation: ${latestTaskErrors.has_degradation ?? false}`,
+      ].join("\n") : "No latest task error summary loaded yet.";
 
       projectStatusSummaryEl.innerHTML = `
         <div class="summary-card">

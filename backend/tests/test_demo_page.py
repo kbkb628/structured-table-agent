@@ -61,6 +61,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'tool_result_count' in content
     assert 'successful_tool_result_count' in content
     assert 'total_tool_elapsed_ms' in content
+    assert 'latest_task_errors_output' in content
+    assert 'error_count' in content
+    assert 'latest_error_code' in content
+    assert 'has_degradation' in content
     assert 'id="project-status-summary"' in content
     assert 'id="project-status-output"' in content
     assert 'id="eval-summary"' in content

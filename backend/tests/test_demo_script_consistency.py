@@ -69,6 +69,9 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_successful_tool_result_count" in script
     assert "project_status_latest_task_failed_tool_result_count" in script
     assert "project_status_latest_task_total_tool_elapsed_ms" in script
+    assert "project_status_latest_task_error_count" in script
+    assert "project_status_latest_task_latest_error_code" in script
+    assert "project_status_latest_task_has_degradation" in script
 
 
 def test_demo_script_mentions_provider_and_eval_summary_output():

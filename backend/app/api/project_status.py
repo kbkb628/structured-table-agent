@@ -136,8 +136,10 @@ def _latest_task_info() -> dict | None:
     context_checkpoint = state.get("context_checkpoint") or {}
     business_context = state.get("business_context") or []
     tool_results = state.get("tool_results") or []
+    errors = state.get("errors") or []
     successful_tool_results = [item for item in tool_results if item.get("success") is True]
     failed_tool_results = [item for item in tool_results if item.get("success") is False]
+    latest_error = errors[-1] if errors else {}
     return {
         "task_id": task_id,
         "status": status,
@@ -177,6 +179,15 @@ def _latest_task_info() -> dict | None:
             "checkpoint_current_step": context_checkpoint.get("current_step"),
             "checkpoint_draft_report_status": context_checkpoint.get("draft_report_status"),
             "checkpoint_latest_error_code": context_checkpoint.get("latest_error_code", ""),
+        },
+        "errors": {
+            "error_count": len(errors),
+            "latest_error_code": latest_error.get("code"),
+            "latest_error_message": latest_error.get("message"),
+            "has_degradation": any(
+                isinstance(item, dict) and "DEGRADE" in str(item.get("code") or "").upper()
+                for item in errors
+            ),
         },
         "tools": {
             "tool_result_count": len(tool_results),

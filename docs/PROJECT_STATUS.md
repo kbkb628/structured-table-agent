@@ -190,6 +190,9 @@
   - `project_status_latest_task_successful_tool_result_count`
   - `project_status_latest_task_failed_tool_result_count`
   - `project_status_latest_task_total_tool_elapsed_ms`
+  - `project_status_latest_task_error_count`
+  - `project_status_latest_task_latest_error_code`
+  - `project_status_latest_task_has_degradation`
   - `project_status_latest_task_has_llm_judgement`
   - `project_status_latest_task_tool_call_log_count`
   - `project_status_files`

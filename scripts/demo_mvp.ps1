@@ -141,6 +141,9 @@ try {
         project_status_latest_task_successful_tool_result_count = $projectStatus.summary.latest_task.tools.successful_tool_result_count
         project_status_latest_task_failed_tool_result_count = $projectStatus.summary.latest_task.tools.failed_tool_result_count
         project_status_latest_task_total_tool_elapsed_ms = $projectStatus.summary.latest_task.tools.total_tool_elapsed_ms
+        project_status_latest_task_error_count = $projectStatus.summary.latest_task.errors.error_count
+        project_status_latest_task_latest_error_code = $projectStatus.summary.latest_task.errors.latest_error_code
+        project_status_latest_task_has_degradation = $projectStatus.summary.latest_task.errors.has_degradation
         project_status_files = $projectStatus.summary.database.tables.files.row_count
         project_status_tasks = $projectStatus.summary.database.tables.analysis_tasks.row_count
         provider_status_key_source = $providerStatus.api_key_source
