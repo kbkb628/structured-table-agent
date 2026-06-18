@@ -111,7 +111,16 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
         "draft_report": {"title": "Draft report"},
         "final_report": {"title": "Final report", "analysis_goal": "compare region sales"},
         "llm_judgement": {"supported_by_tools": True, "issue_count": 0},
-        "eval_result": {"overall_score": 0.91},
+        "eval_result": {
+            "overall_score": 0.91,
+            "schema_valid": True,
+            "tool_success_rate": 1.0,
+            "field_validity": True,
+            "chart_validity": True,
+            "report_completeness": 1.0,
+            "trace_completeness": 1.0,
+            "issues": [],
+        },
         "context_checkpoint": {
             "analysis_goal": "compare region sales",
             "current_step": "report",
@@ -152,3 +161,7 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["artifacts"]["has_final_report"] is True
     assert latest_task["artifacts"]["has_llm_judgement"] is True
     assert latest_task["artifacts"]["tool_call_log_count"] >= 1
+    assert latest_task["evaluation"]["has_eval_result"] is True
+    assert latest_task["evaluation"]["overall_score"] == 0.91
+    assert latest_task["evaluation"]["issue_count"] == 0
+    assert latest_task["evaluation"]["has_dimension_scores"] is True

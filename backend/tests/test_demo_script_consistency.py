@@ -50,6 +50,9 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_has_business_context" in script
     assert "project_status_latest_task_has_llm_judgement" in script
     assert "project_status_latest_task_tool_call_log_count" in script
+    assert "project_status_latest_task_has_eval_result" in script
+    assert "project_status_latest_task_eval_overall_score" in script
+    assert "project_status_latest_task_eval_issue_count" in script
 
 
 def test_demo_script_mentions_provider_and_eval_summary_output():

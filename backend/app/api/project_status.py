@@ -96,6 +96,16 @@ def _latest_task_info() -> dict | None:
             "SELECT COUNT(*) FROM tool_call_logs WHERE task_id = ?",
             (task_id,),
         ).fetchone()
+    eval_result = state.get("eval_result") or {}
+    issues = eval_result.get("issues") if isinstance(eval_result.get("issues"), list) else []
+    dimension_score_keys = {
+        "schema_valid",
+        "tool_success_rate",
+        "field_validity",
+        "chart_validity",
+        "report_completeness",
+        "trace_completeness",
+    }
     return {
         "task_id": task_id,
         "status": status,
@@ -107,6 +117,12 @@ def _latest_task_info() -> dict | None:
             "has_final_report": bool(state.get("final_report")),
             "has_llm_judgement": bool(state.get("llm_judgement")),
             "tool_call_log_count": int(tool_log_count[0]) if tool_log_count else 0,
+        },
+        "evaluation": {
+            "has_eval_result": bool(eval_result),
+            "overall_score": eval_result.get("overall_score"),
+            "issue_count": len(issues),
+            "has_dimension_scores": any(key in eval_result for key in dimension_score_keys),
         },
     }
 

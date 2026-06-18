@@ -451,6 +451,14 @@ def demo_page() -> HTMLResponse:
                 <div id="latest-task-meta" class="provider-meta">Latest persisted task artifact coverage will appear here.</div>
                 <div id="latest_task_artifacts_output" class="provider-diag">No latest task artifact summary loaded yet.</div>
               </div>
+              <div class="provider-card">
+                <div class="provider-card-head">
+                  <div class="provider-title">Latest Task Evaluation</div>
+                  <div id="latest-task-eval-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="latest-task-eval-meta" class="provider-meta">Latest persisted eval_result summary will appear here.</div>
+                <div id="latest_task_eval_output" class="provider-diag">No latest task evaluation summary loaded yet.</div>
+              </div>
               <div id="project-status-summary" class="summary-grid">
                 <div class="summary-card">
                   <div class="summary-label">Demo</div>
@@ -587,6 +595,9 @@ def demo_page() -> HTMLResponse:
     const latestTaskPillEl = document.getElementById("latest-task-pill");
     const latestTaskMetaEl = document.getElementById("latest-task-meta");
     const latestTaskArtifactsOutputEl = document.getElementById("latest_task_artifacts_output");
+    const latestTaskEvalPillEl = document.getElementById("latest-task-eval-pill");
+    const latestTaskEvalMetaEl = document.getElementById("latest-task-eval-meta");
+    const latestTaskEvalOutputEl = document.getElementById("latest_task_eval_output");
     const projectStatusSummaryEl = document.getElementById("project-status-summary");
     const projectStatusOutputEl = document.getElementById("project-status-output");
     const evalSummaryEl = document.getElementById("eval-summary");
@@ -831,6 +842,9 @@ def demo_page() -> HTMLResponse:
         latestTaskPillEl.textContent = "Not loaded";
         latestTaskMetaEl.textContent = "Latest persisted task artifact coverage will appear here.";
         latestTaskArtifactsOutputEl.textContent = "No latest task artifact summary loaded yet.";
+        latestTaskEvalPillEl.textContent = "Not loaded";
+        latestTaskEvalMetaEl.textContent = "Latest persisted eval_result summary will appear here.";
+        latestTaskEvalOutputEl.textContent = "No latest task evaluation summary loaded yet.";
         projectStatusOutputEl.textContent = "No project runtime overview loaded yet.";
         return;
       }
@@ -843,6 +857,7 @@ def demo_page() -> HTMLResponse:
       const sessionStoreEvents = sessionStore.event_summary || {};
       const latestTask = summary.latest_task || null;
       const latestTaskArtifacts = latestTask ? (latestTask.artifacts || {}) : {};
+      const latestTaskEvaluation = latestTask ? (latestTask.evaluation || {}) : {};
       const files = tables.files || { exists: false, row_count: 0 };
       const tasks = tables.analysis_tasks || { exists: false, row_count: 0 };
       const events = tables.analysis_events || { exists: false, row_count: 0 };
@@ -885,6 +900,16 @@ def demo_page() -> HTMLResponse:
         `has_llm_judgement: ${latestTaskArtifacts.has_llm_judgement}`,
         `tool_call_log_count: ${latestTaskArtifacts.tool_call_log_count}`,
       ].join("\n") : "No latest task artifact summary loaded yet.";
+      latestTaskEvalPillEl.textContent = latestTaskEvaluation.has_eval_result ? "Eval ready" : "No eval";
+      latestTaskEvalMetaEl.textContent = latestTask
+        ? [`task_id: ${latestTask.task_id}`, `status: ${latestTask.status || "unknown"}`].join(" | ")
+        : "No persisted task found yet.";
+      latestTaskEvalOutputEl.textContent = latestTask ? [
+        `has_eval_result: ${latestTaskEvaluation.has_eval_result}`,
+        `overall_score: ${latestTaskEvaluation.overall_score ?? "none"}`,
+        `issue_count: ${latestTaskEvaluation.issue_count ?? 0}`,
+        `has_dimension_scores: ${latestTaskEvaluation.has_dimension_scores}`,
+      ].join("\n") : "No latest task evaluation summary loaded yet.";
 
       projectStatusSummaryEl.innerHTML = `
         <div class="summary-card">

@@ -228,6 +228,8 @@ Key summary fields exposed by the script include:
 - `project_status_session_store_active_backend`
 - `project_status_session_store_warning_count`
 - `project_status_latest_task_has_business_context`
+- `project_status_latest_task_has_eval_result`
+- `project_status_latest_task_eval_overall_score`
 - `provider_smoke_error_message`
 - `fixed_eval_average_trace_completeness`
 - `fixed_eval_average_report_completeness`
