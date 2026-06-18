@@ -166,6 +166,18 @@
   - `project_status_demo_available`
   - `project_status_files`
   - `project_status_tasks`
+  - `provider_status_key_source`
+  - `provider_status_smoke_ready`
+  - `provider_smoke_ok`
+  - `provider_smoke_client_type`
+  - `provider_smoke_error_type`
+  - `provider_smoke_error_message`
+  - `fixed_eval_pass_rate`
+  - `fixed_eval_passed_cases`
+  - `fixed_eval_total_cases`
+  - `fixed_eval_average_trace_completeness`
+  - `fixed_eval_average_report_completeness`
+  - `fixed_eval_average_tool_success_rate`
   - 六个固定 demo 问题的任务结果摘要
 
 ## 当前结论

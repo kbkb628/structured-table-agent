@@ -181,6 +181,8 @@ cd E:\bgagent1
 - 上传 `backend/data/samples/sales_orders.csv`
 - 依次运行六个当前支持的演示问题
 - 输出 project status 摘要、任务状态、图表数量、工具调用数量和评估分数摘要
+- 输出 `provider_smoke_error_message` 等 provider smoke 失败细节字段
+- 输出 `fixed_eval_average_trace_completeness`、`fixed_eval_average_report_completeness` 等 fixed eval 质量指标
 
 ## API 与验证
 
