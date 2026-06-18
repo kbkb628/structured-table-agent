@@ -16,6 +16,13 @@ def _resolve_api_key() -> tuple[str | None, str | None]:
     if explicit_key:
         return explicit_key, "QWEN_API_KEY"
 
+    tongyi_key = (
+        os.getenv("TONGYI_API_KEY")
+        or config.get_env("TONGYI_API_KEY")
+    )
+    if tongyi_key:
+        return tongyi_key, "TONGYI_API_KEY"
+
     dashscope_key = (
         os.getenv("DASHSCOPE_API_KEY")
         or config.get_env("DASHSCOPE_API_KEY")
@@ -64,7 +71,11 @@ def describe_llm_provider_diagnostics(resolution: dict | None = None) -> dict:
     api_key_source = resolved.get("api_key_source")
     key_source_kind = "missing"
     if api_key_source:
-        key_source_kind = "qwen" if api_key_source in {"QWEN_API_KEY", "DASHSCOPE_API_KEY"} else "openai_compatible"
+        key_source_kind = (
+            "qwen"
+            if api_key_source in {"QWEN_API_KEY", "TONGYI_API_KEY", "DASHSCOPE_API_KEY"}
+            else "openai_compatible"
+        )
 
     provider_supported = provider in {"qwen", "mock"}
     smoke_ready = provider_supported and (provider == "mock" or has_api_key)
@@ -77,7 +88,7 @@ def describe_llm_provider_diagnostics(resolution: dict | None = None) -> dict:
         recommendations.append("Set LLM_PROVIDER to qwen or mock.")
     if provider == "qwen" and not has_api_key:
         warnings.append("No API key was detected for qwen provider.")
-        recommendations.append("Set QWEN_API_KEY or DASHSCOPE_API_KEY before calling the real provider.")
+        recommendations.append("Set QWEN_API_KEY, TONGYI_API_KEY, or DASHSCOPE_API_KEY before calling the real provider.")
     if provider == "qwen" and key_source_kind == "openai_compatible":
         warnings.append(f"Using compatible key source: {api_key_source}.")
         recommendations.append("If DashScope rejects the request, verify this key is a real Qwen-compatible credential.")
@@ -110,7 +121,7 @@ def get_llm_client():
             return MockLLMClient()
         raise LLMConfigurationError(
             "A Qwen-compatible API key is required when LLM_PROVIDER=qwen. "
-            "Set QWEN_API_KEY, DASHSCOPE_API_KEY, or an OPENAI_API_KEY* environment variable."
+            "Set QWEN_API_KEY, TONGYI_API_KEY, DASHSCOPE_API_KEY, or an OPENAI_API_KEY* environment variable."
         )
 
     return QwenClient(

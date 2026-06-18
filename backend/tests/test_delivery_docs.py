@@ -43,8 +43,8 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "GET /api/project-status" in content
     assert "summary.session_store" in content or "session store" in content
     assert "GET /demo" in content
-    assert "OPENAI_API_KEY_0011AI" in content
-    assert "401 invalid_api_key" in content
+    assert "TONGYI_API_KEY" in content or "OPENAI_API_KEY_0011AI" in content
+    assert "provider smoke returned `ok = true`" in content or "401 invalid_api_key" in content
     assert "provider_smoke_error_message" in content
     assert "fixed_eval_average_trace_completeness" in content
 

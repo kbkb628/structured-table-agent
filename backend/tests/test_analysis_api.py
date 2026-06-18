@@ -76,6 +76,7 @@ class FailingGoalLLMClient:
 def _clear_provider_keys(monkeypatch):
     monkeypatch.delenv("QWEN_API_KEY", raising=False)
     monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.delenv("TONGYI_API_KEY", raising=False)
     for name in list(os.environ):
         if name.startswith("OPENAI_API_KEY"):
             monkeypatch.delenv(name, raising=False)

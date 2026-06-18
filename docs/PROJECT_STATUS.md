@@ -243,6 +243,8 @@ These additions turn real Tongyi Qianwen integration and demo delivery into runt
 
 Latest real smoke evidence on this machine:
 
-- resolved key source: `OPENAI_API_KEY_0011AI`
+- resolved key source: `TONGYI_API_KEY`
 - request reached DashScope successfully
-- provider returned `401 invalid_api_key`
+- provider smoke returned `ok = true`
+- `client_type = QwenClient`
+- example `analysis_goal`: `Summarize total sales amount by region`

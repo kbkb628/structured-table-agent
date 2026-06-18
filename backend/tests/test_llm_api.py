@@ -6,6 +6,9 @@ from app.main import app
 def test_get_llm_provider_status_reports_resolution(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "qwen")
     monkeypatch.setenv("QWEN_MODEL", "qwen-plus")
+    monkeypatch.delenv("QWEN_API_KEY", raising=False)
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.delenv("TONGYI_API_KEY", raising=False)
     monkeypatch.setenv("OPENAI_API_KEY_0011AI", "test-key")
 
     client = TestClient(app)
@@ -27,6 +30,9 @@ def test_get_llm_provider_status_reports_resolution(monkeypatch):
 
 def test_post_llm_provider_smoke_returns_runtime_failure_details(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "qwen")
+    monkeypatch.delenv("QWEN_API_KEY", raising=False)
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.delenv("TONGYI_API_KEY", raising=False)
     monkeypatch.setenv("OPENAI_API_KEY_0011AI", "test-key")
 
     class FailingClient:
@@ -54,6 +60,9 @@ def test_post_llm_provider_smoke_returns_runtime_failure_details(monkeypatch):
 
 def test_post_llm_provider_smoke_returns_analysis_goal_when_provider_is_healthy(monkeypatch):
     monkeypatch.setenv("LLM_PROVIDER", "qwen")
+    monkeypatch.delenv("QWEN_API_KEY", raising=False)
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.delenv("TONGYI_API_KEY", raising=False)
     monkeypatch.setenv("OPENAI_API_KEY_0011AI", "test-key")
 
     class HealthyClient:
@@ -94,6 +103,7 @@ def test_get_llm_provider_status_marks_missing_key_when_qwen_selected(monkeypatc
     monkeypatch.setenv("LLM_PROVIDER", "qwen")
     monkeypatch.delenv("QWEN_API_KEY", raising=False)
     monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.delenv("TONGYI_API_KEY", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY_0011AI", raising=False)
 
     client = TestClient(app)
@@ -104,3 +114,20 @@ def test_get_llm_provider_status_marks_missing_key_when_qwen_selected(monkeypatc
     assert payload["has_api_key"] is False
     assert payload["diagnostics"]["smoke_ready"] is False
     assert any("No API key" in item for item in payload["diagnostics"]["warnings"])
+
+
+def test_get_llm_provider_status_prefers_tongyi_api_key(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "qwen")
+    monkeypatch.delenv("QWEN_API_KEY", raising=False)
+    monkeypatch.delenv("DASHSCOPE_API_KEY", raising=False)
+    monkeypatch.setenv("OPENAI_API_KEY_0011AI", "wrong-key")
+    monkeypatch.setenv("TONGYI_API_KEY", "tongyi-key")
+
+    client = TestClient(app)
+    response = client.get("/api/llm/provider-status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["has_api_key"] is True
+    assert payload["api_key_source"] == "TONGYI_API_KEY"
+    assert payload["diagnostics"]["key_source_kind"] == "qwen"

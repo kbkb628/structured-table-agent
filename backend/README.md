@@ -25,7 +25,7 @@ Currently implemented:
 - replaceable `LLMClient` abstraction with:
   - `QwenClient` for real Tongyi Qianwen calls
   - `MockLLMClient` for explicit fallback and local/offline runs
-- provider factory with configurable `LLM_PROVIDER`, `QWEN_API_KEY`, `QWEN_BASE_URL`, `QWEN_MODEL`, and fallback switch
+- provider factory with configurable `LLM_PROVIDER`, `QWEN_API_KEY` / `TONGYI_API_KEY` / `DASHSCOPE_API_KEY`, `QWEN_BASE_URL`, `QWEN_MODEL`, and fallback switch
 - provider diagnostics through `/api/llm/provider-status`, `/api/llm/provider-smoke`, and `scripts/qwen_provider_smoke.ps1`
   - structured `diagnostics` including provider support, key-source kind, smoke readiness, warnings, and recommendations
 - project runtime overview through `/api/project-status`
@@ -73,6 +73,8 @@ Environment variables:
 - `LLM_PROVIDER=qwen|mock`
 - `LLM_ALLOW_FALLBACK=true|false`
 - `QWEN_API_KEY`
+- `TONGYI_API_KEY`
+- `DASHSCOPE_API_KEY`
 - `QWEN_BASE_URL`
 - `QWEN_MODEL`
 - `QWEN_TIMEOUT_SECONDS`
@@ -81,11 +83,12 @@ Recommended real-provider setup on Windows PowerShell:
 
 ```powershell
 $env:LLM_PROVIDER = "qwen"
-$env:QWEN_API_KEY = "your-key"
+$env:TONGYI_API_KEY = "your-key"
 $env:QWEN_MODEL = "qwen-plus"
 ```
 
 If `LLM_PROVIDER=qwen` and no key is available, the backend raises an explicit configuration error by default. It only falls back to `MockLLMClient` when `LLM_ALLOW_FALLBACK=true`.
+Supported key names are `QWEN_API_KEY`, `TONGYI_API_KEY`, `DASHSCOPE_API_KEY`, and `OPENAI_API_KEY*` compatibility variables.
 
 ## Setup with uv
 
@@ -255,7 +258,7 @@ Create a real-provider session:
 
 ```powershell
 $env:LLM_PROVIDER = "qwen"
-$env:QWEN_API_KEY = "your-key"
+$env:TONGYI_API_KEY = "your-key"
 ```
 
 Upload the sample CSV with `curl.exe`:
