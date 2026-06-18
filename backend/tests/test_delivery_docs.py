@@ -119,6 +119,7 @@ def test_resume_evidence_map_links_resume_claims_to_runtime_evidence():
         encoding="utf-8"
     )
 
+    assert "INTERVIEW_DEMO_CHECKLIST.md" in content
     assert "简历说法" in content
     assert "代码证据" in content
     assert "演示证据" in content
@@ -139,6 +140,24 @@ def test_resume_evidence_map_links_resume_claims_to_runtime_evidence():
     assert "test_analysis_runner.py" in content
     assert "test_session_store.py" in content
     assert "test_keyword_retriever.py" in content
+
+
+def test_interview_demo_checklist_provides_short_demo_path():
+    content = (Path(__file__).resolve().parents[2] / "docs" / "INTERVIEW_DEMO_CHECKLIST.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "最短演示路径" in content
+    assert "/demo" in content
+    assert "/api/llm/provider-status" in content
+    assert "/api/llm/provider-smoke" in content
+    assert "/api/project-status" in content
+    assert "demo_mvp.ps1" in content
+    assert "project_status_latest_task_analysis_goal" in content
+    assert "project_status_latest_task_latest_route_decision" in content
+    assert "project_status_latest_task_top_business_context_bm25_score" in content
+    assert "project_status_latest_task_checkpoint_status" in content
+    assert "fixed_eval_pass_rate" in content
 
 
 def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
@@ -229,6 +248,8 @@ def test_root_readme_matches_current_runtime_truth():
         encoding="utf-8"
     )
 
+    assert "docs/RESUME_EVIDENCE_MAP.md" in content
+    assert "docs/INTERVIEW_DEMO_CHECKLIST.md" in content
     assert "真实 Tongyi Qianwen Provider" in content or "真实通义千问 Provider" in content
     assert "GET /api/project-status" in content
     assert "demo_mvp.ps1" in content
@@ -326,6 +347,7 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     )
 
     assert "RESUME_EVIDENCE_MAP.md" in content
+    assert "INTERVIEW_DEMO_CHECKLIST.md" in content
     assert "demo_mvp.ps1" in content
     assert "provider smoke" in content or "provider smoke failed" in content or "provider 解析结果" in content
     assert "fixed eval" in content or "质量指标" in content

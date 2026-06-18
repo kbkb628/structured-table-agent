@@ -5,6 +5,7 @@
 ## 使用方式
 
 - 面试前先用 [RESUME_PROJECT_DESCRIPTION.md](./RESUME_PROJECT_DESCRIPTION.md) 组织表述
+- 需要快速走一遍现场演示时，直接打开 [INTERVIEW_DEMO_CHECKLIST.md](./INTERVIEW_DEMO_CHECKLIST.md)
 - 被追问“这是不是只写在文档里”时，直接回到本文对应条目
 - 所有说法都应落在“代码证据 + 演示证据 + 测试证据”三层同时成立的范围内
 
@@ -219,4 +220,5 @@
 
 1. 先用 [RESUME_PROJECT_DESCRIPTION.md](./RESUME_PROJECT_DESCRIPTION.md) 讲一句话版本和项目描述版本
 2. 再用 [INTERVIEW_GUIDE.md](./INTERVIEW_GUIDE.md) 讲“为什么这么设计”
-3. 被追问真实性时，回到本文按“简历说法 -> 代码证据 -> 演示证据 -> 测试证据”逐条展开
+3. 用 [INTERVIEW_DEMO_CHECKLIST.md](./INTERVIEW_DEMO_CHECKLIST.md) 走最短演示路径
+4. 被追问真实性时，回到本文按“简历说法 -> 代码证据 -> 演示证据 -> 测试证据”逐条展开

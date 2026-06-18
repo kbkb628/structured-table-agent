@@ -104,8 +104,12 @@ docs/
   当前后端结构说明
 - [docs/RESUME_PROJECT_DESCRIPTION.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/RESUME_PROJECT_DESCRIPTION.md)
   简历项目描述与可复用表达
+- [docs/RESUME_EVIDENCE_MAP.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/RESUME_EVIDENCE_MAP.md)
+  简历说法到代码、演示和测试证据的映射
 - [docs/INTERVIEW_GUIDE.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/INTERVIEW_GUIDE.md)
   面试讲解稿与边界表达
+- [docs/INTERVIEW_DEMO_CHECKLIST.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/INTERVIEW_DEMO_CHECKLIST.md)
+  2-5 分钟最短面试演示路径
 - [backend/README.md](/e:/bgagent1/.worktrees/day1-mvp-backend/backend/README.md)
   后端启动、测试、Provider 配置和 Windows API 示例
 - [scripts/demo_mvp.ps1](/e:/bgagent1/.worktrees/day1-mvp-backend/scripts/demo_mvp.ps1)
