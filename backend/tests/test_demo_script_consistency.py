@@ -150,6 +150,22 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_eval_results_exists" in script
 
 
+def test_demo_script_refreshes_project_status_after_demo_runs():
+    script = _read_demo_script()
+
+    first_project_status_idx = script.find('$projectStatus = Invoke-RestMethod')
+    rerun_eval_idx = script.find('$rerunEval = Invoke-RestMethod')
+    refreshed_project_status_idx = script.find('$projectStatusAfterRuns = Invoke-RestMethod')
+    fixed_eval_idx = script.find('$fixedEval = Invoke-RestMethod')
+
+    assert first_project_status_idx != -1
+    assert rerun_eval_idx != -1
+    assert refreshed_project_status_idx != -1
+    assert fixed_eval_idx != -1
+    assert rerun_eval_idx < refreshed_project_status_idx < fixed_eval_idx
+    assert "project_status_latest_task_id = $projectStatusAfterRuns.summary.latest_task.task_id" in script
+
+
 def test_demo_script_mentions_provider_and_eval_summary_output():
     script = _read_demo_script()
 
