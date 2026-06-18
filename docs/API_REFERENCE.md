@@ -119,6 +119,8 @@
 - `events`
 - `errors`
 
+其中 `field_understanding` 当前会承载 `match_fields` 的结构化匹配结果，包括 `analysis_type`、`candidate_fields`、`warnings`、`planned_tool_sequence`。这些结果会在 `GET /api/project-status` 的 `summary.latest_task.semantics` 中进一步汇总成 `match_analysis_type`、`candidate_field_count`、`match_warning_count`、`planned_tool_sequence`，用于运行时说明 ToolResponse 与 Pydantic schema 约束后的字段理解和计划结果。
+
 额外失败场景：
 
 - 任务不存在时返回 `404`
@@ -353,6 +355,10 @@ cd E:\bgagent1
 - `project_status_latest_task_analysis_goal`
 - `project_status_latest_task_analysis_plan_count`
 - `project_status_latest_task_dimension_field`
+- `project_status_latest_task_match_analysis_type`
+- `project_status_latest_task_candidate_field_count`
+- `project_status_latest_task_match_warning_count`
+- `project_status_latest_task_planned_tool_sequence`
 - `project_status_latest_task_tool_result_count`
 - `project_status_latest_task_retried_tool_result_count`
 - `project_status_latest_task_retry_attempts_total`

@@ -256,6 +256,10 @@ Key summary fields exposed by the script include:
 - `project_status_latest_task_analysis_goal`
 - `project_status_latest_task_analysis_plan_count`
 - `project_status_latest_task_dimension_field`
+- `project_status_latest_task_match_analysis_type`
+- `project_status_latest_task_candidate_field_count`
+- `project_status_latest_task_match_warning_count`
+- `project_status_latest_task_planned_tool_sequence`
 - `project_status_latest_task_tool_result_count`
 - `project_status_latest_task_retried_tool_result_count`
 - `project_status_latest_task_retry_attempts_total`
@@ -265,6 +269,8 @@ Key summary fields exposed by the script include:
 - `provider_smoke_error_message`
 - `fixed_eval_average_trace_completeness`
 - `fixed_eval_average_report_completeness`
+
+These `project_status_latest_task_match_analysis_type`, `project_status_latest_task_candidate_field_count`, `project_status_latest_task_match_warning_count`, and `project_status_latest_task_planned_tool_sequence` fields come from the persisted `field_understanding` block produced by `match_fields`. They show real structured matching and schema-bounded planning evidence rather than any automatic schema repair capability.
 
 ## Windows API examples
 

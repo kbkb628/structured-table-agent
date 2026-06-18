@@ -221,6 +221,10 @@ def _latest_task_info() -> dict | None:
             "completed_step_count": len(completed_steps),
             "finding_count": len(intermediate_findings),
             "dimension_field": field_understanding.get("dimension_field"),
+            "match_analysis_type": field_understanding.get("analysis_type"),
+            "candidate_field_count": len(field_understanding.get("candidate_fields") or []),
+            "match_warning_count": len(field_understanding.get("warnings") or []),
+            "planned_tool_sequence": field_understanding.get("planned_tool_sequence") or [],
             "metric_count": (
                 len(metrics)
                 if metrics

@@ -76,6 +76,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'analysis_plan_count' in content
     assert 'completed_step_count' in content
     assert 'dimension_field' in content
+    assert 'match_analysis_type' in content
+    assert 'candidate_field_count' in content
+    assert 'match_warning_count' in content
+    assert 'planned_tool_sequence' in content
     assert 'latest_task_tools_output' in content
     assert 'tool_result_count' in content
     assert 'successful_tool_result_count' in content

@@ -1079,6 +1079,10 @@ def demo_page() -> HTMLResponse:
         `completed_step_count: ${latestTaskSemantics.completed_step_count ?? 0}`,
         `finding_count: ${latestTaskSemantics.finding_count ?? 0}`,
         `dimension_field: ${latestTaskSemantics.dimension_field || "none"}`,
+        `match_analysis_type: ${latestTaskSemantics.match_analysis_type || "none"}`,
+        `candidate_field_count: ${latestTaskSemantics.candidate_field_count ?? 0}`,
+        `match_warning_count: ${latestTaskSemantics.match_warning_count ?? 0}`,
+        `planned_tool_sequence: ${Array.isArray(latestTaskSemantics.planned_tool_sequence) ? latestTaskSemantics.planned_tool_sequence.join(", ") || "none" : "none"}`,
         `metric_count: ${latestTaskSemantics.metric_count ?? 0}`,
       ].join("\n") : "No latest task semantics summary loaded yet.";
       latestTaskToolsPillEl.textContent = latestTask ? "Tools ready" : "No tasks";

@@ -155,6 +155,10 @@ try {
         project_status_latest_task_completed_step_count = $projectStatus.summary.latest_task.semantics.completed_step_count
         project_status_latest_task_dimension_field = $projectStatus.summary.latest_task.semantics.dimension_field
         project_status_latest_task_metric_count = $projectStatus.summary.latest_task.semantics.metric_count
+        project_status_latest_task_match_analysis_type = $projectStatus.summary.latest_task.semantics.match_analysis_type
+        project_status_latest_task_candidate_field_count = $projectStatus.summary.latest_task.semantics.candidate_field_count
+        project_status_latest_task_match_warning_count = $projectStatus.summary.latest_task.semantics.match_warning_count
+        project_status_latest_task_planned_tool_sequence = $projectStatus.summary.latest_task.semantics.planned_tool_sequence
         project_status_latest_task_tool_result_count = $projectStatus.summary.latest_task.tools.tool_result_count
         project_status_latest_task_successful_tool_result_count = $projectStatus.summary.latest_task.tools.successful_tool_result_count
         project_status_latest_task_failed_tool_result_count = $projectStatus.summary.latest_task.tools.failed_tool_result_count

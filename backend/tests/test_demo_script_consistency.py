@@ -83,6 +83,10 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_completed_step_count" in script
     assert "project_status_latest_task_dimension_field" in script
     assert "project_status_latest_task_metric_count" in script
+    assert "project_status_latest_task_match_analysis_type" in script
+    assert "project_status_latest_task_candidate_field_count" in script
+    assert "project_status_latest_task_match_warning_count" in script
+    assert "project_status_latest_task_planned_tool_sequence" in script
     assert "project_status_latest_task_tool_result_count" in script
     assert "project_status_latest_task_successful_tool_result_count" in script
     assert "project_status_latest_task_failed_tool_result_count" in script

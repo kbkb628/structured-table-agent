@@ -115,7 +115,14 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
         "question": "analyse sales by region",
         "analysis_goal": "compare region sales",
         "file_profile": {},
-        "field_understanding": {"dimension_field": "region"},
+        "field_understanding": {
+            "dimension_field": "region",
+            "metric_field": "sales_amount",
+            "analysis_type": "single_metric",
+            "candidate_fields": ["region", "sales_amount", "order_id"],
+            "warnings": ["No supported metric intent was detected."],
+            "planned_tool_sequence": ["groupby_aggregate", "generate_chart", "generate_report"],
+        },
         "business_context": [
             {
                 "id": "metric_sales_amount",
@@ -282,6 +289,14 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["semantics"]["finding_count"] == 1
     assert latest_task["semantics"]["dimension_field"] == "region"
     assert latest_task["semantics"]["metric_count"] == 1
+    assert latest_task["semantics"]["match_analysis_type"] == "single_metric"
+    assert latest_task["semantics"]["candidate_field_count"] == 3
+    assert latest_task["semantics"]["match_warning_count"] == 1
+    assert latest_task["semantics"]["planned_tool_sequence"] == [
+        "groupby_aggregate",
+        "generate_chart",
+        "generate_report",
+    ]
     assert latest_task["tools"]["tool_result_count"] == 2
     assert latest_task["tools"]["successful_tool_result_count"] == 1
     assert latest_task["tools"]["failed_tool_result_count"] == 1

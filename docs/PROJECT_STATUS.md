@@ -147,7 +147,8 @@
   - `related_fields` 字段加权
   - BM25 风格归一化评分
   - `score_breakdown` 检索打分明细
-  - `GET /api/project-status` / `/demo` / `demo_mvp.ps1` 会暴露最新任务 top business context 的 `score`、`related_field_count`、`has_score_breakdown` 和 `bm25_score`
+- `GET /api/project-status` / `/demo` / `demo_mvp.ps1` 会暴露最新任务 top business context 的 `score`、`related_field_count`、`has_score_breakdown` 和 `bm25_score`
+- `GET /api/project-status` / `/demo` / `demo_mvp.ps1` 也会暴露最新任务 `field_understanding` 里的 `analysis_type`、`candidate_fields`、`warnings`、`planned_tool_sequence` 摘要，作为字段错配治理和 schema 约束仍然留存在运行态的证据
 - `/demo` 当前支持：
   - 上传或加载样例数据
   - 创建并执行真实分析任务
@@ -205,6 +206,10 @@
   - `project_status_latest_task_analysis_plan_count`
   - `project_status_latest_task_completed_step_count`
   - `project_status_latest_task_dimension_field`
+  - `project_status_latest_task_match_analysis_type`
+  - `project_status_latest_task_candidate_field_count`
+  - `project_status_latest_task_match_warning_count`
+  - `project_status_latest_task_planned_tool_sequence`
   - `project_status_latest_task_metric_count`
   - `project_status_latest_task_tool_result_count`
   - `project_status_latest_task_successful_tool_result_count`
