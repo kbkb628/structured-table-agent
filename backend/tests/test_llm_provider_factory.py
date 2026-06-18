@@ -67,3 +67,20 @@ def test_get_llm_client_accepts_custom_openai_compatible_key_name(monkeypatch):
 
     assert isinstance(client, QwenClient)
     assert client.api_key == "test-key"
+    assert client.api_key_source == "OPENAI_API_KEY_0011AI"
+
+
+def test_describe_llm_provider_resolution_reports_key_source(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "qwen")
+    monkeypatch.setenv("QWEN_MODEL", "qwen-plus")
+    _clear_compatible_key_env(monkeypatch)
+    monkeypatch.setenv("OPENAI_API_KEY_0011AI", "test-key")
+
+    from app.llm.factory import describe_llm_provider_resolution
+
+    resolution = describe_llm_provider_resolution()
+
+    assert resolution["provider"] == "qwen"
+    assert resolution["has_api_key"] is True
+    assert resolution["api_key_source"] == "OPENAI_API_KEY_0011AI"
+    assert resolution["model"] == "qwen-plus"

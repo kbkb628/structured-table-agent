@@ -1,6 +1,7 @@
 import json
 
 import pytest
+from urllib.error import HTTPError
 
 from app.schemas.report_schema import FinalReport
 
@@ -137,3 +138,43 @@ def test_qwen_client_raises_on_invalid_json(monkeypatch):
             file_profile={"columns": [{"name": "region"}, {"name": "sales_amount"}]},
             business_context=[{"title": "Region"}],
         )
+
+
+def test_qwen_client_reports_api_key_source_on_http_error(monkeypatch):
+    from app.llm.qwen_client import QwenClient, QwenResponseError
+
+    class StubErrorBody:
+        def read(self):
+            return b'{"error":{"code":"invalid_api_key"}}'
+
+        def close(self):
+            return None
+
+    def _raise_http_error(request, timeout):
+        del request
+        del timeout
+        raise HTTPError(
+            url="https://example.com/v1/chat/completions",
+            code=401,
+            msg="Unauthorized",
+            hdrs=None,
+            fp=StubErrorBody(),
+        )
+
+    monkeypatch.setattr("app.llm.qwen_client.urlopen", _raise_http_error)
+
+    client = QwenClient(
+        api_key="test-key",
+        api_key_source="OPENAI_API_KEY_0011AI",
+        base_url="https://example.com/v1",
+        model="qwen-plus",
+    )
+
+    with pytest.raises(QwenResponseError) as exc_info:
+        client.generate_analysis_goal(
+            question="analyse sales by region",
+            file_profile={"columns": [{"name": "region"}, {"name": "sales_amount"}]},
+            business_context=[{"title": "Region"}],
+        )
+
+    assert "api_key_source=OPENAI_API_KEY_0011AI" in str(exc_info.value)

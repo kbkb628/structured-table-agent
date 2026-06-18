@@ -17,9 +17,11 @@ class QwenClient(LLMClient):
         api_key: str,
         base_url: str,
         model: str,
+        api_key_source: str | None = None,
         timeout_seconds: float = 30,
     ) -> None:
         self.api_key = api_key
+        self.api_key_source = api_key_source
         self.base_url = base_url.rstrip("/")
         self.model = model
         self.timeout_seconds = timeout_seconds
@@ -54,7 +56,8 @@ class QwenClient(LLMClient):
                 raw_body = response.read().decode("utf-8")
         except HTTPError as exc:
             error_body = exc.read().decode("utf-8", errors="ignore")
-            raise QwenResponseError(f"Qwen HTTP error {exc.code}: {error_body}") from exc
+            key_source_note = f" [api_key_source={self.api_key_source}]" if self.api_key_source else ""
+            raise QwenResponseError(f"Qwen HTTP error {exc.code}{key_source_note}: {error_body}") from exc
         except URLError as exc:
             raise QwenResponseError(f"Qwen request failed: {exc.reason}") from exc
 
