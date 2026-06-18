@@ -114,6 +114,10 @@ try {
         upload_columns = $upload.column_count
         project_status_provider = $projectStatus.summary.provider.provider
         project_status_demo_available = $projectStatus.summary.demo.available
+        project_status_demo_path = $projectStatus.summary.demo.path
+        project_status_latest_task_id = $projectStatus.summary.latest_task.task_id
+        project_status_latest_task_status = $projectStatus.summary.latest_task.status
+        project_status_latest_task_updated_at = $projectStatus.summary.latest_task.updated_at
         project_status_session_store_preferred_backend = $projectStatus.summary.session_store.preferred_backend
         project_status_session_store_active_backend = $projectStatus.summary.session_store.active_backend
         project_status_session_store_redis_available = $projectStatus.summary.session_store.redis_available

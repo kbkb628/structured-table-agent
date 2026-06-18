@@ -170,6 +170,10 @@
 - `scripts/demo_mvp.ps1` 当前输出：
   - `project_status_provider`
   - `project_status_demo_available`
+  - `project_status_demo_path`
+  - `project_status_latest_task_id`
+  - `project_status_latest_task_status`
+  - `project_status_latest_task_updated_at`
   - `project_status_session_store_preferred_backend`
   - `project_status_session_store_active_backend`
   - `project_status_session_store_redis_available`

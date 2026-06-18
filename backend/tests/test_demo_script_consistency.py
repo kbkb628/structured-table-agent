@@ -42,6 +42,7 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "/api/project-status" in script
     assert "project_status_provider" in script
     assert "project_status_demo_available" in script
+    assert "project_status_demo_path" in script
     assert "project_status_session_store_preferred_backend" in script
     assert "project_status_session_store_active_backend" in script
     assert "project_status_session_store_redis_available" in script
@@ -61,6 +62,9 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_has_draft_report" in script
     assert "project_status_latest_task_has_final_report" in script
     assert "project_status_latest_task_has_llm_judgement" in script
+    assert "project_status_latest_task_id" in script
+    assert "project_status_latest_task_status" in script
+    assert "project_status_latest_task_updated_at" in script
     assert "project_status_latest_task_supported_by_tools" in script
     assert "project_status_latest_task_has_findings" in script
     assert "project_status_latest_task_judgement_issue_count" in script
@@ -186,6 +190,10 @@ def test_demo_script_contract_matches_pscustomobject_output_shape():
 
     assert object_fields[0] == contract["run_fields"][0]
     assert object_fields[1] == contract["top_level_fields"][0]
+    assert "project_status_demo_path" in object_fields[1]
+    assert "project_status_latest_task_id" in object_fields[1]
+    assert "project_status_latest_task_status" in object_fields[1]
+    assert "project_status_latest_task_updated_at" in object_fields[1]
     assert "project_status_analysis_events" in object_fields[1]
     assert "project_status_tool_call_logs" in object_fields[1]
     assert "project_status_eval_results" in object_fields[1]

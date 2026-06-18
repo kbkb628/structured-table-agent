@@ -411,6 +411,10 @@ cd E:\bgagent1
 - `fixed_eval_average_chart_validity`
 - `fixed_eval_average_field_validity`
 - `project_status_demo_available`
+- `project_status_demo_path`
+- `project_status_latest_task_id`
+- `project_status_latest_task_status`
+- `project_status_latest_task_updated_at`
 - `project_status_latest_task_has_llm_judgement`
 - `project_status_latest_task_judgement_issue_count`
 - `project_status_latest_task_tool_call_log_count`

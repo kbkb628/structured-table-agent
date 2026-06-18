@@ -315,6 +315,10 @@ Key summary fields exposed by the script include:
 Additional runtime-summary fields that are also exposed by the script include:
 
 - `project_status_demo_available`
+- `project_status_demo_path`
+- `project_status_latest_task_id`
+- `project_status_latest_task_status`
+- `project_status_latest_task_updated_at`
 - `project_status_latest_task_has_llm_judgement`
 - `project_status_latest_task_judgement_issue_count`
 - `project_status_latest_task_tool_call_log_count`
