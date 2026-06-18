@@ -490,6 +490,77 @@ def test_session_store_load_state_hydrates_context_checkpoint_from_redis(monkeyp
     assert state["context_checkpoint"]["draft_report_status"] == "available"
 
 
+def test_session_store_load_state_rebuilds_stale_snapshot_from_granular_redis(monkeypatch):
+    task_id = f"task_session_stale_snapshot_{uuid.uuid4().hex[:8]}"
+    stale_state = {
+        "task_id": task_id,
+        "file_id": "file_session_stale_snapshot",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [{"id": "sqlite_metric", "title": "SQLite Sales Amount"}],
+        "analysis_plan": ["match fields", "aggregate"],
+        "current_step": "created",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {"title": "SQLite final report"},
+        "llm_judgement": {"supported_by_tools": False, "issue_count": 2},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "created",
+    }
+    create_task(task_id, "file_session_stale_snapshot", "analyse sales by region", stale_state)
+
+    fake_client = FakeRedisClient()
+    fake_client.values[f"analysis_state:{task_id}"] = json.dumps(stale_state, ensure_ascii=False)
+    fake_client.values[f"final_report:{task_id}"] = json.dumps(
+        {"title": "Redis final report", "analysis_goal": "compare region sales"},
+        ensure_ascii=False,
+    )
+    fake_client.values[f"llm_judgement:{task_id}"] = json.dumps(
+        {"supported_by_tools": True, "issue_count": 0},
+        ensure_ascii=False,
+    )
+    fake_client.values[f"intermediate_findings:{task_id}"] = json.dumps(
+        [{"summary": "Redis says East leads."}],
+        ensure_ascii=False,
+    )
+    fake_client.values[f"latest_context:{task_id}"] = json.dumps(
+        {
+            "analysis_goal": "compare region sales",
+            "current_step": "report",
+            "status": "running",
+            "draft_report_status": "empty",
+            "finding_count": 1,
+        },
+        ensure_ascii=False,
+    )
+    monkeypatch.setattr(SessionStore, "_connect", lambda self: fake_client)
+
+    loaded_state, used_redis = SessionStore().load_state(task_id)
+
+    assert used_redis is True
+    assert loaded_state is not None
+    assert loaded_state["final_report"]["title"] == "Redis final report"
+    assert loaded_state["llm_judgement"]["supported_by_tools"] is True
+    assert loaded_state["intermediate_findings"][0]["summary"] == "Redis says East leads."
+    assert loaded_state["context_checkpoint"]["current_step"] == "report"
+    stored_state = get_task_state(task_id)
+    assert stored_state is not None
+    assert stored_state["final_report"]["title"] == "Redis final report"
+    assert stored_state["llm_judgement"]["supported_by_tools"] is True
+    assert stored_state["intermediate_findings"][0]["summary"] == "Redis says East leads."
+    restored_snapshot = json.loads(fake_client.values[f"analysis_state:{task_id}"])
+    assert restored_snapshot["final_report"]["title"] == "Redis final report"
+    assert restored_snapshot["llm_judgement"]["supported_by_tools"] is True
+    assert restored_snapshot["intermediate_findings"][0]["summary"] == "Redis says East leads."
+
+
 def test_session_store_task_lock_blocks_duplicate_acquire():
     store = SessionStore()
     task_id = f"task_session_lock_{uuid.uuid4().hex[:8]}"

@@ -131,6 +131,12 @@ class SessionStore:
             if payload:
                 state = json.loads(payload)
                 hydrated_state, _ = self._hydrate_state_from_granular_keys(client, task_id, base_state=state)
+                if hydrated_state is not None and hydrated_state != state:
+                    client.set(
+                        self._build_keys(task_id)["analysis_state"],
+                        json.dumps(hydrated_state, ensure_ascii=False),
+                    )
+                    update_task_state(task_id, hydrated_state)
                 return hydrated_state or state, True
 
             hydrated_state, recovered_segments = self._hydrate_state_from_granular_keys(client, task_id)
