@@ -25,15 +25,33 @@ def create_task(task_id: str, file_id: str, question: str, state: dict) -> None:
 
 def update_task_state(task_id: str, state: dict) -> None:
     init_db()
+    now = _ts()
     with get_connection() as conn:
-        conn.execute(
+        updated = conn.execute(
             """
             UPDATE analysis_tasks
             SET status = ?, state_json = ?, updated_at = ?
             WHERE task_id = ?
             """,
-            (state["status"], json.dumps(state, ensure_ascii=False), _ts(), task_id),
+            (state["status"], json.dumps(state, ensure_ascii=False), now, task_id),
         )
+        if updated.rowcount == 0:
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO analysis_tasks (
+                    task_id, file_id, question, status, state_json, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    task_id,
+                    state["file_id"],
+                    state["question"],
+                    state["status"],
+                    json.dumps(state, ensure_ascii=False),
+                    now,
+                    now,
+                ),
+            )
 
 
 def get_task_state(task_id: str) -> dict | None:

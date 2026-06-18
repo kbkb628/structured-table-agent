@@ -5,6 +5,7 @@ from app.services.analysis_runner import run_analysis_task
 from app.storage.analysis_store import create_task
 from app.storage.analysis_store import get_task_state
 from app.storage.analysis_store import list_task_events
+from app.storage.database import get_connection
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
 from app.storage.session_store import SessionStore
@@ -165,6 +166,45 @@ def test_session_store_save_state_updates_sqlite_when_redis_is_unavailable():
     assert stored is not None
     assert stored["status"] == "completed"
     assert stored["current_step"] == "completed"
+
+
+def test_session_store_save_state_recreates_missing_sqlite_row_when_redis_is_available(monkeypatch):
+    task_id = f"task_session_restore_sqlite_{uuid.uuid4().hex[:8]}"
+    state = {
+        "task_id": task_id,
+        "file_id": "file_session_restore_sqlite",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [],
+        "analysis_plan": ["match fields"],
+        "current_step": "completed",
+        "completed_steps": ["match fields"],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "completed",
+    }
+    create_task(task_id, "file_session_restore_sqlite", "analyse sales by region", state)
+    with get_connection() as conn:
+        conn.execute("DELETE FROM analysis_tasks WHERE task_id = ?", (task_id,))
+
+    fake_client = FakeRedisClient()
+    monkeypatch.setattr(SessionStore, "_connect", lambda self: fake_client)
+
+    saved_with_redis = SessionStore().save_state(task_id, state)
+    stored = get_task_state(task_id)
+
+    assert saved_with_redis is True
+    assert stored is not None
+    assert stored["task_id"] == task_id
+    assert stored["status"] == "completed"
 
 
 def test_session_store_falls_back_to_sqlite_when_redis_is_available_but_task_key_is_missing():
