@@ -47,6 +47,9 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_session_store_degraded_to_sqlite" in script
     assert "project_status_session_store_warning_count" in script
     assert "project_status_session_store_recovered_count" in script
+    assert "project_status_session_store_latest_recovered_recovery_source" in script
+    assert "project_status_session_store_latest_recovered_segment_count" in script
+    assert "project_status_session_store_latest_recovered_segments" in script
     assert "project_status_latest_task_has_business_context" in script
     assert "project_status_latest_task_has_llm_judgement" in script
     assert "project_status_latest_task_supported_by_tools" in script

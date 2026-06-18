@@ -157,6 +157,8 @@
   - provider 解析与 diagnostics
   - demo 可用性与路径
   - `summary.session_store` 运行态摘要
+    - 最近一次 `session_state_recovered` 的 `recovery_source`
+    - 最近一次恢复涉及的 `recovered_segments`
   - `files`
   - `analysis_tasks`
   - `analysis_events`
@@ -170,6 +172,9 @@
   - `project_status_session_store_degraded_to_sqlite`
   - `project_status_session_store_warning_count`
   - `project_status_session_store_recovered_count`
+  - `project_status_session_store_latest_recovered_recovery_source`
+  - `project_status_session_store_latest_recovered_segment_count`
+  - `project_status_session_store_latest_recovered_segments`
   - `project_status_latest_task_has_business_context`
   - `project_status_latest_task_has_eval_result`
   - `project_status_latest_task_eval_overall_score`

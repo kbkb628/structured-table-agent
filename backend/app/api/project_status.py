@@ -41,7 +41,7 @@ def _session_store_info() -> dict:
             SELECT task_id, created_at
             FROM analysis_events
             WHERE event_type = ?
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC, rowid DESC
             LIMIT 1
             """,
             ("session_store_warning",),
@@ -52,14 +52,16 @@ def _session_store_info() -> dict:
         ).fetchone()
         latest_recovered = conn.execute(
             """
-            SELECT task_id, created_at
+            SELECT task_id, created_at, payload_json
             FROM analysis_events
             WHERE event_type = ?
-            ORDER BY created_at DESC
+            ORDER BY created_at DESC, rowid DESC
             LIMIT 1
             """,
             ("session_state_recovered",),
         ).fetchone()
+    latest_recovered_payload = json.loads(latest_recovered[2]) if latest_recovered and latest_recovered[2] else {}
+    latest_recovered_segments = latest_recovered_payload.get("recovered_segments") or []
     return {
         "preferred_backend": "redis",
         "active_backend": "redis" if redis_available else "sqlite",
@@ -73,6 +75,9 @@ def _session_store_info() -> dict:
             "latest_warning_at": latest_warning[1] if latest_warning else None,
             "latest_recovered_task_id": latest_recovered[0] if latest_recovered else None,
             "latest_recovered_at": latest_recovered[1] if latest_recovered else None,
+            "latest_recovered_recovery_source": latest_recovered_payload.get("recovery_source"),
+            "latest_recovered_segment_count": len(latest_recovered_segments),
+            "latest_recovered_segments": latest_recovered_segments,
         },
     }
 

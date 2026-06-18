@@ -992,6 +992,9 @@ def demo_page() -> HTMLResponse:
         `recovered_count: ${sessionStoreEvents.recovered_count ?? 0}`,
         `latest_warning_task_id: ${sessionStoreEvents.latest_warning_task_id || "none"}`,
         `latest_recovered_task_id: ${sessionStoreEvents.latest_recovered_task_id || "none"}`,
+        `latest_recovered_recovery_source: ${sessionStoreEvents.latest_recovered_recovery_source || "none"}`,
+        `latest_recovered_segment_count: ${sessionStoreEvents.latest_recovered_segment_count ?? 0}`,
+        `latest_recovered_segments: ${Array.isArray(sessionStoreEvents.latest_recovered_segments) ? sessionStoreEvents.latest_recovered_segments.join(", ") || "none" : "none"}`,
       ].join("\n");
       latestTaskPillEl.textContent = latestTask ? (latestTask.status || "available") : "No tasks";
       latestTaskMetaEl.textContent = latestTask

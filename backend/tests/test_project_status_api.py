@@ -82,7 +82,10 @@ def test_get_project_status_aggregates_session_store_event_summary():
             "session_state_recovered",
             "session_store",
             "session state recovered from granular Redis keys",
-            {"recovery_source": "sqlite_plus_granular_redis"},
+            {
+                "recovery_source": "sqlite_plus_granular_redis",
+                "recovered_segments": ["final_report", "context_checkpoint", "business_context"],
+            },
         )
 
     response = client.get("/api/project-status")
@@ -95,6 +98,13 @@ def test_get_project_status_aggregates_session_store_event_summary():
     assert event_summary["latest_recovered_task_id"] == recovered_task_id
     assert event_summary["latest_warning_at"]
     assert event_summary["latest_recovered_at"]
+    assert event_summary["latest_recovered_recovery_source"] == "sqlite_plus_granular_redis"
+    assert event_summary["latest_recovered_segment_count"] == 3
+    assert event_summary["latest_recovered_segments"] == [
+        "final_report",
+        "context_checkpoint",
+        "business_context",
+    ]
 
 
 def test_get_project_status_reports_latest_task_artifact_coverage():

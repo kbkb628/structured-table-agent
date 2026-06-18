@@ -290,6 +290,7 @@
 - 这个接口只读取已有状态，不会写入业务数据
 - `/demo` 当前已经使用这个接口展示 project runtime overview
 - `summary.session_store` 会直接暴露 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available`、`degraded_to_sqlite` 和 `redis_url`
+- `summary.session_store.event_summary` 还会暴露最近一次恢复事件的摘要，包括 `latest_recovered_recovery_source`、`latest_recovered_segment_count` 和 `latest_recovered_segments`
 - `summary.latest_task` 会同时暴露最新任务的 artifact 覆盖率和 evaluation 摘要，包括 `has_eval_result`、`overall_score`、`issue_count` 和 `has_dimension_scores`
 - `summary.latest_task.judgement` 会暴露最新任务的补充型 `llm_judgement` 摘要，包括 `supported_by_tools`、`has_findings` 和 `issue_count`
 - `summary.latest_task.process` 会暴露最新任务的过程追踪摘要，包括 `pending_metric_count`、`planned_tool_call_count`、`event_count`、`latest_event_type` 和 `llm_issue_count`
@@ -327,6 +328,9 @@ cd E:\bgagent1
 - `project_status_provider`
 - `project_status_session_store_active_backend`
 - `project_status_session_store_warning_count`
+- `project_status_session_store_latest_recovered_recovery_source`
+- `project_status_session_store_latest_recovered_segment_count`
+- `project_status_session_store_latest_recovered_segments`
 - `project_status_latest_task_has_business_context`
 - `project_status_latest_task_supported_by_tools`
 - `project_status_latest_task_has_findings`

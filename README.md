@@ -144,6 +144,7 @@ LLM 相关环境变量：
 
 当前 Redis 仍是推荐依赖而不是强制依赖。Redis 不可用时，系统会显式降级到 SQLite 并记录 `session_store_warning` 事件。
 现在 `GET /api/project-status` 与 `/demo` 也会直接展示 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available` 和 `degraded_to_sqlite`，便于把“Redis 优先 / SQLite 降级”作为运行时事实演示，而不只是文档表述。
+如果最新恢复事件存在，`GET /api/project-status`、`/demo` 和 `scripts/demo_mvp.ps1` 还会直接暴露 `project_status_session_store_latest_recovered_recovery_source`、`project_status_session_store_latest_recovered_segment_count` 和 `project_status_session_store_latest_recovered_segments`，用于说明最近一次 `session_state_recovered` 事件是基于哪些细粒度 Redis 段完成回填的。
 
 ## 样例数据说明
 
@@ -188,7 +189,7 @@ cd E:\bgagent1
 - 依次运行六个当前支持的演示问题
 - 输出 project status 摘要、任务状态、图表数量、工具调用数量和评估分数摘要
 - 输出 `project_status_provider` 作为 project runtime overview 的 provider 摘要字段
-- 输出 `project_status_session_store_active_backend`、`project_status_session_store_warning_count` 等 session store runtime mode 与事件摘要字段
+- 输出 `project_status_session_store_active_backend`、`project_status_session_store_warning_count`、`project_status_session_store_latest_recovered_recovery_source`、`project_status_session_store_latest_recovered_segment_count`、`project_status_session_store_latest_recovered_segments` 等 session store runtime mode 与事件摘要字段
 - 输出 `project_status_latest_task_has_business_context`、`project_status_latest_task_has_eval_result`、`project_status_latest_task_eval_overall_score`、`project_status_latest_task_pending_metric_count`、`project_status_latest_task_latest_event_type`、`project_status_latest_task_chart_spec_count`、`project_status_latest_task_key_finding_count`、`project_status_latest_task_business_context_count`、`project_status_latest_task_checkpoint_current_step`、`project_status_latest_task_analysis_goal`、`project_status_latest_task_analysis_plan_count`、`project_status_latest_task_dimension_field`、`project_status_latest_task_supported_by_tools`、`project_status_latest_task_has_findings`、`project_status_latest_task_tool_result_count`、`project_status_latest_task_retried_tool_result_count`、`project_status_latest_task_retry_attempts_total`、`project_status_latest_task_total_tool_elapsed_ms`、`project_status_latest_task_error_count`、`project_status_latest_task_has_degradation` 等 latest task artifact / evaluation / judgement / process / report / context / semantics / tools / errors 摘要字段
 - 输出 `provider_smoke_error_message` 等 provider smoke 失败细节字段
 - 输出 `fixed_eval_average_trace_completeness`、`fixed_eval_average_report_completeness` 等 fixed eval 质量指标
