@@ -48,10 +48,6 @@ try {
         Wait-ServerReady -HealthUrl "$BaseUrl/docs"
     }
 
-    $projectStatus = Invoke-RestMethod `
-        -Method Get `
-        -Uri "$BaseUrl/api/project-status"
-
     $providerStatus = Invoke-RestMethod `
         -Method Get `
         -Uri "$BaseUrl/api/llm/provider-status"
