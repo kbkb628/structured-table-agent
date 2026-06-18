@@ -28,6 +28,7 @@ Currently implemented:
 - provider factory with configurable `LLM_PROVIDER`, `QWEN_API_KEY`, `QWEN_BASE_URL`, `QWEN_MODEL`, and fallback switch
 - provider diagnostics through `/api/llm/provider-status`, `/api/llm/provider-smoke`, and `scripts/qwen_provider_smoke.ps1`
   - structured `diagnostics` including provider support, key-source kind, smoke readiness, warnings, and recommendations
+- project runtime overview through `/api/project-status`
 - Qwen-driven analysis goal generation and analysis plan generation during task creation
 - LangGraph-based orchestration with explicit `validate_tool_result` and `route_next_step` nodes for `/api/analysis/{task_id}/run`
 - deterministic pandas / DuckDB / chart / report-tool chain kept as the numeric ground truth
