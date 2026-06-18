@@ -110,7 +110,21 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
         "tool_results": [{"success": True, "tool_name": "groupby_aggregate"}],
         "chart_specs": [{"chart_type": "bar"}],
         "draft_report": {"title": "Draft report"},
-        "final_report": {"title": "Final report", "analysis_goal": "compare region sales"},
+        "final_report": {
+            "title": "Final report",
+            "analysis_goal": "compare region sales",
+            "key_findings": [
+                {
+                    "finding": "East leads.",
+                    "evidence": "sales_amount_sum=1200",
+                    "source_tool": "groupby_aggregate",
+                }
+            ],
+            "chart_explanations": ["Bar chart compares region sales."],
+            "business_suggestions": ["Check channel mix in East."],
+            "data_limitations": ["Uploaded CSV only."],
+            "next_steps": ["Drill down by channel."],
+        },
         "llm_judgement": {"supported_by_tools": True, "issue_count": 0},
         "eval_result": {
             "overall_score": 0.91,
@@ -191,3 +205,8 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["process"]["event_count"] >= 2
     assert latest_task["process"]["latest_event_type"] == "report_generated"
     assert latest_task["process"]["llm_issue_count"] == 0
+    assert latest_task["report"]["chart_spec_count"] == 1
+    assert latest_task["report"]["key_finding_count"] == 1
+    assert latest_task["report"]["business_suggestion_count"] == 1
+    assert latest_task["report"]["data_limitation_count"] == 1
+    assert latest_task["report"]["next_step_count"] == 1

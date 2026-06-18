@@ -129,6 +129,10 @@ try {
         project_status_latest_task_planned_tool_call_count = $projectStatus.summary.latest_task.process.planned_tool_call_count
         project_status_latest_task_event_count = $projectStatus.summary.latest_task.process.event_count
         project_status_latest_task_latest_event_type = $projectStatus.summary.latest_task.process.latest_event_type
+        project_status_latest_task_chart_spec_count = $projectStatus.summary.latest_task.report.chart_spec_count
+        project_status_latest_task_key_finding_count = $projectStatus.summary.latest_task.report.key_finding_count
+        project_status_latest_task_business_suggestion_count = $projectStatus.summary.latest_task.report.business_suggestion_count
+        project_status_latest_task_data_limitation_count = $projectStatus.summary.latest_task.report.data_limitation_count
         project_status_files = $projectStatus.summary.database.tables.files.row_count
         project_status_tasks = $projectStatus.summary.database.tables.analysis_tasks.row_count
         provider_status_key_source = $providerStatus.api_key_source

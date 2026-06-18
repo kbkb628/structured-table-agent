@@ -121,6 +121,8 @@ def _latest_task_info() -> dict | None:
         "trace_completeness",
     }
     llm_judgement = state.get("llm_judgement") or {}
+    final_report = state.get("final_report") or {}
+    chart_specs = state.get("chart_specs") or []
     return {
         "task_id": task_id,
         "status": status,
@@ -146,6 +148,13 @@ def _latest_task_info() -> dict | None:
             "latest_event_type": latest_event[0] if latest_event else None,
             "latest_event_at": latest_event[1] if latest_event else None,
             "llm_issue_count": int(llm_judgement.get("issue_count", 0) or 0),
+        },
+        "report": {
+            "chart_spec_count": len(chart_specs),
+            "key_finding_count": len(final_report.get("key_findings") or []),
+            "business_suggestion_count": len(final_report.get("business_suggestions") or []),
+            "data_limitation_count": len(final_report.get("data_limitations") or []),
+            "next_step_count": len(final_report.get("next_steps") or []),
         },
     }
 

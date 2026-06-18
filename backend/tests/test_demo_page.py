@@ -49,6 +49,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'pending_metric_count' in content
     assert 'planned_tool_call_count' in content
     assert 'latest_event_type' in content
+    assert 'latest_task_report_output' in content
+    assert 'chart_spec_count' in content
+    assert 'key_finding_count' in content
+    assert 'business_suggestion_count' in content
     assert 'id="project-status-summary"' in content
     assert 'id="project-status-output"' in content
     assert 'id="eval-summary"' in content

@@ -178,6 +178,10 @@
   - `project_status_latest_task_planned_tool_call_count`
   - `project_status_latest_task_event_count`
   - `project_status_latest_task_latest_event_type`
+  - `project_status_latest_task_chart_spec_count`
+  - `project_status_latest_task_key_finding_count`
+  - `project_status_latest_task_business_suggestion_count`
+  - `project_status_latest_task_data_limitation_count`
   - `project_status_latest_task_has_llm_judgement`
   - `project_status_latest_task_tool_call_log_count`
   - `project_status_files`

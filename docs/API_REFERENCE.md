@@ -292,6 +292,7 @@
 - `summary.session_store` 会直接暴露 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available`、`degraded_to_sqlite` 和 `redis_url`
 - `summary.latest_task` 会同时暴露最新任务的 artifact 覆盖率和 evaluation 摘要，包括 `has_eval_result`、`overall_score`、`issue_count` 和 `has_dimension_scores`
 - `summary.latest_task.process` 会暴露最新任务的过程追踪摘要，包括 `pending_metric_count`、`planned_tool_call_count`、`event_count`、`latest_event_type` 和 `llm_issue_count`
+- `summary.latest_task.report` 会暴露最新任务的报告摘要，包括 `chart_spec_count`、`key_finding_count`、`business_suggestion_count`、`data_limitation_count` 和 `next_step_count`
 
 ## 11. 相关验证命令
 
@@ -326,6 +327,8 @@ cd E:\bgagent1
 - `project_status_latest_task_eval_overall_score`
 - `project_status_latest_task_pending_metric_count`
 - `project_status_latest_task_latest_event_type`
+- `project_status_latest_task_chart_spec_count`
+- `project_status_latest_task_key_finding_count`
 - `provider_smoke_error_message`
 - `fixed_eval_average_trace_completeness`
 - `fixed_eval_average_report_completeness`
