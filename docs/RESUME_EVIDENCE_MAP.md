@@ -27,6 +27,7 @@
 - 测试证据
   - `backend/tests/test_files_api.py`
   - `backend/tests/test_analysis_api.py`
+  - 其中 `backend/tests/test_analysis_api.py` 已覆盖 `DEVELOPMENT_GUIDE.md` 中三条中文 MVP 验收问句的真实 HTTP 闭环
 
 ### 2. 简历说法：使用 LangGraph 编排最小状态流，并通过 `route_next_step` 支持多指标问题的最小动态推进
 

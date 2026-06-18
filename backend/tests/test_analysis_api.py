@@ -82,6 +82,24 @@ def _clear_provider_keys(monkeypatch):
             monkeypatch.delenv(name, raising=False)
 
 
+def _run_sample_analysis_question(question: str) -> dict:
+    client = TestClient(app)
+    upload = client.post("/api/files/upload-sample")
+    assert upload.status_code == 200
+    file_id = upload.json()["file_id"]
+
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": file_id, "question": question},
+    )
+    assert start.status_code == 200
+    task_id = start.json()["task_id"]
+
+    run = client.post(f"/api/analysis/{task_id}/run")
+    assert run.status_code == 200
+    return run.json()
+
+
 def test_start_analysis_creates_task(tmp_path):
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text("product_category,sales_amount\nelectronics,1200\n", encoding="utf-8")
@@ -272,6 +290,43 @@ def test_run_channel_analysis_returns_multiple_tool_results(tmp_path):
     assert len(run.json()["chart_specs"]) == 2
     assert run.json()["pending_tool_calls"] == []
     assert run.json()["pending_metrics"] == []
+
+
+def test_run_chinese_category_topn_question_completes_with_expected_dimension():
+    run = _run_sample_analysis_question("分析各品类销售额 Top5，并给出业务建议")
+
+    assert run["status"] == "completed"
+    assert run["field_understanding"]["dimension_field"] == "product_category"
+    assert run["field_understanding"]["metric_field"] == "sales_amount"
+    assert len(run["tool_results"]) == 1
+    assert len(run["chart_specs"]) == 1
+    assert len(run["final_report"]["key_findings"]) >= 1
+    assert len(run["final_report"]["business_suggestions"]) >= 1
+
+
+def test_run_chinese_region_compare_question_completes_with_expected_dimension():
+    run = _run_sample_analysis_question("分析各地区销售额对比，并生成图表")
+
+    assert run["status"] == "completed"
+    assert run["field_understanding"]["dimension_field"] == "region"
+    assert run["field_understanding"]["metric_field"] == "sales_amount"
+    assert len(run["tool_results"]) == 1
+    assert len(run["chart_specs"]) == 1
+    assert run["chart_specs"][0]["chart_type"] == "bar"
+    assert len(run["final_report"]["key_findings"]) >= 1
+
+
+def test_run_chinese_channel_performance_question_completes_with_dual_metrics():
+    run = _run_sample_analysis_question("分析不同渠道的订单数量和销售额表现")
+
+    assert run["status"] == "completed"
+    assert run["field_understanding"]["dimension_field"] == "channel"
+    assert run["field_understanding"]["analysis_type"] == "channel_performance"
+    assert len(run["field_understanding"]["metrics"]) == 2
+    assert len(run["tool_results"]) == 2
+    assert len(run["chart_specs"]) == 2
+    assert run["pending_tool_calls"] == []
+    assert run["pending_metrics"] == []
 
 
 def test_run_share_analysis_returns_share_rows(tmp_path):
