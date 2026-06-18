@@ -36,6 +36,7 @@
 - `LLM Provider Status`
 - `Project Runtime Overview`
 - `Latest Task Artifacts / Evaluation / Judgement / Context / Tools / Errors`
+- `Fixed Eval Cases` 区块里的 case coverage 列表，可直接看到三条中文 MVP 验收问句
 
 ## Step 2：打开 `GET /api/llm/provider-status`
 
@@ -126,6 +127,8 @@
 - `project_status_latest_task_top_business_context_bm25_score`
 - `project_status_latest_task_checkpoint_status`
 - `fixed_eval_pass_rate`
+- `fixed_eval_case_ids`
+- `fixed_eval_questions`
 
 ## 2 分钟版本
 

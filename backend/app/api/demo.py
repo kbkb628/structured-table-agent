@@ -622,6 +622,10 @@ def demo_page() -> HTMLResponse:
               <h3>Eval Results</h3>
               <pre id="eval-results-output">No fixed eval summary loaded.</pre>
             </div>
+            <div class="output-block">
+              <h3>Eval Case Coverage</h3>
+              <pre id="eval-case-coverage-output">No fixed eval case coverage loaded.</pre>
+            </div>
           </div>
         </div>
       </div>
@@ -679,6 +683,7 @@ def demo_page() -> HTMLResponse:
     const projectStatusOutputEl = document.getElementById("project-status-output");
     const evalSummaryEl = document.getElementById("eval-summary");
     const evalResultsEl = document.getElementById("eval-results-output");
+    const evalCaseCoverageEl = document.getElementById("eval-case-coverage-output");
     const chartPreviewEl = document.getElementById("chart-preview");
     const eventsEl = document.getElementById("events-output");
     const toolLogsEl = document.getElementById("tool-logs-output");
@@ -902,6 +907,7 @@ def demo_page() -> HTMLResponse:
             <div class="summary-note">average_field_validity.</div>
           </div>
         `;
+        evalCaseCoverageEl.textContent = "No fixed eval case coverage loaded.";
         return;
       }
 
@@ -947,6 +953,11 @@ def demo_page() -> HTMLResponse:
           <div class="summary-note">average_field_validity</div>
         </div>
       `;
+
+      const coveredCases = Array.isArray(summary.results) ? summary.results : [];
+      evalCaseCoverageEl.textContent = coveredCases.length
+        ? coveredCases.map((item) => `${item.case_id}: ${item.question}`).join("\n")
+        : "No fixed eval case coverage loaded.";
     }
 
     function renderProjectStatus(payload) {

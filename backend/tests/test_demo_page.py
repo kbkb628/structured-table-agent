@@ -113,6 +113,7 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'id="project-status-output"' in content
     assert 'id="eval-summary"' in content
     assert 'id="eval-results-output"' in content
+    assert 'id="eval-case-coverage-output"' in content
     assert 'retried_tool_calls' in content
     assert 'average_tool_elapsed_ms_total' in content
     assert 'average_chart_validity' in content
@@ -128,6 +129,7 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert "/api/llm/provider-smoke" in content
     assert "/api/project-status" in content
     assert "/api/eval/cases/run" in content
+    assert "Eval Case Coverage" in content
     assert "session store runtime mode" in content.lower()
 
 
