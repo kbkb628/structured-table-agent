@@ -127,7 +127,7 @@ print(json.dumps(run_fixed_eval_cases(), ensure_ascii=False, indent=2))
 '@ | .\.venv\Scripts\python.exe -
 ```
 
-The runner executes the six currently supported case families on `data/samples/sales_orders.csv`:
+The runner executes nine fixed eval cases on `data/samples/sales_orders.csv`:
 
 - category sales TopN
 - category sales share
@@ -135,6 +135,9 @@ The runner executes the six currently supported case families on `data/samples/s
 - region sales comparison
 - channel order-count and sales performance
 - sales trend by order date
+- Chinese category sales TopN with business suggestions
+- Chinese region sales comparison with chart generation
+- Chinese channel order-count and sales performance
 
 The summary also exposes evaluation aggregates derived from the real `RuleScorer` output:
 
@@ -148,7 +151,7 @@ The summary also exposes evaluation aggregates derived from the real `RuleScorer
 - `retry_attempts_total`
 
 The same regression summary is also available through `POST /api/eval/cases/run`.
-The fixed eval set currently covers six English demo questions plus the three Chinese MVP acceptance questions defined in `DEVELOPMENT_GUIDE.md`.
+The fixed eval set currently covers nine fixed eval cases: six English demo questions plus the three Chinese MVP acceptance questions defined in `DEVELOPMENT_GUIDE.md`.
 
 ## Analysis flow
 

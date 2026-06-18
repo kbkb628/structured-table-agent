@@ -94,6 +94,15 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "fixed_eval_average_tool_success_rate" in content
 
 
+def test_backend_readme_mentions_current_fixed_eval_scope():
+    content = (Path(__file__).resolve().parents[2] / "backend" / "README.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "nine fixed eval cases" in content
+    assert "three Chinese MVP acceptance questions" in content
+
+
 def test_resume_project_description_mentions_qwen_and_project_status_delivery():
     content = (Path(__file__).resolve().parents[2] / "docs" / "RESUME_PROJECT_DESCRIPTION.md").read_text(
         encoding="utf-8"
