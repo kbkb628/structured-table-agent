@@ -340,6 +340,7 @@ def test_run_analysis_task_supports_category_sales_share_question(tmp_path: Path
     assert result["chart_specs"][0]["chart_type"] == "bar"
     assert result["chart_specs"][0]["plotly_spec"]["layout"]["yaxis"]["title"] == "share_percent"
     assert result["chart_specs"][0]["plotly_spec"]["data"][0]["y"] == [73.33, 26.67]
+    assert result["intermediate_findings"][0]["summary"] == "electronics contributes the highest grouped share at 73.33%."
 
 
 def test_run_analysis_task_supports_sales_trend_question(tmp_path: Path):
@@ -416,6 +417,7 @@ def test_run_analysis_task_supports_sales_trend_question(tmp_path: Path):
         "2026-06-03",
     ]
     assert result["chart_specs"][0]["chart_type"] == "line"
+    assert result["intermediate_findings"][0]["summary"] == "sales_amount_sum changes over time from 1500 on 2026-06-01 to 800 on 2026-06-03."
 
 
 def test_run_analysis_task_supports_category_sales_anomalies(tmp_path: Path):
@@ -492,6 +494,7 @@ def test_run_analysis_task_supports_category_sales_anomalies(tmp_path: Path):
     assert result["chart_specs"][0]["chart_type"] == "bar"
     assert result["chart_specs"][0]["plotly_spec"]["layout"]["yaxis"]["title"] == "z_score"
     assert result["chart_specs"][0]["plotly_spec"]["data"][0]["y"] == [2.2361]
+    assert result["intermediate_findings"][0]["summary"] == "beauty is flagged as an anomaly with z_score 2.2361."
 
 
 def test_run_analysis_task_completes_when_anomaly_analysis_finds_no_outliers(tmp_path: Path):
@@ -565,6 +568,7 @@ def test_run_analysis_task_completes_when_anomaly_analysis_finds_no_outliers(tmp
     assert result["tool_results"][0]["data"]["rows"] == []
     assert result["chart_specs"] == []
     assert result["errors"] == []
+    assert result["intermediate_findings"][0]["summary"] == "No anomalies were detected in the aggregated result."
 
 
 def test_run_analysis_task_marks_failed_when_llm_report_generation_fails(tmp_path: Path, monkeypatch):

@@ -25,6 +25,41 @@ def _persist_state(state: AnalysisGraphState) -> None:
     SessionStore().save_state(state["task_id"], state)
 
 
+def _format_metric_value(value: object) -> str:
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
+def _build_finding_summary(tool_name: str, metric_label: str, rows: list[dict], fallback_summary: str) -> str:
+    if not rows:
+        return fallback_summary
+
+    top_row = rows[0]
+    dimension_keys = [key for key in top_row.keys() if key not in {metric_label, "share_ratio", "share_percent", "z_score", "is_anomaly"}]
+    dimension_field = dimension_keys[0] if dimension_keys else "dimension"
+    dimension_value = top_row.get(dimension_field, "unknown")
+
+    if tool_name == "calculate_share" and "share_percent" in top_row:
+        return f"{dimension_value} contributes the highest grouped share at {top_row['share_percent']}%."
+
+    if tool_name == "trend_analysis":
+        first_row = rows[0]
+        last_row = rows[-1]
+        x_field = next((key for key in first_row.keys() if key != metric_label), "dimension")
+        first_value = _format_metric_value(first_row.get(metric_label, 0))
+        last_value = _format_metric_value(last_row.get(metric_label, 0))
+        return (
+            f"{metric_label} changes over time from {first_value} on {first_row.get(x_field)} "
+            f"to {last_value} on {last_row.get(x_field)}."
+        )
+
+    if tool_name == "anomaly_analysis" and "z_score" in top_row:
+        return f"{dimension_value} is flagged as an anomaly with z_score {top_row['z_score']}."
+
+    return fallback_summary
+
+
 def fail_task(state: AnalysisGraphState, code: str, message: str, payload: dict | None = None) -> AnalysisGraphState:
     error = {"code": code, "message": message, "details": payload or {}}
     state["errors"].append(error)
@@ -153,7 +188,12 @@ def validate_tool_result_node(state: AnalysisGraphState) -> AnalysisGraphState:
     state["intermediate_findings"].append(
         {
             "metric_label": metric["label"],
-            "summary": tool_result.get("summary", ""),
+            "summary": _build_finding_summary(
+                tool_name,
+                metric["label"],
+                rows,
+                tool_result.get("summary", ""),
+            ),
             "top_row": rows[0],
         }
     )
