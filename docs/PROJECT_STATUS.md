@@ -156,6 +156,7 @@
 - `GET /api/project-status` 当前聚合：
   - provider 解析与 diagnostics
   - demo 可用性与路径
+  - `summary.session_store` 运行态摘要
   - `files`
   - `analysis_tasks`
   - `analysis_events`
@@ -200,6 +201,7 @@
 - Added backend provider smoke endpoint: `POST /api/llm/provider-smoke`
 - Added repo-level smoke script: `scripts/qwen_provider_smoke.ps1`
 - Added backend runtime overview endpoint: `GET /api/project-status`
+- Added session store runtime summary inside `GET /api/project-status`
 - Surfaced runtime overview in `/demo`
 - Surfaced runtime overview in `scripts/demo_mvp.ps1`
 

@@ -435,6 +435,14 @@ def demo_page() -> HTMLResponse:
                 <div id="project-status-pill" class="provider-pill">Not loaded</div>
               </div>
               <div id="project-status-meta" class="provider-meta">Runtime summary will appear here.</div>
+              <div class="provider-card">
+                <div class="provider-card-head">
+                  <div class="provider-title">Session Store Runtime Mode</div>
+                  <div id="session-store-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="session-store-meta" class="provider-meta">Redis-first / SQLite-fallback summary will appear here.</div>
+                <div id="session-store-output" class="provider-diag">No session store runtime summary loaded yet.</div>
+              </div>
               <div id="project-status-summary" class="summary-grid">
                 <div class="summary-card">
                   <div class="summary-label">Demo</div>
@@ -565,6 +573,9 @@ def demo_page() -> HTMLResponse:
     const providerDiagEl = document.getElementById("provider-diag");
     const projectStatusPillEl = document.getElementById("project-status-pill");
     const projectStatusMetaEl = document.getElementById("project-status-meta");
+    const sessionStorePillEl = document.getElementById("session-store-pill");
+    const sessionStoreMetaEl = document.getElementById("session-store-meta");
+    const sessionStoreOutputEl = document.getElementById("session-store-output");
     const projectStatusSummaryEl = document.getElementById("project-status-summary");
     const projectStatusOutputEl = document.getElementById("project-status-output");
     const evalSummaryEl = document.getElementById("eval-summary");
@@ -803,6 +814,9 @@ def demo_page() -> HTMLResponse:
       if (!payload || !payload.summary) {
         projectStatusPillEl.textContent = "Not loaded";
         projectStatusMetaEl.textContent = "Runtime summary will appear here.";
+        sessionStorePillEl.textContent = "Not loaded";
+        sessionStoreMetaEl.textContent = "Redis-first / SQLite-fallback summary will appear here.";
+        sessionStoreOutputEl.textContent = "No session store runtime summary loaded yet.";
         projectStatusOutputEl.textContent = "No project runtime overview loaded yet.";
         return;
       }
@@ -811,6 +825,7 @@ def demo_page() -> HTMLResponse:
       const tables = (summary.database || {}).tables || {};
       const provider = summary.provider || {};
       const providerDiagnostics = provider.diagnostics || {};
+      const sessionStore = summary.session_store || {};
       const files = tables.files || { exists: false, row_count: 0 };
       const tasks = tables.analysis_tasks || { exists: false, row_count: 0 };
       const events = tables.analysis_events || { exists: false, row_count: 0 };
@@ -824,6 +839,19 @@ def demo_page() -> HTMLResponse:
         `Provider: ${provider.provider || "unknown"}`,
         `Smoke ready: ${providerDiagnostics.smoke_ready}`,
       ].join(" | ");
+      sessionStorePillEl.textContent = sessionStore.degraded_to_sqlite ? "SQLite fallback" : "Redis active";
+      sessionStoreMetaEl.textContent = [
+        `Preferred: ${sessionStore.preferred_backend || "redis"}`,
+        `Active: ${sessionStore.active_backend || "unknown"}`,
+        `Redis available: ${sessionStore.redis_available}`,
+      ].join(" | ");
+      sessionStoreOutputEl.textContent = [
+        `preferred_backend: ${sessionStore.preferred_backend || "redis"}`,
+        `active_backend: ${sessionStore.active_backend || "unknown"}`,
+        `redis_available: ${sessionStore.redis_available}`,
+        `degraded_to_sqlite: ${sessionStore.degraded_to_sqlite}`,
+        `redis_url: ${sessionStore.redis_url || "unknown"}`,
+      ].join("\n");
 
       projectStatusSummaryEl.innerHTML = `
         <div class="summary-card">

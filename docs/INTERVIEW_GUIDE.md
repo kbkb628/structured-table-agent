@@ -124,7 +124,7 @@
 - 即使 Redis 的主 `analysis_state` 快照缺失，也可以基于 SQLite 状态和细粒度 Redis key 恢复任务视图
 - 这类恢复不会静默发生，而是会写入 `session_state_recovered` 事件，进入任务时间线
 - 当前已经实现基于 FastAPI 返回的极简 `/demo` 演示页，用于串联上传、任务执行、Provider 诊断、固定评测和 project runtime overview
-- 当前已经实现 `GET /api/project-status`，用于聚合 provider 解析、demo 可用性和 SQLite 表行数
+- 当前已经实现 `GET /api/project-status`，用于聚合 provider 解析、demo 可用性、session store runtime mode 和 SQLite 表行数
 - `scripts/demo_mvp.ps1` 会跑真实演示链路，并输出 project status 摘要
 - 当前没有实现 embedding / 向量检索 / rerank、DockerSandbox、完整 React 前端、异步队列
 
@@ -146,7 +146,7 @@
 
 - provider 能力不只停留在代码抽象上，还能通过接口和脚本做运行时诊断
 - demo 不只是静态页面，而是基于真实后端接口拉取任务状态、事件和工具日志
-- project runtime overview 能直接展示 SQLite 表行数和 provider 状态，便于演示当前系统状态
+- project runtime overview 能直接展示 SQLite 表行数、provider 状态以及当前 session store 是 Redis 还是 SQLite 降级，便于演示当前系统状态
 - `demo_mvp.ps1` 还能直接输出 `project_status_provider`、`provider_smoke_error_message`、`fixed_eval_average_trace_completeness`、`fixed_eval_average_report_completeness` 等字段，作为 fixed eval 质量指标和运行时诊断证据，便于当场说明系统当前可用性和结果质量
 
 ## 9. 后续迭代方向

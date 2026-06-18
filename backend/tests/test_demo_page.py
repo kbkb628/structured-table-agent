@@ -32,6 +32,9 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'id="provider-pill"' in content
     assert 'id="provider-meta"' in content
     assert 'id="provider-diag"' in content
+    assert 'id="session-store-pill"' in content
+    assert 'id="session-store-meta"' in content
+    assert 'id="session-store-output"' in content
     assert 'id="project-status-summary"' in content
     assert 'id="project-status-output"' in content
     assert 'id="eval-summary"' in content
@@ -47,6 +50,7 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert "/api/llm/provider-smoke" in content
     assert "/api/project-status" in content
     assert "/api/eval/cases/run" in content
+    assert "session store runtime mode" in content.lower()
 
 
 def test_root_path_remains_unregistered():

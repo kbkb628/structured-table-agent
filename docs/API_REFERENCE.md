@@ -277,6 +277,7 @@
 
 - `summary.provider`
 - `summary.demo`
+- `summary.session_store`
 - `summary.database.tables.files`
 - `summary.database.tables.analysis_tasks`
 - `summary.database.tables.analysis_events`
@@ -287,6 +288,7 @@
 
 - 这个接口只读取已有状态，不会写入业务数据
 - `/demo` 当前已经使用这个接口展示 project runtime overview
+- `summary.session_store` 会直接暴露 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available`、`degraded_to_sqlite` 和 `redis_url`
 
 ## 11. 相关验证命令
 

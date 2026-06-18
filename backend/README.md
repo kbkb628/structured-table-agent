@@ -207,6 +207,7 @@ The page supports:
 - running the real analysis task flow
 - inspecting live LLM provider status and running a provider smoke check
 - loading the project runtime overview from `/api/project-status`
+- inspecting the session store runtime mode exposed by `/api/project-status`, including whether Redis is active or the backend is degraded to SQLite
 - running the fixed eval regression summary from the same demo page
 - viewing final report output, task snapshot, event timeline, and tool logs
 

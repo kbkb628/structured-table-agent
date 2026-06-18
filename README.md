@@ -139,6 +139,7 @@ LLM 相关环境变量：
 - `QWEN_TIMEOUT_SECONDS`
 
 当前 Redis 仍是推荐依赖而不是强制依赖。Redis 不可用时，系统会显式降级到 SQLite 并记录 `session_store_warning` 事件。
+现在 `GET /api/project-status` 与 `/demo` 也会直接展示 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available` 和 `degraded_to_sqlite`，便于把“Redis 优先 / SQLite 降级”作为运行时事实演示，而不只是文档表述。
 
 ## 样例数据说明
 
@@ -178,6 +179,7 @@ cd E:\bgagent1
 
 - 自动启动本地 FastAPI 服务
 - 调用 `GET /api/project-status` 获取当前项目运行总览
+- 在 project runtime overview 中直接查看 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available` 和 `degraded_to_sqlite`
 - 上传 `backend/data/samples/sales_orders.csv`
 - 依次运行六个当前支持的演示问题
 - 输出 project status 摘要、任务状态、图表数量、工具调用数量和评估分数摘要
