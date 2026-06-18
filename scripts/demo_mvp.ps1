@@ -209,8 +209,17 @@ try {
         project_status_analysis_events = $projectStatus.summary.database.tables.analysis_events.row_count
         project_status_tool_call_logs = $projectStatus.summary.database.tables.tool_call_logs.row_count
         project_status_eval_results = $projectStatus.summary.database.tables.eval_results.row_count
+        provider_status_allow_fallback = $providerStatus.allow_fallback
+        provider_status_has_api_key = $providerStatus.has_api_key
         provider_status_key_source = $providerStatus.api_key_source
+        provider_status_base_url = $providerStatus.base_url
+        provider_status_model = $providerStatus.model
+        provider_status_timeout_seconds = $providerStatus.timeout_seconds
+        provider_status_provider_supported = $providerStatus.diagnostics.provider_supported
+        provider_status_key_source_kind = $providerStatus.diagnostics.key_source_kind
         provider_status_smoke_ready = $providerStatus.diagnostics.smoke_ready
+        provider_status_warnings = $providerStatus.diagnostics.warnings
+        provider_status_recommendations = $providerStatus.diagnostics.recommendations
         provider_smoke_ok = $providerSmoke.ok
         provider_smoke_client_type = $providerSmoke.client_type
         provider_smoke_error_type = $providerSmoke.error_type

@@ -432,8 +432,17 @@ cd E:\bgagent1
 - `project_status_analysis_events`
 - `project_status_tool_call_logs`
 - `project_status_eval_results`
+- `provider_status_allow_fallback`
+- `provider_status_has_api_key`
 - `provider_status_key_source`
+- `provider_status_base_url`
+- `provider_status_model`
+- `provider_status_timeout_seconds`
+- `provider_status_provider_supported`
+- `provider_status_key_source_kind`
 - `provider_status_smoke_ready`
+- `provider_status_warnings`
+- `provider_status_recommendations`
 - `provider_smoke_ok`
 - `provider_smoke_client_type`
 - `provider_smoke_error_type`

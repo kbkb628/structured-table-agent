@@ -145,8 +145,17 @@ def test_demo_script_mentions_provider_and_eval_summary_output():
     assert "/api/llm/provider-status" in script
     assert "/api/llm/provider-smoke" in script
     assert "/api/eval/cases/run" in script
+    assert "provider_status_allow_fallback" in script
+    assert "provider_status_has_api_key" in script
     assert "provider_status_key_source" in script
+    assert "provider_status_base_url" in script
+    assert "provider_status_model" in script
+    assert "provider_status_timeout_seconds" in script
+    assert "provider_status_provider_supported" in script
+    assert "provider_status_key_source_kind" in script
     assert "provider_status_smoke_ready" in script
+    assert "provider_status_warnings" in script
+    assert "provider_status_recommendations" in script
     assert "provider_smoke_ok" in script
     assert "provider_smoke_client_type" in script
     assert "provider_smoke_error_type" in script
@@ -175,6 +184,15 @@ def test_demo_script_contract_matches_pscustomobject_output_shape():
     assert "project_status_analysis_events" in object_fields[1]
     assert "project_status_tool_call_logs" in object_fields[1]
     assert "project_status_eval_results" in object_fields[1]
+    assert "provider_status_allow_fallback" in object_fields[1]
+    assert "provider_status_has_api_key" in object_fields[1]
+    assert "provider_status_base_url" in object_fields[1]
+    assert "provider_status_model" in object_fields[1]
+    assert "provider_status_timeout_seconds" in object_fields[1]
+    assert "provider_status_provider_supported" in object_fields[1]
+    assert "provider_status_key_source_kind" in object_fields[1]
+    assert "provider_status_warnings" in object_fields[1]
+    assert "provider_status_recommendations" in object_fields[1]
 
 
 def test_demo_script_contract_is_documented_across_delivery_docs():
