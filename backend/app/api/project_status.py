@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime, timezone
 
 from fastapi import APIRouter
 
@@ -10,6 +11,10 @@ from app.storage.database import init_db
 from app.storage.session_store import SessionStore
 
 router = APIRouter(tags=["project-status"])
+
+
+def _now_iso() -> str:
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
 def _table_info(table_name: str) -> dict:
@@ -30,6 +35,7 @@ def _session_store_info() -> dict:
     store = SessionStore(url=redis_url)
     redis_client = store._connect()
     redis_available = redis_client is not None
+    now_iso = _now_iso()
     init_db()
     with get_connection() as conn:
         warning_count = conn.execute(
@@ -41,11 +47,23 @@ def _session_store_info() -> dict:
             SELECT task_id, created_at
             FROM analysis_events
             WHERE event_type = ?
+              AND created_at <= ?
             ORDER BY created_at DESC, rowid DESC
             LIMIT 1
             """,
-            ("session_store_warning",),
+            ("session_store_warning", now_iso),
         ).fetchone()
+        if latest_warning is None:
+            latest_warning = conn.execute(
+                """
+                SELECT task_id, created_at
+                FROM analysis_events
+                WHERE event_type = ?
+                ORDER BY created_at DESC, rowid DESC
+                LIMIT 1
+                """,
+                ("session_store_warning",),
+            ).fetchone()
         recovered_count = conn.execute(
             "SELECT COUNT(*) FROM analysis_events WHERE event_type = ?",
             ("session_state_recovered",),
@@ -55,11 +73,23 @@ def _session_store_info() -> dict:
             SELECT task_id, created_at, payload_json
             FROM analysis_events
             WHERE event_type = ?
+              AND created_at <= ?
             ORDER BY created_at DESC, rowid DESC
             LIMIT 1
             """,
-            ("session_state_recovered",),
+            ("session_state_recovered", now_iso),
         ).fetchone()
+        if latest_recovered is None:
+            latest_recovered = conn.execute(
+                """
+                SELECT task_id, created_at, payload_json
+                FROM analysis_events
+                WHERE event_type = ?
+                ORDER BY created_at DESC, rowid DESC
+                LIMIT 1
+                """,
+                ("session_state_recovered",),
+            ).fetchone()
     latest_recovered_payload = json.loads(latest_recovered[2]) if latest_recovered and latest_recovered[2] else {}
     latest_recovered_segments = latest_recovered_payload.get("recovered_segments") or []
     return {
@@ -83,16 +113,28 @@ def _session_store_info() -> dict:
 
 
 def _latest_task_info() -> dict | None:
+    now_iso = _now_iso()
     init_db()
     with get_connection() as conn:
         row = conn.execute(
             """
             SELECT task_id, status, state_json, updated_at
             FROM analysis_tasks
-            ORDER BY updated_at DESC
+            WHERE updated_at <= ?
+            ORDER BY updated_at DESC, rowid DESC
             LIMIT 1
-            """
+            """,
+            (now_iso,),
         ).fetchone()
+        if row is None:
+            row = conn.execute(
+                """
+                SELECT task_id, status, state_json, updated_at
+                FROM analysis_tasks
+                ORDER BY updated_at DESC, rowid DESC
+                LIMIT 1
+                """
+            ).fetchone()
         if row is None:
             return None
         task_id, status, state_json, updated_at = row
@@ -106,11 +148,23 @@ def _latest_task_info() -> dict | None:
             SELECT tool_name
             FROM tool_call_logs
             WHERE task_id = ?
-            ORDER BY created_at DESC
+              AND created_at <= ?
+            ORDER BY created_at DESC, rowid DESC
             LIMIT 1
             """,
-            (task_id,),
+            (task_id, now_iso),
         ).fetchone()
+        if latest_tool_log is None:
+            latest_tool_log = conn.execute(
+                """
+                SELECT tool_name
+                FROM tool_call_logs
+                WHERE task_id = ?
+                ORDER BY created_at DESC, rowid DESC
+                LIMIT 1
+                """,
+                (task_id,),
+            ).fetchone()
         event_count = conn.execute(
             "SELECT COUNT(*) FROM analysis_events WHERE task_id = ?",
             (task_id,),
@@ -120,11 +174,23 @@ def _latest_task_info() -> dict | None:
             SELECT event_type, created_at
             FROM analysis_events
             WHERE task_id = ?
-            ORDER BY created_at DESC
+              AND created_at <= ?
+            ORDER BY created_at DESC, rowid DESC
             LIMIT 1
             """,
-            (task_id,),
+            (task_id, now_iso),
         ).fetchone()
+        if latest_event is None:
+            latest_event = conn.execute(
+                """
+                SELECT event_type, created_at
+                FROM analysis_events
+                WHERE task_id = ?
+                ORDER BY created_at DESC, rowid DESC
+                LIMIT 1
+                """,
+                (task_id,),
+            ).fetchone()
     eval_result = state.get("eval_result") or {}
     issues = eval_result.get("issues") if isinstance(eval_result.get("issues"), list) else []
     suggestions = eval_result.get("suggestions") if isinstance(eval_result.get("suggestions"), list) else []
