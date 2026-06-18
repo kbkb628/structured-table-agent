@@ -42,6 +42,9 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "/api/project-status" in script
     assert "project_status_provider" in script
     assert "project_status_demo_available" in script
+    assert "project_status_session_store_active_backend" in script
+    assert "project_status_session_store_redis_available" in script
+    assert "project_status_session_store_degraded_to_sqlite" in script
 
 
 def test_demo_script_mentions_provider_and_eval_summary_output():

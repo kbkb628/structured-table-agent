@@ -25,6 +25,9 @@
       "upload_columns",
       "project_status_provider",
       "project_status_demo_available",
+      "project_status_session_store_active_backend",
+      "project_status_session_store_redis_available",
+      "project_status_session_store_degraded_to_sqlite",
       "project_status_files",
       "project_status_tasks",
       "provider_status_key_source",
@@ -46,6 +49,7 @@
   ],
   "documented_summary_fields": [
     "project_status_provider",
+    "project_status_session_store_active_backend",
     "provider_smoke_error_message",
     "fixed_eval_average_trace_completeness",
     "fixed_eval_average_report_completeness"

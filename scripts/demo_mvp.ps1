@@ -114,6 +114,9 @@ try {
         upload_columns = $upload.column_count
         project_status_provider = $projectStatus.summary.provider.provider
         project_status_demo_available = $projectStatus.summary.demo.available
+        project_status_session_store_active_backend = $projectStatus.summary.session_store.active_backend
+        project_status_session_store_redis_available = $projectStatus.summary.session_store.redis_available
+        project_status_session_store_degraded_to_sqlite = $projectStatus.summary.session_store.degraded_to_sqlite
         project_status_files = $projectStatus.summary.database.tables.files.row_count
         project_status_tasks = $projectStatus.summary.database.tables.analysis_tasks.row_count
         provider_status_key_source = $providerStatus.api_key_source

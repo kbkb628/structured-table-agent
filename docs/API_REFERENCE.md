@@ -316,6 +316,7 @@ cd E:\bgagent1
 脚本会输出一份紧凑的 JSON 摘要，其中包含：
 
 - `project_status_provider`
+- `project_status_session_store_active_backend`
 - `provider_smoke_error_message`
 - `fixed_eval_average_trace_completeness`
 - `fixed_eval_average_report_completeness`

@@ -165,6 +165,9 @@
 - `scripts/demo_mvp.ps1` 当前输出：
   - `project_status_provider`
   - `project_status_demo_available`
+  - `project_status_session_store_active_backend`
+  - `project_status_session_store_redis_available`
+  - `project_status_session_store_degraded_to_sqlite`
   - `project_status_files`
   - `project_status_tasks`
   - `provider_status_key_source`

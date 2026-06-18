@@ -225,6 +225,7 @@ The script uploads the sample CSV, queries `GET /api/project-status`, checks `GE
 Key summary fields exposed by the script include:
 
 - `project_status_provider`
+- `project_status_session_store_active_backend`
 - `provider_smoke_error_message`
 - `fixed_eval_average_trace_completeness`
 - `fixed_eval_average_report_completeness`
