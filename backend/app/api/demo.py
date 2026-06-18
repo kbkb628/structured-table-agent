@@ -380,6 +380,9 @@ def demo_page() -> HTMLResponse:
             <button class="chip" type="button" data-question="analyse category sales anomalies">Anomaly</button>
             <button class="chip" type="button" data-question="analyse sales trend by order date">Trend</button>
             <button class="chip" type="button" data-question="analyse channel order count and sales performance">Channel</button>
+            <button class="chip" type="button" data-question="分析各品类销售额 Top5，并给出业务建议">中文 TopN</button>
+            <button class="chip" type="button" data-question="分析各地区销售额对比，并生成图表">中文地区</button>
+            <button class="chip" type="button" data-question="分析不同渠道的订单数量和销售额表现">中文渠道</button>
           </div>
 
           <div class="button-row">

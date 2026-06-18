@@ -22,6 +22,9 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'id="upload-form"' in content
     assert 'id="load-sample-button"' in content
     assert 'id="question-input"' in content
+    assert 'data-question="分析各品类销售额 Top5，并给出业务建议"' in content
+    assert 'data-question="分析各地区销售额对比，并生成图表"' in content
+    assert 'data-question="分析不同渠道的订单数量和销售额表现"' in content
     assert 'id="run-analysis-button"' in content
     assert 'id="provider-status-button"' in content
     assert 'id="provider-smoke-button"' in content
