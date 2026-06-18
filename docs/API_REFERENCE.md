@@ -293,7 +293,7 @@
 - `summary.session_store.event_summary` 还会暴露最近一次恢复事件的摘要，包括 `latest_recovered_recovery_source`、`latest_recovered_segment_count` 和 `latest_recovered_segments`
 - `summary.latest_task` 会同时暴露最新任务的 artifact 覆盖率和 evaluation 摘要，包括 `has_eval_result`、`overall_score`、`issue_count` 和 `has_dimension_scores`
 - `summary.latest_task.judgement` 会暴露最新任务的补充型 `llm_judgement` 摘要，包括 `supported_by_tools`、`has_findings` 和 `issue_count`
-- `summary.latest_task.process` 会暴露最新任务的过程追踪摘要，包括 `pending_metric_count`、`planned_tool_call_count`、`event_count`、`latest_event_type` 和 `llm_issue_count`
+- `summary.latest_task.process` 会暴露最新任务的过程追踪摘要，包括 `pending_metric_count`、`planned_tool_call_count`、`event_count`、`latest_event_type`、`llm_issue_count`、`route_decision_count`、`continued_route_decision_count`、`finished_route_decision_count` 和 `latest_route_decision`
 - `summary.latest_task.report` 会暴露最新任务的报告摘要，包括 `chart_spec_count`、`key_finding_count`、`business_suggestion_count`、`data_limitation_count` 和 `next_step_count`
 - `summary.latest_task.context` 会暴露最新任务的上下文摘要，包括 `business_context_count`、`top_business_context_title`、`top_business_context_score`、`top_business_context_related_field_count`、`top_business_context_has_score_breakdown`、`top_business_context_bm25_score`、`checkpoint_current_step`、`checkpoint_draft_report_status` 和 `checkpoint_latest_error_code`
 - `summary.latest_task.semantics` 会暴露最新任务的语义与规划摘要，包括 `analysis_goal`、`analysis_plan_count`、`current_step`、`completed_step_count`、`finding_count`、`dimension_field` 和 `metric_count`
@@ -338,6 +338,10 @@ cd E:\bgagent1
 - `project_status_latest_task_eval_overall_score`
 - `project_status_latest_task_pending_metric_count`
 - `project_status_latest_task_latest_event_type`
+- `project_status_latest_task_route_decision_count`
+- `project_status_latest_task_continued_route_decision_count`
+- `project_status_latest_task_finished_route_decision_count`
+- `project_status_latest_task_latest_route_decision`
 - `project_status_latest_task_chart_spec_count`
 - `project_status_latest_task_key_finding_count`
 - `project_status_latest_task_business_context_count`

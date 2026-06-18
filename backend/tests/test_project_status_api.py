@@ -132,7 +132,12 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
         ],
         "analysis_plan": ["match fields", "aggregate", "report"],
         "current_step": "report",
-        "completed_steps": ["match fields", "aggregate"],
+        "completed_steps": [
+            "match fields",
+            "route_next_step:continue",
+            "groupby_aggregate:sales_amount_sum",
+            "route_next_step:finish",
+        ],
         "intermediate_findings": [{"summary": "East leads."}],
         "tool_results": [
             {
@@ -252,6 +257,10 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["process"]["event_count"] >= 2
     assert latest_task["process"]["latest_event_type"] == "report_generated"
     assert latest_task["process"]["llm_issue_count"] == 0
+    assert latest_task["process"]["route_decision_count"] == 2
+    assert latest_task["process"]["continued_route_decision_count"] == 1
+    assert latest_task["process"]["finished_route_decision_count"] == 1
+    assert latest_task["process"]["latest_route_decision"] == "finish"
     assert latest_task["report"]["chart_spec_count"] == 1
     assert latest_task["report"]["key_finding_count"] == 1
     assert latest_task["report"]["business_suggestion_count"] == 1
@@ -269,7 +278,7 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["semantics"]["analysis_goal"] == "compare region sales"
     assert latest_task["semantics"]["analysis_plan_count"] == 3
     assert latest_task["semantics"]["current_step"] == "report"
-    assert latest_task["semantics"]["completed_step_count"] == 2
+    assert latest_task["semantics"]["completed_step_count"] == 4
     assert latest_task["semantics"]["finding_count"] == 1
     assert latest_task["semantics"]["dimension_field"] == "region"
     assert latest_task["semantics"]["metric_count"] == 1

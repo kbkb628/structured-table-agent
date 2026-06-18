@@ -240,6 +240,10 @@ Key summary fields exposed by the script include:
 - `project_status_latest_task_eval_overall_score`
 - `project_status_latest_task_pending_metric_count`
 - `project_status_latest_task_latest_event_type`
+- `project_status_latest_task_route_decision_count`
+- `project_status_latest_task_continued_route_decision_count`
+- `project_status_latest_task_finished_route_decision_count`
+- `project_status_latest_task_latest_route_decision`
 - `project_status_latest_task_chart_spec_count`
 - `project_status_latest_task_key_finding_count`
 - `project_status_latest_task_business_context_count`

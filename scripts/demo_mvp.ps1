@@ -134,6 +134,10 @@ try {
         project_status_latest_task_planned_tool_call_count = $projectStatus.summary.latest_task.process.planned_tool_call_count
         project_status_latest_task_event_count = $projectStatus.summary.latest_task.process.event_count
         project_status_latest_task_latest_event_type = $projectStatus.summary.latest_task.process.latest_event_type
+        project_status_latest_task_route_decision_count = $projectStatus.summary.latest_task.process.route_decision_count
+        project_status_latest_task_continued_route_decision_count = $projectStatus.summary.latest_task.process.continued_route_decision_count
+        project_status_latest_task_finished_route_decision_count = $projectStatus.summary.latest_task.process.finished_route_decision_count
+        project_status_latest_task_latest_route_decision = $projectStatus.summary.latest_task.process.latest_route_decision
         project_status_latest_task_chart_spec_count = $projectStatus.summary.latest_task.report.chart_spec_count
         project_status_latest_task_key_finding_count = $projectStatus.summary.latest_task.report.key_finding_count
         project_status_latest_task_business_suggestion_count = $projectStatus.summary.latest_task.report.business_suggestion_count

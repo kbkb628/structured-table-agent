@@ -1037,6 +1037,10 @@ def demo_page() -> HTMLResponse:
         `event_count: ${latestTaskProcess.event_count ?? 0}`,
         `latest_event_type: ${latestTaskProcess.latest_event_type || "none"}`,
         `llm_issue_count: ${latestTaskProcess.llm_issue_count ?? 0}`,
+        `route_decision_count: ${latestTaskProcess.route_decision_count ?? 0}`,
+        `continued_route_decision_count: ${latestTaskProcess.continued_route_decision_count ?? 0}`,
+        `finished_route_decision_count: ${latestTaskProcess.finished_route_decision_count ?? 0}`,
+        `latest_route_decision: ${latestTaskProcess.latest_route_decision || "none"}`,
       ].join("\n") : "No latest task process summary loaded yet.";
       latestTaskReportPillEl.textContent = latestTask ? "Report ready" : "No tasks";
       latestTaskReportMetaEl.textContent = latestTask

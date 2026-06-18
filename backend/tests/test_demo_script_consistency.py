@@ -62,6 +62,10 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_planned_tool_call_count" in script
     assert "project_status_latest_task_event_count" in script
     assert "project_status_latest_task_latest_event_type" in script
+    assert "project_status_latest_task_route_decision_count" in script
+    assert "project_status_latest_task_continued_route_decision_count" in script
+    assert "project_status_latest_task_finished_route_decision_count" in script
+    assert "project_status_latest_task_latest_route_decision" in script
     assert "project_status_latest_task_chart_spec_count" in script
     assert "project_status_latest_task_key_finding_count" in script
     assert "project_status_latest_task_business_suggestion_count" in script

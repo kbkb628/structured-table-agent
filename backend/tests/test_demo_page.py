@@ -55,6 +55,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'pending_metric_count' in content
     assert 'planned_tool_call_count' in content
     assert 'latest_event_type' in content
+    assert 'route_decision_count' in content
+    assert 'continued_route_decision_count' in content
+    assert 'finished_route_decision_count' in content
+    assert 'latest_route_decision' in content
     assert 'latest_task_report_output' in content
     assert 'chart_spec_count' in content
     assert 'key_finding_count' in content

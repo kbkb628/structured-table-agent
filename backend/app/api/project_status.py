@@ -145,6 +145,11 @@ def _latest_task_info() -> dict | None:
     field_understanding = state.get("field_understanding") or {}
     metrics = field_understanding.get("metrics") or []
     completed_steps = state.get("completed_steps") or []
+    route_decisions = [
+        step.split("route_next_step:", 1)[1]
+        for step in completed_steps
+        if isinstance(step, str) and step.startswith("route_next_step:")
+    ]
     intermediate_findings = state.get("intermediate_findings") or []
     tool_results = state.get("tool_results") or []
     errors = state.get("errors") or []
@@ -186,6 +191,10 @@ def _latest_task_info() -> dict | None:
             "latest_event_type": latest_event[0] if latest_event else None,
             "latest_event_at": latest_event[1] if latest_event else None,
             "llm_issue_count": int(llm_judgement.get("issue_count", 0) or 0),
+            "route_decision_count": len(route_decisions),
+            "continued_route_decision_count": sum(1 for item in route_decisions if item == "continue"),
+            "finished_route_decision_count": sum(1 for item in route_decisions if item == "finish"),
+            "latest_route_decision": route_decisions[-1] if route_decisions else None,
         },
         "report": {
             "chart_spec_count": len(chart_specs),

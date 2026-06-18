@@ -23,6 +23,7 @@
 - Anomaly 分析工具：按分组聚合结果执行基于 z-score 的异常值识别
 - JSONL 本地混合检索，包含关键词、短语命中、字段加权和 BM25 风格评分
 - LangGraph 显式状态流，包含 `validate_tool_result` 与 `route_next_step`
+- `GET /api/project-status` / `/demo` / `demo_mvp.ps1` 会暴露最新任务里 `route_next_step:continue|finish` 的真实摘要，证明多指标任务确实发生过继续/收尾路由
 - 真实可替换 LLM Provider 接入：
   - `QwenClient`
   - `MockLLMClient`
@@ -184,6 +185,10 @@
   - `project_status_latest_task_planned_tool_call_count`
   - `project_status_latest_task_event_count`
   - `project_status_latest_task_latest_event_type`
+  - `project_status_latest_task_route_decision_count`
+  - `project_status_latest_task_continued_route_decision_count`
+  - `project_status_latest_task_finished_route_decision_count`
+  - `project_status_latest_task_latest_route_decision`
   - `project_status_latest_task_chart_spec_count`
   - `project_status_latest_task_key_finding_count`
   - `project_status_latest_task_business_suggestion_count`
