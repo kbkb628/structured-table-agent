@@ -20,6 +20,8 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "GET /demo" in content
     assert "GET /api/project-status" in content
     assert "当前 6 个真实支持 case" in content
+    assert "provider_smoke_error_message" in content
+    assert "fixed_eval_average_trace_completeness" in content
 
 
 def test_resume_project_description_mentions_qwen_and_project_status_delivery():
@@ -69,6 +71,8 @@ def test_architecture_overview_mentions_runtime_overview_and_demo_layers():
     assert "GET /api/project-status" in content
     assert "llm.py" in content
     assert "project_status.py" in content
+    assert "provider smoke" in content or "provider_smoke_error_message" in content
+    assert "fixed eval" in content or "fixed_eval_average_trace_completeness" in content
 
 
 def test_interview_guide_mentions_demo_script_diagnostic_outputs():

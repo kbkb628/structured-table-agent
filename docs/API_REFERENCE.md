@@ -311,6 +311,14 @@ cd E:\bgagent1
 .\scripts\demo_mvp.ps1 -StartServer
 ```
 
+脚本会输出一份紧凑的 JSON 摘要，其中包含：
+
+- `project_status_provider`
+- `provider_smoke_error_message`
+- `fixed_eval_average_trace_completeness`
+- `fixed_eval_average_report_completeness`
+- 以及六个固定 demo 问题的执行摘要
+
 项目运行总览：
 
 ```powershell
