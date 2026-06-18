@@ -27,6 +27,46 @@ def _chart_explanation(chart_type: str) -> str:
     return f"{label} chart generated for {chart_type} view."
 
 
+def _build_key_finding(result: dict, rows: list[dict]) -> dict:
+    top_row = rows[0]
+    tool_name = result["tool_name"]
+    dimension_key, metric_key, metric_value = _split_top_row(top_row)
+    top_dimension = top_row.get(dimension_key, "unknown")
+
+    if tool_name == "calculate_share" and "share_percent" in top_row:
+        return {
+            "finding": f"{top_dimension} contributes the highest grouped share in the current result set",
+            "evidence": f"The top grouped share row is {top_dimension} with share_percent = {top_row['share_percent']}",
+            "source_tool": tool_name,
+        }
+
+    if tool_name == "trend_analysis":
+        first_row = rows[0]
+        last_row = rows[-1]
+        date_key = next((key for key in first_row.keys() if key != metric_key), "dimension")
+        return {
+            "finding": f"{metric_key} changes over time across the available dates",
+            "evidence": (
+                f"The time series spans from {date_key} = {first_row.get(date_key)} with {metric_key} = {first_row.get(metric_key)} "
+                f"to {date_key} = {last_row.get(date_key)} with {metric_key} = {last_row.get(metric_key)}"
+            ),
+            "source_tool": tool_name,
+        }
+
+    if tool_name == "anomaly_analysis" and "z_score" in top_row:
+        return {
+            "finding": f"{top_dimension} is the most prominent anomaly in the current result set",
+            "evidence": f"The top anomaly row is {top_dimension} with z_score = {top_row['z_score']}",
+            "source_tool": tool_name,
+        }
+
+    return {
+        "finding": f"{top_dimension} performs best in the current result set",
+        "evidence": f"The top row in the aggregation result is {top_dimension} with {metric_key} = {metric_value}",
+        "source_tool": tool_name,
+    }
+
+
 def generate_report(
     question: str,
     analysis_goal: str,
@@ -44,16 +84,7 @@ def generate_report(
         if not rows:
             continue
 
-        top_row = rows[0]
-        dimension_key, metric_key, metric_value = _split_top_row(top_row)
-        top_dimension = top_row.get(dimension_key, "unknown")
-        key_findings.append(
-            {
-                "finding": f"{top_dimension} performs best in the current result set",
-                "evidence": f"The top row in the aggregation result is {top_dimension} with {metric_key} = {metric_value}",
-                "source_tool": result["tool_name"],
-            }
-        )
+        key_findings.append(_build_key_finding(result, rows))
 
     if not key_findings:
         key_findings.append(

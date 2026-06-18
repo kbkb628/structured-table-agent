@@ -118,3 +118,81 @@ def test_generate_report_uses_chart_type_specific_explanation():
 
     assert report.success is True
     assert report.data["chart_explanations"][0] == "Line chart generated for line view."
+
+
+def test_generate_report_uses_share_specific_key_finding():
+    report = generate_report(
+        question="analyse category sales share",
+        analysis_goal="compare category sales share",
+        tool_results=[
+            {
+                "tool_name": "calculate_share",
+                "data": {
+                    "rows": [
+                        {
+                            "product_category": "electronics",
+                            "sales_amount_sum": 2200,
+                            "share_ratio": 0.7333,
+                            "share_percent": 73.33,
+                        }
+                    ]
+                },
+            }
+        ],
+        chart_specs=[{"chart_type": "bar"}],
+    )
+
+    assert report.success is True
+    assert report.data["key_findings"][0]["finding"] == "electronics contributes the highest grouped share in the current result set"
+    assert "share_percent = 73.33" in report.data["key_findings"][0]["evidence"]
+
+
+def test_generate_report_uses_trend_specific_key_finding():
+    report = generate_report(
+        question="analyse sales trend by order date",
+        analysis_goal="analyse sales trend over time",
+        tool_results=[
+            {
+                "tool_name": "trend_analysis",
+                "data": {
+                    "rows": [
+                        {"order_date": "2026-06-01", "sales_amount_sum": 1500},
+                        {"order_date": "2026-06-03", "sales_amount_sum": 800},
+                    ]
+                },
+            }
+        ],
+        chart_specs=[{"chart_type": "line"}],
+    )
+
+    assert report.success is True
+    assert report.data["key_findings"][0]["finding"] == "sales_amount_sum changes over time across the available dates"
+    assert "2026-06-01" in report.data["key_findings"][0]["evidence"]
+    assert "2026-06-03" in report.data["key_findings"][0]["evidence"]
+
+
+def test_generate_report_uses_anomaly_specific_key_finding():
+    report = generate_report(
+        question="analyse category sales anomalies",
+        analysis_goal="detect abnormal category sales",
+        tool_results=[
+            {
+                "tool_name": "anomaly_analysis",
+                "data": {
+                    "rows": [
+                        {
+                            "product_category": "beauty",
+                            "sales_amount_sum": 10000,
+                            "z_score": 2.2361,
+                            "is_anomaly": True,
+                        }
+                    ]
+                },
+            }
+        ],
+        chart_specs=[{"chart_type": "bar"}],
+    )
+
+    assert report.success is True
+    assert report.data["key_findings"][0]["finding"] == "beauty is the most prominent anomaly in the current result set"
+    assert "z_score = 2.2361" in report.data["key_findings"][0]["evidence"]
