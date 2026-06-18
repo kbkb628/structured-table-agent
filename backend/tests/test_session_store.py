@@ -601,6 +601,52 @@ def test_session_store_load_state_rebuilds_stale_snapshot_from_granular_redis(mo
     assert restored_snapshot["intermediate_findings"][0]["summary"] == "Redis says East leads."
 
 
+def test_session_store_load_state_backfills_missing_context_checkpoint_in_snapshot(monkeypatch):
+    task_id = f"task_session_missing_checkpoint_{uuid.uuid4().hex[:8]}"
+    stale_state = {
+        "task_id": task_id,
+        "file_id": "file_session_missing_checkpoint",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [{"id": "metric_sales_amount", "title": "Sales Amount"}],
+        "analysis_plan": ["match fields", "aggregate"],
+        "current_step": "report",
+        "completed_steps": ["match fields"],
+        "intermediate_findings": [{"summary": "East leads."}],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {"title": "Draft report"},
+        "final_report": {},
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "running",
+    }
+    create_task(task_id, "file_session_missing_checkpoint", "analyse sales by region", stale_state)
+
+    fake_client = FakeRedisClient()
+    fake_client.values[f"analysis_state:{task_id}"] = json.dumps(stale_state, ensure_ascii=False)
+    monkeypatch.setattr(SessionStore, "_connect", lambda self: fake_client)
+
+    loaded_state, used_redis = SessionStore().load_state(task_id)
+
+    assert used_redis is True
+    assert loaded_state is not None
+    assert loaded_state["context_checkpoint"]["analysis_goal"] == "compare region sales"
+    assert loaded_state["context_checkpoint"]["current_step"] == "report"
+    assert loaded_state["context_checkpoint"]["draft_report_status"] == "available"
+    restored_snapshot = json.loads(fake_client.values[f"analysis_state:{task_id}"])
+    assert restored_snapshot["context_checkpoint"]["analysis_goal"] == "compare region sales"
+    assert restored_snapshot["context_checkpoint"]["current_step"] == "report"
+    assert restored_snapshot["context_checkpoint"]["draft_report_status"] == "available"
+    stored_state = get_task_state(task_id)
+    assert stored_state is not None
+    assert stored_state["context_checkpoint"]["analysis_goal"] == "compare region sales"
+
+
 def test_session_store_task_lock_blocks_duplicate_acquire():
     store = SessionStore()
     task_id = f"task_session_lock_{uuid.uuid4().hex[:8]}"
