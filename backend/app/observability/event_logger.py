@@ -79,10 +79,9 @@ def list_analysis_events(task_id: str) -> list[dict]:
 
 
 def hydrate_state_events(state: dict) -> dict:
-    persisted_events = list_analysis_events(state["task_id"])
-    if not persisted_events and state.get("events"):
+    if state.get("events"):
         backfill_task_events(state["task_id"], state["events"])
-        persisted_events = list_analysis_events(state["task_id"])
+    persisted_events = list_analysis_events(state["task_id"])
     if persisted_events or not state.get("events"):
         state["events"] = persisted_events
     return state

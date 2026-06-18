@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.llm.factory import LLMConfigurationError
 from app.llm.qwen_client import QwenResponseError
-from app.storage.analysis_store import backfill_task_events
+from app.observability.event_logger import hydrate_state_events
 from app.observability.event_logger import list_analysis_events
 from app.schemas.analysis_schema import AnalysisStartRequest, AnalysisStartResponse, AnalysisTaskState
 from app.schemas.analysis_schema import AnalysisToolLogList
@@ -59,12 +59,7 @@ def get_analysis(task_id: str) -> AnalysisTaskState:
     state, _ = SessionStore().load_state(task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
-    persisted_events = list_analysis_events(task_id)
-    if not persisted_events and state.get("events"):
-        backfill_task_events(task_id, state["events"])
-        persisted_events = list_analysis_events(task_id)
-    if persisted_events or not state.get("events"):
-        state["events"] = persisted_events
+    hydrate_state_events(state)
     state["tool_call_logs"] = get_tool_call_logs(task_id)
     if "context_checkpoint" not in state:
         state["context_checkpoint"] = SessionStore()._build_context_checkpoint(state)
@@ -78,12 +73,8 @@ def get_analysis_events(task_id: str) -> AnalysisEventList:
         state, _ = SessionStore().load_state(task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
-    persisted_events = list_analysis_events(task_id)
-    if not persisted_events and state.get("events"):
-        backfill_task_events(task_id, state["events"])
-        persisted_events = list_analysis_events(task_id)
-    events = persisted_events if persisted_events or not state.get("events") else state.get("events", [])
-    return AnalysisEventList(task_id=task_id, events=events)
+    hydrate_state_events(state)
+    return AnalysisEventList(task_id=task_id, events=state.get("events", []))
 
 
 @router.get("/{task_id}/tool-logs", response_model=AnalysisToolLogList)

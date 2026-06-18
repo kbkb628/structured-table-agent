@@ -7,6 +7,7 @@ from app.observability.event_logger import record_startup_events
 from app.observability.event_logger import record_task_completed
 from app.observability.event_logger import record_tool_called
 from app.observability.event_logger import record_tool_succeeded
+from app.storage.analysis_store import backfill_task_events
 from app.storage.analysis_store import create_task
 
 
@@ -92,6 +93,50 @@ def test_hydrate_state_events_loads_latest_persisted_events():
     assert state["events"][-2]["event_type"] == "task_completed"
     assert state["events"][-1]["event_type"] == "eval_finished"
     assert state["events"][-1]["payload"]["overall_score"] == 1.0
+
+
+def test_hydrate_state_events_backfills_missing_history_into_partial_sqlite_timeline():
+    task_id = f"task_event_partial_{uuid.uuid4().hex[:8]}"
+    state = _build_state(task_id)
+    recovered_events = [
+        {
+            "event_id": f"evt_{task_id}_1",
+            "event_type": "task_created",
+            "node": "start_analysis",
+            "message": "task created",
+            "payload": {"status": "created"},
+            "created_at": "2026-06-18T10:00:00+00:00",
+        },
+        {
+            "event_id": f"evt_{task_id}_2",
+            "event_type": "fields_matched",
+            "node": "match_fields",
+            "message": "matched analysis fields",
+            "payload": {"dimension_field": "region"},
+            "created_at": "2026-06-18T10:00:01+00:00",
+        },
+        {
+            "event_id": f"evt_{task_id}_3",
+            "event_type": "eval_finished",
+            "node": "run_eval",
+            "message": "rule evaluation completed",
+            "payload": {"overall_score": 0.92},
+            "created_at": "2026-06-18T10:00:02+00:00",
+        },
+    ]
+    state["events"] = recovered_events.copy()
+    create_task(task_id, state["file_id"], state["question"], state)
+    backfill_task_events(task_id, recovered_events[-1:])
+
+    hydrate_state_events(state)
+
+    assert [event["event_type"] for event in state["events"]] == [
+        "task_created",
+        "fields_matched",
+        "eval_finished",
+    ]
+    events = list_analysis_events(task_id)
+    assert [event["event_id"] for event in events] == [event["event_id"] for event in recovered_events]
 
 
 def test_tool_events_include_summary_fields():
