@@ -103,6 +103,15 @@ def test_backend_readme_mentions_current_fixed_eval_scope():
     assert "three Chinese MVP acceptance questions" in content
 
 
+def test_demo_script_docs_describe_post_run_project_status_refresh():
+    repo_root = Path(__file__).resolve().parents[2]
+    root_readme = (repo_root / "README.md").read_text(encoding="utf-8")
+    backend_readme = (repo_root / "backend" / "README.md").read_text(encoding="utf-8")
+
+    assert "刷新 `GET /api/project-status`" in root_readme
+    assert "refreshes `GET /api/project-status` after the demo runs" in backend_readme
+
+
 def test_resume_project_description_mentions_qwen_and_project_status_delivery():
     content = (Path(__file__).resolve().parents[2] / "docs" / "RESUME_PROJECT_DESCRIPTION.md").read_text(
         encoding="utf-8"

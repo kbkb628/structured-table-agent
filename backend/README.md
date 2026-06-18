@@ -227,7 +227,7 @@ cd E:\bgagent1
 .\scripts\demo_mvp.ps1 -StartServer
 ```
 
-The script uploads the sample CSV, queries `GET /api/project-status`, checks `GET /api/llm/provider-status` and `POST /api/llm/provider-smoke`, runs the current supported demo question set, and prints a compact JSON summary including provider diagnostics, smoke failure details when present, and fixed-eval quality metrics.
+The script checks `GET /api/llm/provider-status` and `POST /api/llm/provider-smoke`, uploads the sample CSV, runs the current supported demo question set, re-runs `POST /api/eval/run` for the latest task, refreshes `GET /api/project-status` after the demo runs, and prints a compact JSON summary including provider diagnostics, smoke failure details when present, and fixed-eval quality metrics.
 
 Key summary fields exposed by the script include:
 

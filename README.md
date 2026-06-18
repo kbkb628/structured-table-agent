@@ -191,11 +191,13 @@ cd E:\bgagent1
 脚本会：
 
 - 自动启动本地 FastAPI 服务
-- 调用 `GET /api/project-status` 获取当前项目运行总览
-- 在 project runtime overview 中直接查看 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available` 和 `degraded_to_sqlite`
+- 调用 `GET /api/llm/provider-status` 与 `POST /api/llm/provider-smoke`，先做 provider 运行时诊断
 - 上传 `backend/data/samples/sales_orders.csv`
 - 依次运行六个当前支持的英文演示问题（页面快捷按钮已覆盖其中 6 条）
 - `/demo` 页面同时提供三条中文 MVP 验收问句的快捷按钮，便于直接演示指导文档定义的中文验收口径
+- 对最后一个任务调用 `POST /api/eval/run` 重跑一次评估
+- 刷新 `GET /api/project-status` 获取本轮演示后的当前项目运行总览
+- 在 project runtime overview 中直接查看 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available` 和 `degraded_to_sqlite`
 - 输出 project status 摘要、任务状态、图表数量、工具调用数量和评估分数摘要
 - 输出 `project_status_provider` 作为 project runtime overview 的 provider 摘要字段
 - 输出 `project_status_session_store_preferred_backend`、`project_status_session_store_active_backend`、`project_status_session_store_redis_available`、`project_status_session_store_degraded_to_sqlite`、`project_status_session_store_redis_url`、`project_status_session_store_warning_count`、`project_status_session_store_recovered_count`、`project_status_session_store_latest_warning_task_id`、`project_status_session_store_latest_warning_at`、`project_status_session_store_latest_recovered_task_id`、`project_status_session_store_latest_recovered_at`、`project_status_session_store_latest_recovered_recovery_source`、`project_status_session_store_latest_recovered_segment_count`、`project_status_session_store_latest_recovered_segments` 等 session store runtime mode 与事件摘要字段
