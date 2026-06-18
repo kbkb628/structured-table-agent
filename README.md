@@ -129,6 +129,9 @@ py -3.12 -m venv .venv
 - 样例数据：`backend/data/samples/sales_orders.csv`
 - 默认上传目录：`backend/data/uploads`
 
+说明：
+- `backend/app.db` 与 `backend/data/*.db` 属于本地运行时 SQLite 产物，不作为源码交付内容纳入版本控制。
+
 LLM 相关环境变量：
 
 - `LLM_PROVIDER=qwen|mock`
