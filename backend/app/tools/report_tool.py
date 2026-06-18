@@ -22,6 +22,11 @@ def _split_top_row(top_row: dict) -> tuple[str, str, object]:
     return dimension_key, metric_key, top_row.get(metric_key, 0)
 
 
+def _chart_explanation(chart_type: str) -> str:
+    label = "Line" if chart_type == "line" else "Bar"
+    return f"{label} chart generated for {chart_type} view."
+
+
 def generate_report(
     question: str,
     analysis_goal: str,
@@ -64,7 +69,7 @@ def generate_report(
         "analysis_goal": analysis_goal,
         "key_findings": key_findings,
         "chart_explanations": [
-            f"Bar chart generated for {item['chart_type']} view."
+            _chart_explanation(item["chart_type"])
             for item in resolved_chart_specs
         ]
         or ["No chart was generated; conclusions are based on tabular tool results."],

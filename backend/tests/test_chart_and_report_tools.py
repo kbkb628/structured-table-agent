@@ -101,3 +101,20 @@ def test_generate_report_returns_final_report_schema():
 
     assert validated.analysis_goal == "compare region sales"
     assert validated.key_findings[0].source_tool == "groupby_aggregate"
+
+
+def test_generate_report_uses_chart_type_specific_explanation():
+    report = generate_report(
+        question="analyse sales trend by order date",
+        analysis_goal="analyse sales trend over time",
+        tool_results=[
+            {
+                "tool_name": "trend_analysis",
+                "data": {"rows": [{"order_date": "2026-06-01", "sales_amount_sum": 1200}]},
+            }
+        ],
+        chart_specs=[{"chart_type": "line"}],
+    )
+
+    assert report.success is True
+    assert report.data["chart_explanations"][0] == "Line chart generated for line view."
