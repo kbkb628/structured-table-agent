@@ -222,6 +222,10 @@ def test_run_analysis_returns_completed_state(tmp_path):
 
     assert run.status_code == 200
     assert run.json()["status"] == "completed"
+    assert "tool_call_logs" in run.json()
+    assert len(run.json()["tool_call_logs"]) == 4
+    assert run.json()["tool_call_logs"][0]["tool_name"] == "match_fields"
+    assert run.json()["tool_call_logs"][-1]["tool_name"] == "generate_report"
     assert status.json()["task_id"] == task_id
     assert "context_checkpoint" in status.json()
     assert "tool_call_logs" in status.json()
