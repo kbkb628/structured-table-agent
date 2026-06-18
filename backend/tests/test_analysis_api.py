@@ -403,6 +403,51 @@ def test_run_anomaly_analysis_returns_anomaly_rows(tmp_path):
     assert run.json()["chart_specs"][0]["plotly_spec"]["data"][0]["y"] == [2.2361]
 
 
+def test_run_anomaly_analysis_completes_when_no_outlier_rows_exist(tmp_path):
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "product_category,sales_amount\n"
+        "beauty,1000\n"
+        "apparel,1100\n"
+        "electronics,1050\n"
+        "office,1020\n"
+        "home,1080\n",
+        encoding="utf-8",
+    )
+    save_file_record(
+        FileRecord(
+            file_id="file_api_anomaly_none",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=5,
+            column_count=2,
+            columns_json=json.dumps(
+                [
+                    {"name": "product_category", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 5},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 5},
+                ]
+            ),
+            created_at="2026-06-18T00:00:00+00:00",
+        )
+    )
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": "file_api_anomaly_none", "question": "analyse category sales anomalies"},
+    )
+    task_id = start.json()["task_id"]
+
+    run = client.post(f"/api/analysis/{task_id}/run")
+
+    assert run.status_code == 200
+    assert run.json()["status"] == "completed"
+    assert run.json()["tool_results"][0]["tool_name"] == "anomaly_analysis"
+    assert run.json()["tool_results"][0]["data"]["rows"] == []
+    assert run.json()["chart_specs"] == []
+    assert run.json()["errors"] == []
+
+
 def test_eval_run_persists_eval_result(tmp_path):
     csv_path = tmp_path / "sales_orders.csv"
     csv_path.write_text(

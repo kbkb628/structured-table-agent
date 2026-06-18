@@ -494,6 +494,79 @@ def test_run_analysis_task_supports_category_sales_anomalies(tmp_path: Path):
     assert result["chart_specs"][0]["plotly_spec"]["data"][0]["y"] == [2.2361]
 
 
+def test_run_analysis_task_completes_when_anomaly_analysis_finds_no_outliers(tmp_path: Path):
+    task_id = f"task_runner_anomaly_none_{uuid.uuid4().hex[:8]}"
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "product_category,sales_amount\n"
+        "beauty,1000\n"
+        "apparel,1100\n"
+        "electronics,1050\n"
+        "office,1020\n"
+        "home,1080\n",
+        encoding="utf-8",
+    )
+    file_profile = {
+        "file_id": "file_task_anomaly_none",
+        "filename": "sales_orders.csv",
+        "row_count": 5,
+        "column_count": 2,
+        "columns": [
+            {"name": "product_category", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 5},
+            {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 5},
+        ],
+        "created_at": "2026-06-18T00:00:00+00:00",
+    }
+
+    save_file_record(
+        FileRecord(
+            file_id="file_task_anomaly_none",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=5,
+            column_count=2,
+            columns_json=json.dumps(file_profile["columns"]),
+            created_at="2026-06-18T00:00:00+00:00",
+        )
+    )
+
+    create_task(
+        task_id,
+        "file_task_anomaly_none",
+        "analyse category sales anomalies",
+        {
+            "task_id": task_id,
+            "file_id": "file_task_anomaly_none",
+            "question": "analyse category sales anomalies",
+            "analysis_goal": "detect abnormal category sales",
+            "file_profile": file_profile,
+            "field_understanding": {},
+            "business_context": [{"title": "Category"}],
+            "analysis_plan": ["match fields", "anomaly analysis", "chart", "report"],
+            "current_step": "created",
+            "completed_steps": [],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "llm_judgement": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "created",
+        },
+    )
+
+    result = run_analysis_task(task_id)
+
+    assert result["status"] == "completed"
+    assert result["tool_results"][0]["tool_name"] == "anomaly_analysis"
+    assert result["tool_results"][0]["data"]["rows"] == []
+    assert result["chart_specs"] == []
+    assert result["errors"] == []
+
+
 def test_run_analysis_task_marks_failed_when_llm_report_generation_fails(tmp_path: Path, monkeypatch):
     task_id = f"task_runner_llm_fail_{uuid.uuid4().hex[:8]}"
     csv_path = tmp_path / "sales_orders.csv"

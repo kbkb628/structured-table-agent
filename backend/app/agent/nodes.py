@@ -120,6 +120,24 @@ def validate_tool_result_node(state: AnalysisGraphState) -> AnalysisGraphState:
         )
 
     rows = (tool_result.get("data") or {}).get("rows") or []
+    if tool_name == "anomaly_analysis" and not rows:
+        state["tool_results"].append(tool_result)
+        state["completed_steps"].append(f"{tool_name}:{metric['label']}")
+        state["intermediate_findings"].append(
+            {
+                "metric_label": metric["label"],
+                "summary": "No anomalies were detected in the aggregated result.",
+                "top_row": {},
+            }
+        )
+        state["pending_metrics"] = (state.get("pending_metrics") or [])[1:]
+        state["pending_tool_calls"] = (state.get("pending_tool_calls") or [])[1:]
+        state.pop("_latest_tool_result", None)
+        state.pop("_latest_tool_request", None)
+        state.pop("_latest_metric", None)
+        record_tool_succeeded(state["task_id"], tool_name, tool_result)
+        return state
+
     if not rows:
         state["tool_results"].append(tool_result)
         record_tool_failed(state["task_id"], tool_name, tool_result)
@@ -168,6 +186,8 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
 
     for tool_result in state["tool_results"]:
         rows = tool_result.get("data", {}).get("rows", [])
+        if not rows:
+            continue
         metric_label = tool_result.get("metric_label")
         tool_name = tool_result.get("tool_name")
         if tool_name == "calculate_share" and "share_percent" in rows[0]:
