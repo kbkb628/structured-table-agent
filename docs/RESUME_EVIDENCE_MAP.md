@@ -154,6 +154,7 @@
   - `GET /api/project-status`
   - `GET /demo`
   - `scripts/demo_mvp.ps1`
+  - 当 Redis 主 `analysis_state` 快照缺失，但 `draft_report`、`final_report`、`llm_judgement`、`business_context`、`intermediate_findings` 和 `context_checkpoint` 等细粒度 Redis key 仍然存在时，系统会重建任务视图并记录 `session_state_recovered`
   - 可直接观察 `project_status_session_store_active_backend`
   - 可直接观察 `project_status_session_store_degraded_to_sqlite`
   - 可直接观察 `project_status_session_store_latest_recovered_recovery_source`

@@ -332,6 +332,7 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
 
 
 def test_get_project_status_ignores_future_dated_fixture_task_for_latest_summary():
+    frozen_now = "2099-12-31T23:59:59+00:00"
     future_task_id = "task_project_status_future_fixture"
     future_state = {
         "task_id": future_task_id,
@@ -363,19 +364,21 @@ def test_get_project_status_ignores_future_dated_fixture_task_for_latest_summary
         "errors": [],
         "status": "completed",
     }
-    with patch("app.storage.analysis_store._ts", return_value="2099-12-31T23:59:59+00:00"):
+    with patch("app.storage.analysis_store._ts", return_value=frozen_now):
         create_task(future_task_id, future_state["file_id"], future_state["question"], future_state)
         update_task_state(future_task_id, future_state)
 
     client = TestClient(app)
-    upload = client.post("/api/files/upload-sample")
-    file_id = upload.json()["file_id"]
-    question = "analyse sales by region"
-    start = client.post("/api/analysis/start", json={"file_id": file_id, "question": question})
-    task_id = start.json()["task_id"]
-    client.post(f"/api/analysis/{task_id}/run")
+    with patch("app.storage.analysis_store._ts", return_value=frozen_now):
+        upload = client.post("/api/files/upload-sample")
+        file_id = upload.json()["file_id"]
+        question = "analyse sales by region"
+        start = client.post("/api/analysis/start", json={"file_id": file_id, "question": question})
+        task_id = start.json()["task_id"]
+        client.post(f"/api/analysis/{task_id}/run")
 
-    response = client.get("/api/project-status")
+    with patch("app.api.project_status._now_iso", return_value=frozen_now):
+        response = client.get("/api/project-status")
 
     assert response.status_code == 200
     latest_task = response.json()["summary"]["latest_task"]

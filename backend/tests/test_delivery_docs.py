@@ -158,6 +158,8 @@ def test_resume_evidence_map_links_resume_claims_to_runtime_evidence():
     assert "llm_judgement" in content
     assert "score_breakdown" in content
     assert "context_checkpoint" in content
+    assert "analysis_state" in content
+    assert "细粒度 Redis key" in content
     assert "provider-status" in content
     assert "provider-smoke" in content
     assert "project-status" in content
@@ -423,6 +425,8 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "demo_mvp.ps1" in content
     assert "Plotly 风格图表配置" in content or "plotly_spec" in content
     assert "缺少可用 API key" in content
+    assert "analysis_state" in content
+    assert "细粒度 Redis key" in content
     assert "provider smoke" in content or "provider smoke failed" in content or "provider 解析结果" in content
     assert "fixed eval" in content or "质量指标" in content
     assert "project_status_latest_task_has_context_checkpoint" in content
