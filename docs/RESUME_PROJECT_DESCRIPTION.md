@@ -1,6 +1,7 @@
 # Resume Project Description
 
 以下内容用于简历或项目介绍，表述边界严格限制在当前仓库已经真实实现的能力内。
+如果需要把简历说法继续映射到具体代码、接口、脚本和测试证据，可继续查看 [RESUME_EVIDENCE_MAP.md](./RESUME_EVIDENCE_MAP.md)。
 
 ## 一句话版本
 

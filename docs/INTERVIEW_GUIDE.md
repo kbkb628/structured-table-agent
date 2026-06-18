@@ -1,6 +1,7 @@
 # Interview Guide
 
 本文档用于面试时讲解当前项目，所有说法都应以仓库中的真实实现为准。
+如果需要把面试表述直接落到代码、接口、脚本和测试证据，可配合 [RESUME_EVIDENCE_MAP.md](./RESUME_EVIDENCE_MAP.md) 一起使用。
 
 ## 1. 项目目标
 

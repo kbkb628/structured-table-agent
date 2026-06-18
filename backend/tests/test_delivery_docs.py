@@ -97,6 +97,7 @@ def test_resume_project_description_mentions_qwen_and_project_status_delivery():
         encoding="utf-8"
     )
 
+    assert "RESUME_EVIDENCE_MAP.md" in content
     assert "Tongyi Qianwen" in content or "通义千问" in content
     assert "project-status" in content
     assert "demo_mvp.ps1" in content
@@ -111,6 +112,33 @@ def test_resume_project_description_mentions_qwen_and_project_status_delivery():
     assert "BM25" in content
     assert "context_checkpoint" in content
     assert "SQLite 降级" in content or "SQLite" in content
+
+
+def test_resume_evidence_map_links_resume_claims_to_runtime_evidence():
+    content = (Path(__file__).resolve().parents[2] / "docs" / "RESUME_EVIDENCE_MAP.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "简历说法" in content
+    assert "代码证据" in content
+    assert "演示证据" in content
+    assert "CSV / Excel" in content
+    assert "route_next_step" in content
+    assert "ToolResponse" in content
+    assert "z-score" in content
+    assert "QwenClient" in content
+    assert "MockLLMClient" in content
+    assert "llm_judgement" in content
+    assert "score_breakdown" in content
+    assert "context_checkpoint" in content
+    assert "provider-status" in content
+    assert "provider-smoke" in content
+    assert "project-status" in content
+    assert "demo_mvp.ps1" in content
+    assert "test_files_api.py" in content
+    assert "test_analysis_runner.py" in content
+    assert "test_session_store.py" in content
+    assert "test_keyword_retriever.py" in content
 
 
 def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
@@ -297,6 +325,7 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
         encoding="utf-8"
     )
 
+    assert "RESUME_EVIDENCE_MAP.md" in content
     assert "demo_mvp.ps1" in content
     assert "provider smoke" in content or "provider smoke failed" in content or "provider 解析结果" in content
     assert "fixed eval" in content or "质量指标" in content
