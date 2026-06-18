@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.llm.factory import LLMConfigurationError
 from app.llm.qwen_client import QwenResponseError
+from app.storage.analysis_store import backfill_task_events
 from app.observability.event_logger import list_analysis_events
 from app.schemas.analysis_schema import AnalysisStartRequest, AnalysisStartResponse, AnalysisTaskState
 from app.schemas.analysis_schema import AnalysisToolLogList
@@ -59,6 +60,9 @@ def get_analysis(task_id: str) -> AnalysisTaskState:
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
     persisted_events = list_analysis_events(task_id)
+    if not persisted_events and state.get("events"):
+        backfill_task_events(task_id, state["events"])
+        persisted_events = list_analysis_events(task_id)
     if persisted_events or not state.get("events"):
         state["events"] = persisted_events
     state["tool_call_logs"] = get_tool_call_logs(task_id)
@@ -75,6 +79,9 @@ def get_analysis_events(task_id: str) -> AnalysisEventList:
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
     persisted_events = list_analysis_events(task_id)
+    if not persisted_events and state.get("events"):
+        backfill_task_events(task_id, state["events"])
+        persisted_events = list_analysis_events(task_id)
     events = persisted_events if persisted_events or not state.get("events") else state.get("events", [])
     return AnalysisEventList(task_id=task_id, events=events)
 

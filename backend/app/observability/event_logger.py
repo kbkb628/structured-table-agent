@@ -13,6 +13,7 @@ from app.observability.trace_models import TASK_FAILED
 from app.observability.trace_models import TOOL_CALLED
 from app.observability.trace_models import TOOL_FAILED
 from app.observability.trace_models import TOOL_SUCCEEDED
+from app.storage.analysis_store import backfill_task_events
 from app.storage.analysis_store import list_task_events
 from app.storage.analysis_store import record_event
 
@@ -79,6 +80,9 @@ def list_analysis_events(task_id: str) -> list[dict]:
 
 def hydrate_state_events(state: dict) -> dict:
     persisted_events = list_analysis_events(state["task_id"])
+    if not persisted_events and state.get("events"):
+        backfill_task_events(state["task_id"], state["events"])
+        persisted_events = list_analysis_events(state["task_id"])
     if persisted_events or not state.get("events"):
         state["events"] = persisted_events
     return state

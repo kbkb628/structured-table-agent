@@ -121,6 +121,40 @@ def list_task_events(task_id: str) -> list[dict]:
     ]
 
 
+def backfill_task_events(task_id: str, events: list[dict]) -> int:
+    init_db()
+    persisted_count = 0
+    with get_connection() as conn:
+        for event in events:
+            if not isinstance(event, dict):
+                continue
+            event_id = event.get("event_id")
+            event_type = event.get("event_type")
+            node = event.get("node")
+            message = event.get("message")
+            created_at = event.get("created_at")
+            payload = event.get("payload", {})
+            if not all(isinstance(value, str) and value for value in [event_id, event_type, node, message, created_at]):
+                continue
+            conn.execute(
+                """
+                INSERT OR IGNORE INTO analysis_events (event_id, task_id, event_type, node, message, payload_json, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    event_id,
+                    task_id,
+                    event_type,
+                    node,
+                    message,
+                    json.dumps(payload if isinstance(payload, dict) else {}, ensure_ascii=False),
+                    created_at,
+                ),
+            )
+            persisted_count += 1
+    return persisted_count
+
+
 def record_tool_call(task_id: str, tool_name: str, request: dict, response: dict) -> None:
     init_db()
     with get_connection() as conn:

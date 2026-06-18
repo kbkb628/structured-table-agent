@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from app.llm.qwen_client import QwenResponseError
 from app.main import app
-from app.storage.analysis_store import create_task, get_task_state, record_event
+from app.storage.analysis_store import create_task, get_task_state, list_task_events, record_event
 from app.storage.file_store import save_file_record
 from app.storage.models import FileRecord
 from app.storage.session_store import SessionStore
@@ -550,12 +550,54 @@ def test_eval_run_uses_redis_snapshot_even_when_sqlite_row_is_missing():
         "llm_judgement": {},
         "eval_result": {},
         "events": [
-            {"event_type": "task_created"},
-            {"event_type": "fields_matched"},
-            {"event_type": "tool_succeeded"},
-            {"event_type": "chart_generated"},
-            {"event_type": "report_generated"},
-            {"event_type": "task_completed"},
+            {
+                "event_id": f"evt_{task_id}_1",
+                "event_type": "task_created",
+                "node": "start_analysis",
+                "message": "task created",
+                "payload": {"status": "created"},
+                "created_at": "2026-06-18T10:00:00+00:00",
+            },
+            {
+                "event_id": f"evt_{task_id}_2",
+                "event_type": "fields_matched",
+                "node": "match_fields",
+                "message": "matched analysis fields",
+                "payload": {},
+                "created_at": "2026-06-18T10:00:01+00:00",
+            },
+            {
+                "event_id": f"evt_{task_id}_3",
+                "event_type": "tool_succeeded",
+                "node": "groupby_aggregate",
+                "message": "groupby_aggregate succeeded",
+                "payload": {},
+                "created_at": "2026-06-18T10:00:02+00:00",
+            },
+            {
+                "event_id": f"evt_{task_id}_4",
+                "event_type": "chart_generated",
+                "node": "generate_chart",
+                "message": "generated bar chart",
+                "payload": {},
+                "created_at": "2026-06-18T10:00:03+00:00",
+            },
+            {
+                "event_id": f"evt_{task_id}_5",
+                "event_type": "report_generated",
+                "node": "generate_report",
+                "message": "generated final report",
+                "payload": {},
+                "created_at": "2026-06-18T10:00:04+00:00",
+            },
+            {
+                "event_id": f"evt_{task_id}_6",
+                "event_type": "task_completed",
+                "node": "langgraph",
+                "message": "analysis task completed",
+                "payload": {"status": "completed"},
+                "created_at": "2026-06-18T10:00:05+00:00",
+            },
         ],
         "errors": [],
         "status": "completed",
@@ -576,6 +618,9 @@ def test_eval_run_uses_redis_snapshot_even_when_sqlite_row_is_missing():
     stored = get_task_state(task_id)
     assert stored is not None
     assert stored["task_id"] == task_id
+    persisted_events = list_task_events(task_id)
+    assert persisted_events
+    assert any(event["event_type"] == "task_created" for event in persisted_events)
 
 
 def test_eval_run_returns_404_for_missing_task():
@@ -788,7 +833,7 @@ def test_get_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():
         "eval_result": {},
         "events": [
             {
-                "event_id": "evt_redis_only_1",
+                "event_id": f"evt_{task_id}_1",
                 "event_type": "task_created",
                 "node": "start_analysis",
                 "message": "task created",
@@ -849,7 +894,7 @@ def test_get_analysis_events_uses_redis_snapshot_when_sqlite_timeline_is_missing
         "eval_result": {},
         "events": [
             {
-                "event_id": "evt_redis_events_1",
+                "event_id": f"evt_{task_id}_1",
                 "event_type": "task_created",
                 "node": "start_analysis",
                 "message": "task created",
@@ -872,6 +917,9 @@ def test_get_analysis_events_uses_redis_snapshot_when_sqlite_timeline_is_missing
     payload = response.json()
     assert payload["task_id"] == task_id
     assert payload["events"][0]["event_type"] == "task_created"
+    persisted_events = list_task_events(task_id)
+    assert persisted_events
+    assert any(event["event_type"] == "task_created" for event in persisted_events)
 
 
 def test_get_analysis_uses_granular_redis_recovery_when_snapshot_is_missing(tmp_path):
