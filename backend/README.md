@@ -219,7 +219,7 @@ cd E:\bgagent1
 .\scripts\demo_mvp.ps1 -StartServer
 ```
 
-The script uploads the sample CSV, queries `GET /api/project-status`, checks `GET /api/llm/provider-status` and `POST /api/llm/provider-smoke`, runs the current supported demo question set, and prints a compact JSON summary including provider and fixed-eval fields.
+The script uploads the sample CSV, queries `GET /api/project-status`, checks `GET /api/llm/provider-status` and `POST /api/llm/provider-smoke`, runs the current supported demo question set, and prints a compact JSON summary including provider diagnostics, smoke failure details when present, and fixed-eval quality metrics.
 
 ## Windows API examples
 

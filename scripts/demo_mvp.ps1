@@ -120,9 +120,14 @@ try {
         provider_status_smoke_ready = $providerStatus.diagnostics.smoke_ready
         provider_smoke_ok = $providerSmoke.ok
         provider_smoke_client_type = $providerSmoke.client_type
+        provider_smoke_error_type = $providerSmoke.error_type
+        provider_smoke_error_message = $providerSmoke.error_message
         fixed_eval_pass_rate = $fixedEval.pass_rate
         fixed_eval_passed_cases = $fixedEval.passed_cases
         fixed_eval_total_cases = $fixedEval.total_cases
+        fixed_eval_average_trace_completeness = $fixedEval.average_trace_completeness
+        fixed_eval_average_report_completeness = $fixedEval.average_report_completeness
+        fixed_eval_average_tool_success_rate = $fixedEval.average_tool_success_rate
         runs = $runs
         rerun_eval_task = $rerunEval.task_id
         rerun_eval_score = $rerunEval.eval_result.overall_score

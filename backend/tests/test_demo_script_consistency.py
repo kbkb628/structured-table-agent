@@ -39,3 +39,7 @@ def test_demo_script_mentions_provider_and_eval_summary_output():
     assert "provider_status_key_source" in script
     assert "provider_smoke_ok" in script
     assert "fixed_eval_pass_rate" in script
+    assert "provider_smoke_error_type" in script
+    assert "provider_smoke_error_message" in script
+    assert "fixed_eval_average_trace_completeness" in script
+    assert "fixed_eval_average_report_completeness" in script
