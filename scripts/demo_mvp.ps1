@@ -206,6 +206,9 @@ try {
         project_status_latest_task_has_degradation = $projectStatus.summary.latest_task.errors.has_degradation
         project_status_files = $projectStatus.summary.database.tables.files.row_count
         project_status_tasks = $projectStatus.summary.database.tables.analysis_tasks.row_count
+        project_status_analysis_events = $projectStatus.summary.database.tables.analysis_events.row_count
+        project_status_tool_call_logs = $projectStatus.summary.database.tables.tool_call_logs.row_count
+        project_status_eval_results = $projectStatus.summary.database.tables.eval_results.row_count
         provider_status_key_source = $providerStatus.api_key_source
         provider_status_smoke_ready = $providerStatus.diagnostics.smoke_ready
         provider_smoke_ok = $providerSmoke.ok

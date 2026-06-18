@@ -132,6 +132,11 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_latest_error_code" in script
     assert "project_status_latest_task_latest_error_message" in script
     assert "project_status_latest_task_has_degradation" in script
+    assert "project_status_files" in script
+    assert "project_status_tasks" in script
+    assert "project_status_analysis_events" in script
+    assert "project_status_tool_call_logs" in script
+    assert "project_status_eval_results" in script
 
 
 def test_demo_script_mentions_provider_and_eval_summary_output():
@@ -167,6 +172,9 @@ def test_demo_script_contract_matches_pscustomobject_output_shape():
 
     assert object_fields[0] == contract["run_fields"][0]
     assert object_fields[1] == contract["top_level_fields"][0]
+    assert "project_status_analysis_events" in object_fields[1]
+    assert "project_status_tool_call_logs" in object_fields[1]
+    assert "project_status_eval_results" in object_fields[1]
 
 
 def test_demo_script_contract_is_documented_across_delivery_docs():

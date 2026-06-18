@@ -262,6 +262,9 @@
   - `project_status_latest_task_tool_call_log_count`
   - `project_status_files`
   - `project_status_tasks`
+  - `project_status_analysis_events`
+  - `project_status_tool_call_logs`
+  - `project_status_eval_results`
   - `provider_status_key_source`
   - `provider_status_smoke_ready`
   - `provider_smoke_ok`
@@ -298,6 +301,9 @@
   - `project_status_latest_task_latest_error_code`
   - `project_status_files`
   - `project_status_tasks`
+  - `project_status_analysis_events`
+  - `project_status_tool_call_logs`
+  - `project_status_eval_results`
   - 六个固定 demo 问题的任务结果摘要
 
 ## 当前结论

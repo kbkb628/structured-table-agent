@@ -332,6 +332,9 @@ Additional runtime-summary fields that are also exposed by the script include:
 - `project_status_latest_task_latest_error_code`
 - `project_status_files`
 - `project_status_tasks`
+- `project_status_analysis_events`
+- `project_status_tool_call_logs`
+- `project_status_eval_results`
 - `provider_status_key_source`
 - `provider_status_smoke_ready`
 - `provider_smoke_ok`

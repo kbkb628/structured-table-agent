@@ -60,6 +60,9 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "project_status_latest_task_latest_error_code" in content
     assert "project_status_files" in content
     assert "project_status_tasks" in content
+    assert "project_status_analysis_events" in content
+    assert "project_status_tool_call_logs" in content
+    assert "project_status_eval_results" in content
     assert "provider_status_key_source" in content
     assert "provider_status_smoke_ready" in content
     assert "provider_smoke_ok" in content
@@ -134,6 +137,9 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "project_status_latest_task_latest_error_code" in content
     assert "project_status_files" in content
     assert "project_status_tasks" in content
+    assert "project_status_analysis_events" in content
+    assert "project_status_tool_call_logs" in content
+    assert "project_status_eval_results" in content
     assert "provider_status_key_source" in content
     assert "provider_status_smoke_ready" in content
     assert "provider_smoke_ok" in content
@@ -199,6 +205,9 @@ def test_root_readme_matches_current_runtime_truth():
     assert "project_status_latest_task_latest_error_code" in content
     assert "project_status_files" in content
     assert "project_status_tasks" in content
+    assert "project_status_analysis_events" in content
+    assert "project_status_tool_call_logs" in content
+    assert "project_status_eval_results" in content
     assert "provider_status_key_source" in content
     assert "provider_status_smoke_ready" in content
     assert "provider_smoke_ok" in content
@@ -276,6 +285,9 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "project_status_latest_task_latest_error_code" in content
     assert "project_status_files" in content
     assert "project_status_tasks" in content
+    assert "project_status_analysis_events" in content
+    assert "project_status_tool_call_logs" in content
+    assert "project_status_eval_results" in content
     assert "provider_status_key_source" in content
     assert "provider_status_smoke_ready" in content
     assert "provider_smoke_ok" in content
