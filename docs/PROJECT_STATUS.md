@@ -324,7 +324,7 @@
   - `project_status_analysis_events`
   - `project_status_tool_call_logs`
   - `project_status_eval_results`
-  - 六个固定 demo 问题的任务结果摘要
+  - 九个固定 case 的任务结果摘要，其中包含三条中文 MVP 验收问句
 
 ## 当前结论
 

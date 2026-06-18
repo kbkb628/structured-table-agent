@@ -694,8 +694,8 @@ def test_eval_cases_run_returns_fixed_case_summary():
 
     assert response.status_code == 200
     payload = response.json()
-    assert payload["total_cases"] == 6
-    assert payload["passed_cases"] == 6
+    assert payload["total_cases"] == 9
+    assert payload["passed_cases"] == 9
     assert payload["failed_cases"] == 0
     assert payload["pass_rate"] == 1.0
     assert payload["average_tool_success_rate"] == 1.0
@@ -703,7 +703,10 @@ def test_eval_cases_run_returns_fixed_case_summary():
     assert payload["average_report_completeness"] == 1.0
     assert payload["average_chart_validity"] == 1.0
     assert payload["average_field_validity"] == 1.0
-    assert len(payload["results"]) == 6
+    assert len(payload["results"]) == 9
+    assert any(item["case_id"] == "category_topn_zh" for item in payload["results"])
+    assert any(item["case_id"] == "region_compare_zh" for item in payload["results"])
+    assert any(item["case_id"] == "channel_performance_zh" for item in payload["results"])
 
 
 def test_get_analysis_tool_logs_returns_persisted_logs(tmp_path):

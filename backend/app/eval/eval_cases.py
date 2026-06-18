@@ -59,6 +59,30 @@ def get_fixed_eval_cases() -> list[dict]:
             "min_chart_specs": 1,
             "min_overall_score": 0.8,
         },
+        {
+            "case_id": "category_topn_zh",
+            "question": "分析各品类销售额 Top5，并给出业务建议",
+            "expected_status": "completed",
+            "min_tool_results": 1,
+            "min_chart_specs": 1,
+            "min_overall_score": 0.8,
+        },
+        {
+            "case_id": "region_compare_zh",
+            "question": "分析各地区销售额对比，并生成图表",
+            "expected_status": "completed",
+            "min_tool_results": 1,
+            "min_chart_specs": 1,
+            "min_overall_score": 0.8,
+        },
+        {
+            "case_id": "channel_performance_zh",
+            "question": "分析不同渠道的订单数量和销售额表现",
+            "expected_status": "completed",
+            "min_tool_results": 2,
+            "min_chart_specs": 2,
+            "min_overall_score": 0.8,
+        },
     ]
 
 

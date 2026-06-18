@@ -4,7 +4,7 @@ from app.eval.eval_cases import _register_sample_file, get_fixed_eval_cases, run
 def test_get_fixed_eval_cases_returns_supported_cases():
     cases = get_fixed_eval_cases()
 
-    assert len(cases) == 6
+    assert len(cases) == 9
     assert {case["case_id"] for case in cases} == {
         "category_topn",
         "region_compare",
@@ -12,14 +12,17 @@ def test_get_fixed_eval_cases_returns_supported_cases():
         "category_share",
         "sales_trend",
         "category_anomaly",
+        "category_topn_zh",
+        "region_compare_zh",
+        "channel_performance_zh",
     }
 
 
 def test_run_fixed_eval_cases_returns_passing_summary():
     summary = run_fixed_eval_cases()
 
-    assert summary["total_cases"] == 6
-    assert summary["passed_cases"] == 6
+    assert summary["total_cases"] == 9
+    assert summary["passed_cases"] == 9
     assert summary["failed_cases"] == 0
     assert summary["pass_rate"] == 1.0
     assert summary["retried_tool_calls"] == 0
@@ -30,7 +33,7 @@ def test_run_fixed_eval_cases_returns_passing_summary():
     assert summary["average_chart_validity"] == 1.0
     assert summary["average_field_validity"] == 1.0
     assert summary["average_tool_elapsed_ms_total"] >= 0
-    assert len(summary["results"]) == 6
+    assert len(summary["results"]) == 9
     assert all(item["passed"] is True for item in summary["results"])
     assert all(item["overall_score"] >= 0.8 for item in summary["results"])
     assert all(item["tool_success_rate"] == 1.0 for item in summary["results"])
@@ -44,6 +47,9 @@ def test_run_fixed_eval_cases_returns_passing_summary():
     assert any(item["case_id"] == "category_share" for item in summary["results"])
     assert any(item["case_id"] == "sales_trend" for item in summary["results"])
     assert any(item["case_id"] == "category_anomaly" for item in summary["results"])
+    assert any(item["case_id"] == "category_topn_zh" for item in summary["results"])
+    assert any(item["case_id"] == "region_compare_zh" for item in summary["results"])
+    assert any(item["case_id"] == "channel_performance_zh" for item in summary["results"])
 
 
 def test_register_sample_file_uses_profile_dataset_tool(monkeypatch):

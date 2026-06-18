@@ -214,7 +214,7 @@
 
 用途：
 
-- 运行当前 6 个真实支持 case 的固定回归评测
+- 运行当前 9 个真实支持 case 的固定回归评测
 - 返回整体通过率、重试统计和平均质量指标
 - 复用真实 `run_fixed_eval_cases()` 链路，不依赖额外 mock
 
@@ -234,7 +234,7 @@
 - `average_field_validity`
 - `results`
 
-当前 6 个真实支持 case 包括：
+当前 9 个真实支持 case 包括：
 
 - `analyse category sales top 5`
 - `analyse category sales share`
@@ -242,6 +242,9 @@
 - `analyse sales by region`
 - `analyse sales trend by order date`
 - `analyse channel order count and sales performance`
+- `分析各品类销售额 Top5，并给出业务建议`
+- `分析各地区销售额对比，并生成图表`
+- `分析不同渠道的订单数量和销售额表现`
 
 ## 10. 本地演示页
 
@@ -461,7 +464,7 @@ cd E:\bgagent1
 - `project_status_latest_task_top_key_finding`
 - `project_status_latest_task_latest_finding_summary`
 - `fixed_eval_average_tool_success_rate`
-- 以及六个固定 demo 问题的执行摘要
+- 以及九个固定 case 的执行摘要，其中包含三条中文 MVP 验收问句
 
 项目运行总览：
 

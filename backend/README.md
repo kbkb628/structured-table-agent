@@ -148,6 +148,7 @@ The summary also exposes evaluation aggregates derived from the real `RuleScorer
 - `retry_attempts_total`
 
 The same regression summary is also available through `POST /api/eval/cases/run`.
+The fixed eval set currently covers six English demo questions plus the three Chinese MVP acceptance questions defined in `DEVELOPMENT_GUIDE.md`.
 
 ## Analysis flow
 

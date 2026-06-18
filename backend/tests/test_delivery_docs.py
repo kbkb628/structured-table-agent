@@ -20,7 +20,7 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "GET /demo" in content
     assert "GET /api/project-status" in content
     assert "summary.session_store" in content or "session store" in content
-    assert "当前 6 个真实支持 case" in content
+    assert "当前 9 个真实支持 case" in content
     assert "provider_smoke_error_message" in content
     assert "project_status_latest_task_has_context_checkpoint" in content
     assert "project_status_latest_task_eval_has_dimension_scores" in content
