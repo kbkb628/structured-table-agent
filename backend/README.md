@@ -204,6 +204,7 @@ The page supports:
 - loading the built-in `sales_orders.csv` sample into the same upload flow
 - entering or choosing a supported analysis question
 - running the real analysis task flow
+- inspecting live LLM provider status and running a provider smoke check
 - viewing final report output, task snapshot, event timeline, and tool logs
 
 ## One-command demo

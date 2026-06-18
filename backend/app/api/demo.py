@@ -177,6 +177,55 @@ def demo_page() -> HTMLResponse:
       font-size: 0.8rem;
       color: var(--muted);
     }
+    .provider-grid {
+      display: grid;
+      gap: 10px;
+    }
+    .provider-card {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: #fffdf8;
+      padding: 12px 14px;
+      display: grid;
+      gap: 6px;
+    }
+    .provider-card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .provider-title {
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .provider-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      background: #f1eadc;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .provider-meta {
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+    .provider-diag {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px dashed var(--line);
+      background: #fcf7ef;
+      font-size: 0.84rem;
+      color: var(--muted);
+      white-space: pre-wrap;
+      line-height: 1.5;
+    }
     .grid {
       display: grid;
       gap: 18px;
@@ -334,6 +383,8 @@ def demo_page() -> HTMLResponse:
             <button id="upload-button" class="secondary" type="button">1. Upload File</button>
             <button id="run-analysis-button" class="primary" type="button">2. Start And Run</button>
             <button id="refresh-button" class="ghost" type="button">Refresh Task</button>
+            <button id="provider-status-button" class="ghost" type="button">LLM Status</button>
+            <button id="provider-smoke-button" class="ghost" type="button">LLM Smoke</button>
           </div>
 
           <div id="task-status" class="status">No file uploaded yet.</div>
@@ -362,6 +413,16 @@ def demo_page() -> HTMLResponse:
           <div class="hint">
             The page uses existing APIs only:
             <span class="fine">`/api/files/upload`, `/api/analysis/start`, `/api/analysis/{task_id}/run`, `/api/analysis/{task_id}`, `/events`, `/tool-logs`.</span>
+          </div>
+          <div class="provider-grid">
+            <div class="provider-card">
+              <div class="provider-card-head">
+                <div class="provider-title">LLM Provider Status</div>
+                <div id="provider-pill" class="provider-pill">Not loaded</div>
+              </div>
+              <div id="provider-meta" class="provider-meta">Provider diagnostics will appear here.</div>
+              <div id="provider-diag" class="provider-diag">No provider status loaded yet.</div>
+            </div>
           </div>
         </div>
       </div>
@@ -429,6 +490,9 @@ def demo_page() -> HTMLResponse:
     const reportListEl = document.getElementById("report-list");
     const taskEl = document.getElementById("task-output");
     const taskSummaryEl = document.getElementById("task-summary");
+    const providerPillEl = document.getElementById("provider-pill");
+    const providerMetaEl = document.getElementById("provider-meta");
+    const providerDiagEl = document.getElementById("provider-diag");
     const chartPreviewEl = document.getElementById("chart-preview");
     const eventsEl = document.getElementById("events-output");
     const toolLogsEl = document.getElementById("tool-logs-output");
@@ -438,6 +502,8 @@ def demo_page() -> HTMLResponse:
     const uploadButton = document.getElementById("upload-button");
     const runButton = document.getElementById("run-analysis-button");
     const refreshButton = document.getElementById("refresh-button");
+    const providerStatusButton = document.getElementById("provider-status-button");
+    const providerSmokeButton = document.getElementById("provider-smoke-button");
 
     function setStatus(message) {
       statusEl.textContent = message;
@@ -571,6 +637,39 @@ def demo_page() -> HTMLResponse:
       `;
     }
 
+    function renderProviderStatus(status) {
+      if (!status) {
+        providerPillEl.textContent = "Not loaded";
+        providerMetaEl.textContent = "Provider diagnostics will appear here.";
+        providerDiagEl.textContent = "No provider status loaded yet.";
+        return;
+      }
+
+      const pillLabel = status.diagnostics?.smoke_ready
+        ? "Smoke ready"
+        : (status.diagnostics?.provider_supported ? "Needs attention" : "Unsupported");
+      providerPillEl.textContent = pillLabel;
+      providerMetaEl.textContent = [
+        `Provider: ${status.provider}`,
+        `Key source: ${status.api_key_source || "missing"}`,
+        `Base URL: ${status.base_url}`,
+        `Model: ${status.model}`,
+      ].join(" | ");
+      const diag = status.diagnostics || {};
+      const lines = [
+        `provider_supported: ${diag.provider_supported}`,
+        `key_source_kind: ${diag.key_source_kind}`,
+        `smoke_ready: ${diag.smoke_ready}`,
+      ];
+      if (Array.isArray(diag.warnings) && diag.warnings.length) {
+        lines.push(`warnings: ${diag.warnings.join(" ; ")}`);
+      }
+      if (Array.isArray(diag.recommendations) && diag.recommendations.length) {
+        lines.push(`recommendations: ${diag.recommendations.join(" ; ")}`);
+      }
+      providerDiagEl.textContent = lines.join("\n");
+    }
+
     async function apiFetch(url, options = {}) {
       const response = await fetch(url, options);
       const contentType = response.headers.get("content-type") || "";
@@ -635,6 +734,28 @@ def demo_page() -> HTMLResponse:
       toolLogsEl.textContent = stringify(toolLogs.tool_call_logs || []);
       setStatus(`Task ${task.task_id} status: ${task.status}`);
       return task;
+    }
+
+    async function loadProviderStatus() {
+      setStatus("Loading provider status...");
+      const payload = await apiFetch("/api/llm/provider-status");
+      renderProviderStatus(payload);
+      setStatus(`Provider status loaded: ${payload.provider}`);
+      return payload;
+    }
+
+    async function runProviderSmoke() {
+      setStatus("Running provider smoke...");
+      const payload = await apiFetch("/api/llm/provider-smoke", { method: "POST" });
+      renderProviderStatus(payload.provider_resolution);
+      providerDiagEl.textContent = [
+        providerDiagEl.textContent,
+        "",
+        `Smoke ok: ${payload.ok}`,
+        payload.error_message ? `Smoke error: ${payload.error_message}` : `Analysis goal: ${payload.analysis_goal}`,
+      ].join("\n");
+      setStatus(payload.ok ? "Provider smoke succeeded." : `Provider smoke failed: ${payload.error_message}`);
+      return payload;
     }
 
     async function startAndRunAnalysis() {
@@ -747,10 +868,36 @@ def demo_page() -> HTMLResponse:
       }
     });
 
+    providerStatusButton.addEventListener("click", async () => {
+      providerStatusButton.disabled = true;
+      try {
+        await loadProviderStatus();
+      } catch (error) {
+        setStatus("Provider status failed: " + error.message);
+      } finally {
+        providerStatusButton.disabled = false;
+      }
+    });
+
+    providerSmokeButton.addEventListener("click", async () => {
+      providerSmokeButton.disabled = true;
+      try {
+        await runProviderSmoke();
+      } catch (error) {
+        setStatus("Provider smoke failed: " + error.message);
+      } finally {
+        providerSmokeButton.disabled = false;
+      }
+    });
+
     document.querySelectorAll("[data-question]").forEach((button) => {
       button.addEventListener("click", () => {
         questionInput.value = button.dataset.question;
       });
+    });
+
+    loadProviderStatus().catch((error) => {
+      setStatus("Initial provider status load failed: " + error.message);
     });
   </script>
 </body>
