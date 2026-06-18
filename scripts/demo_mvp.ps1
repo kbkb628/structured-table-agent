@@ -246,6 +246,8 @@ try {
         fixed_eval_average_tool_success_rate = $fixedEval.average_tool_success_rate
         fixed_eval_average_chart_validity = $fixedEval.average_chart_validity
         fixed_eval_average_field_validity = $fixedEval.average_field_validity
+        fixed_eval_case_ids = @($fixedEval.results | ForEach-Object { $_.case_id })
+        fixed_eval_questions = @($fixedEval.results | ForEach-Object { $_.question })
         runs = $runs
         rerun_eval_task = $rerunEval.task_id
         rerun_eval_score = $rerunEval.eval_result.overall_score

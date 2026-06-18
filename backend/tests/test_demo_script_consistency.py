@@ -184,6 +184,8 @@ def test_demo_script_mentions_provider_and_eval_summary_output():
     assert "fixed_eval_average_tool_success_rate" in script
     assert "fixed_eval_average_chart_validity" in script
     assert "fixed_eval_average_field_validity" in script
+    assert "fixed_eval_case_ids" in script
+    assert "fixed_eval_questions" in script
 
 
 def test_demo_script_contract_matches_pscustomobject_output_shape():
@@ -222,6 +224,8 @@ def test_demo_script_contract_matches_pscustomobject_output_shape():
     assert "fixed_eval_passed_cases" in contract["documented_summary_fields"]
     assert "fixed_eval_total_cases" in contract["documented_summary_fields"]
     assert "fixed_eval_average_tool_success_rate" in contract["documented_summary_fields"]
+    assert "fixed_eval_case_ids" in contract["documented_summary_fields"]
+    assert "fixed_eval_questions" in contract["documented_summary_fields"]
 
 
 def test_demo_script_contract_is_documented_across_delivery_docs():

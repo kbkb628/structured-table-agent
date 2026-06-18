@@ -137,6 +137,7 @@ cd E:\bgagent1
 - 输出 provider 运行态字段
 - 输出 latest task 摘要字段
 - 输出 fixed eval 质量字段，例如 `fixed_eval_pass_rate`
+- 输出 `fixed_eval_case_ids` 和 `fixed_eval_questions`，可直接确认脚本覆盖到三条中文 MVP 验收问句
 
 失败排查：
 

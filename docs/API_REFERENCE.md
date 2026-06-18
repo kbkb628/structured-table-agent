@@ -464,6 +464,8 @@ cd E:\bgagent1
 - `project_status_latest_task_top_key_finding`
 - `project_status_latest_task_latest_finding_summary`
 - `fixed_eval_average_tool_success_rate`
+- `fixed_eval_case_ids`
+- `fixed_eval_questions`
 - 以及九个固定 case 的执行摘要，其中包含三条中文 MVP 验收问句
 
 项目运行总览：

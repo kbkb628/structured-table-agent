@@ -297,6 +297,8 @@
   - `fixed_eval_average_tool_success_rate`
   - `fixed_eval_average_chart_validity`
   - `fixed_eval_average_field_validity`
+  - `fixed_eval_case_ids`
+  - `fixed_eval_questions`
   - `project_status_demo_available`
   - `project_status_session_store_redis_available`
   - `project_status_session_store_degraded_to_sqlite`
