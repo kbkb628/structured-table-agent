@@ -389,6 +389,7 @@ def demo_page() -> HTMLResponse:
             <button id="refresh-button" class="ghost" type="button">Refresh Task</button>
             <button id="provider-status-button" class="ghost" type="button">LLM Status</button>
             <button id="provider-smoke-button" class="ghost" type="button">LLM Smoke</button>
+            <button id="project-status-button" class="ghost" type="button">Project Overview</button>
             <button id="eval-cases-button" class="ghost" type="button">Run Fixed Eval Cases</button>
           </div>
 
@@ -427,6 +428,36 @@ def demo_page() -> HTMLResponse:
               </div>
               <div id="provider-meta" class="provider-meta">Provider diagnostics will appear here.</div>
               <div id="provider-diag" class="provider-diag">No provider status loaded yet.</div>
+            </div>
+            <div class="provider-card">
+              <div class="provider-card-head">
+                <div class="provider-title">Project Runtime Overview</div>
+                <div id="project-status-pill" class="provider-pill">Not loaded</div>
+              </div>
+              <div id="project-status-meta" class="provider-meta">Runtime summary will appear here.</div>
+              <div id="project-status-summary" class="summary-grid">
+                <div class="summary-card">
+                  <div class="summary-label">Demo</div>
+                  <div class="summary-value">-</div>
+                  <div class="summary-note">Demo availability is loaded from project status.</div>
+                </div>
+                <div class="summary-card">
+                  <div class="summary-label">Files</div>
+                  <div class="summary-value">0</div>
+                  <div class="summary-note">Persisted upload records.</div>
+                </div>
+                <div class="summary-card">
+                  <div class="summary-label">Tasks</div>
+                  <div class="summary-value">0</div>
+                  <div class="summary-note">Persisted analysis task rows.</div>
+                </div>
+                <div class="summary-card">
+                  <div class="summary-label">Events</div>
+                  <div class="summary-value">0</div>
+                  <div class="summary-note">Persisted execution timeline rows.</div>
+                </div>
+              </div>
+              <div id="project-status-output" class="provider-diag">No project runtime overview loaded yet.</div>
             </div>
           </div>
         </div>
@@ -532,6 +563,10 @@ def demo_page() -> HTMLResponse:
     const providerPillEl = document.getElementById("provider-pill");
     const providerMetaEl = document.getElementById("provider-meta");
     const providerDiagEl = document.getElementById("provider-diag");
+    const projectStatusPillEl = document.getElementById("project-status-pill");
+    const projectStatusMetaEl = document.getElementById("project-status-meta");
+    const projectStatusSummaryEl = document.getElementById("project-status-summary");
+    const projectStatusOutputEl = document.getElementById("project-status-output");
     const evalSummaryEl = document.getElementById("eval-summary");
     const evalResultsEl = document.getElementById("eval-results-output");
     const chartPreviewEl = document.getElementById("chart-preview");
@@ -545,6 +580,7 @@ def demo_page() -> HTMLResponse:
     const refreshButton = document.getElementById("refresh-button");
     const providerStatusButton = document.getElementById("provider-status-button");
     const providerSmokeButton = document.getElementById("provider-smoke-button");
+    const projectStatusButton = document.getElementById("project-status-button");
     const evalCasesButton = document.getElementById("eval-cases-button");
 
     function setStatus(message) {
@@ -763,6 +799,66 @@ def demo_page() -> HTMLResponse:
       `;
     }
 
+    function renderProjectStatus(payload) {
+      if (!payload || !payload.summary) {
+        projectStatusPillEl.textContent = "Not loaded";
+        projectStatusMetaEl.textContent = "Runtime summary will appear here.";
+        projectStatusOutputEl.textContent = "No project runtime overview loaded yet.";
+        return;
+      }
+
+      const summary = payload.summary;
+      const tables = (summary.database || {}).tables || {};
+      const provider = summary.provider || {};
+      const providerDiagnostics = provider.diagnostics || {};
+      const files = tables.files || { exists: false, row_count: 0 };
+      const tasks = tables.analysis_tasks || { exists: false, row_count: 0 };
+      const events = tables.analysis_events || { exists: false, row_count: 0 };
+      const toolLogs = tables.tool_call_logs || { exists: false, row_count: 0 };
+      const evalResults = tables.eval_results || { exists: false, row_count: 0 };
+      const demo = summary.demo || { available: false, path: "/demo" };
+
+      projectStatusPillEl.textContent = demo.available ? "Demo ready" : "Needs attention";
+      projectStatusMetaEl.textContent = [
+        `Demo path: ${demo.path || "/demo"}`,
+        `Provider: ${provider.provider || "unknown"}`,
+        `Smoke ready: ${providerDiagnostics.smoke_ready}`,
+      ].join(" | ");
+
+      projectStatusSummaryEl.innerHTML = `
+        <div class="summary-card">
+          <div class="summary-label">Demo</div>
+          <div class="summary-value">${escapeHtml(demo.available ? "Ready" : "Off")}</div>
+          <div class="summary-note">${escapeHtml(demo.path || "/demo")}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Files</div>
+          <div class="summary-value">${escapeHtml(files.row_count)}</div>
+          <div class="summary-note">${escapeHtml(files.exists ? "SQLite table present" : "SQLite table missing")}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Tasks</div>
+          <div class="summary-value">${escapeHtml(tasks.row_count)}</div>
+          <div class="summary-note">${escapeHtml(tasks.exists ? "Persisted analysis rows" : "SQLite table missing")}</div>
+        </div>
+        <div class="summary-card">
+          <div class="summary-label">Events</div>
+          <div class="summary-value">${escapeHtml(events.row_count)}</div>
+          <div class="summary-note">${escapeHtml(events.exists ? "Persisted event rows" : "SQLite table missing")}</div>
+        </div>
+      `;
+
+      projectStatusOutputEl.textContent = [
+        `provider: ${provider.provider || "unknown"}`,
+        `api_key_source: ${provider.api_key_source || "missing"}`,
+        `files: exists=${files.exists} row_count=${files.row_count}`,
+        `analysis_tasks: exists=${tasks.exists} row_count=${tasks.row_count}`,
+        `analysis_events: exists=${events.exists} row_count=${events.row_count}`,
+        `tool_call_logs: exists=${toolLogs.exists} row_count=${toolLogs.row_count}`,
+        `eval_results: exists=${evalResults.exists} row_count=${evalResults.row_count}`,
+      ].join("\n");
+    }
+
     async function apiFetch(url, options = {}) {
       const response = await fetch(url, options);
       const contentType = response.headers.get("content-type") || "";
@@ -857,6 +953,14 @@ def demo_page() -> HTMLResponse:
       renderEvalSummary(payload);
       evalResultsEl.textContent = stringify(payload);
       setStatus(`Fixed eval cases completed: ${payload.passed_cases}/${payload.total_cases} passed.`);
+      return payload;
+    }
+
+    async function loadProjectStatus() {
+      setStatus("Loading project runtime overview...");
+      const payload = await apiFetch("/api/project-status");
+      renderProjectStatus(payload);
+      setStatus("Project runtime overview loaded.");
       return payload;
     }
 
@@ -992,6 +1096,17 @@ def demo_page() -> HTMLResponse:
       }
     });
 
+    projectStatusButton.addEventListener("click", async () => {
+      projectStatusButton.disabled = true;
+      try {
+        await loadProjectStatus();
+      } catch (error) {
+        setStatus("Project runtime overview failed: " + error.message);
+      } finally {
+        projectStatusButton.disabled = false;
+      }
+    });
+
     evalCasesButton.addEventListener("click", async () => {
       evalCasesButton.disabled = true;
       try {
@@ -1011,6 +1126,10 @@ def demo_page() -> HTMLResponse:
 
     loadProviderStatus().catch((error) => {
       setStatus("Initial provider status load failed: " + error.message);
+    });
+
+    loadProjectStatus().catch((error) => {
+      setStatus("Initial project runtime overview load failed: " + error.message);
     });
   </script>
 </body>
