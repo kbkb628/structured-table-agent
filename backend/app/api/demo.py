@@ -1073,6 +1073,11 @@ def demo_page() -> HTMLResponse:
         `top_business_context_has_score_breakdown: ${latestTaskContext.top_business_context_has_score_breakdown ?? false}`,
         `top_business_context_bm25_score: ${latestTaskContext.top_business_context_bm25_score ?? "none"}`,
         `checkpoint_current_step: ${latestTaskContext.checkpoint_current_step || "none"}`,
+        `checkpoint_status: ${latestTaskContext.checkpoint_status || "none"}`,
+        `checkpoint_pending_metric_count: ${latestTaskContext.checkpoint_pending_metric_count ?? 0}`,
+        `checkpoint_finding_count: ${latestTaskContext.checkpoint_finding_count ?? 0}`,
+        `checkpoint_business_context_title_count: ${latestTaskContext.checkpoint_business_context_title_count ?? 0}`,
+        `checkpoint_business_context_titles: ${Array.isArray(latestTaskContext.checkpoint_business_context_titles) ? latestTaskContext.checkpoint_business_context_titles.join(", ") || "none" : "none"}`,
         `checkpoint_draft_report_status: ${latestTaskContext.checkpoint_draft_report_status || "none"}`,
         `checkpoint_latest_error_code: ${latestTaskContext.checkpoint_latest_error_code || "none"}`,
       ].join("\n") : "No latest task context summary loaded yet.";

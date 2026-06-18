@@ -157,6 +157,11 @@ try {
         project_status_latest_task_top_business_context_has_score_breakdown = $projectStatus.summary.latest_task.context.top_business_context_has_score_breakdown
         project_status_latest_task_top_business_context_bm25_score = $projectStatus.summary.latest_task.context.top_business_context_bm25_score
         project_status_latest_task_checkpoint_current_step = $projectStatus.summary.latest_task.context.checkpoint_current_step
+        project_status_latest_task_checkpoint_status = $projectStatus.summary.latest_task.context.checkpoint_status
+        project_status_latest_task_checkpoint_pending_metric_count = $projectStatus.summary.latest_task.context.checkpoint_pending_metric_count
+        project_status_latest_task_checkpoint_finding_count = $projectStatus.summary.latest_task.context.checkpoint_finding_count
+        project_status_latest_task_checkpoint_business_context_title_count = $projectStatus.summary.latest_task.context.checkpoint_business_context_title_count
+        project_status_latest_task_checkpoint_business_context_titles = $projectStatus.summary.latest_task.context.checkpoint_business_context_titles
         project_status_latest_task_checkpoint_draft_report_status = $projectStatus.summary.latest_task.context.checkpoint_draft_report_status
         project_status_latest_task_analysis_goal = $projectStatus.summary.latest_task.semantics.analysis_goal
         project_status_latest_task_analysis_plan_count = $projectStatus.summary.latest_task.semantics.analysis_plan_count

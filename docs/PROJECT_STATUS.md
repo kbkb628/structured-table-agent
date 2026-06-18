@@ -209,6 +209,11 @@
   - `project_status_latest_task_top_business_context_has_score_breakdown`
   - `project_status_latest_task_top_business_context_bm25_score`
   - `project_status_latest_task_checkpoint_current_step`
+  - `project_status_latest_task_checkpoint_status`
+  - `project_status_latest_task_checkpoint_pending_metric_count`
+  - `project_status_latest_task_checkpoint_finding_count`
+  - `project_status_latest_task_checkpoint_business_context_title_count`
+  - `project_status_latest_task_checkpoint_business_context_titles`
   - `project_status_latest_task_checkpoint_draft_report_status`
   - `project_status_latest_task_analysis_goal`
   - `project_status_latest_task_analysis_plan_count`
