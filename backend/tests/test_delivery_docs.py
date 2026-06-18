@@ -41,3 +41,14 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "GET /demo" in content
     assert "OPENAI_API_KEY_0011AI" in content
     assert "401 invalid_api_key" in content
+
+
+def test_root_readme_matches_current_runtime_truth():
+    content = (Path(__file__).resolve().parents[2] / "README.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "真实 Tongyi Qianwen Provider" in content or "真实通义千问 Provider" in content
+    assert "GET /api/project-status" in content
+    assert "demo_mvp.ps1" in content
+    assert "未实现真实 LLM Provider" not in content
