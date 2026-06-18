@@ -48,6 +48,10 @@ try {
         Wait-ServerReady -HealthUrl "$BaseUrl/docs"
     }
 
+    $projectStatus = Invoke-RestMethod `
+        -Method Get `
+        -Uri "$BaseUrl/api/project-status"
+
     $uploadRaw = & curl.exe -s -X POST -F "file=@$samplePath" "$BaseUrl/api/files/upload"
     if (-not $uploadRaw) {
         throw "Upload request returned an empty response."
@@ -96,6 +100,10 @@ try {
         upload_file_id = $upload.file_id
         upload_rows = $upload.row_count
         upload_columns = $upload.column_count
+        project_status_provider = $projectStatus.summary.provider.provider
+        project_status_demo_available = $projectStatus.summary.demo.available
+        project_status_files = $projectStatus.summary.database.tables.files.row_count
+        project_status_tasks = $projectStatus.summary.database.tables.analysis_tasks.row_count
         runs = $runs
         rerun_eval_task = $rerunEval.task_id
         rerun_eval_score = $rerunEval.eval_result.overall_score

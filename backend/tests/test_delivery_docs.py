@@ -16,4 +16,5 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     )
 
     assert "GET /demo" in content
+    assert "GET /api/project-status" in content
     assert "当前 6 个真实支持 case" in content

@@ -18,3 +18,12 @@ def test_demo_script_questions_match_readme_demo_questions():
     for question in expected_questions:
         assert f"- `{question}`" in readme
         assert f'"{question}"' in script
+
+
+def test_demo_script_mentions_project_status_summary_output():
+    repo_root = Path(__file__).resolve().parents[2]
+    script = (repo_root / "scripts" / "demo_mvp.ps1").read_text(encoding="utf-8")
+
+    assert "/api/project-status" in script
+    assert "project_status_provider" in script
+    assert "project_status_demo_available" in script

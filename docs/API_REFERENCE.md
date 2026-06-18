@@ -1,6 +1,6 @@
 # API Reference
 
-本文档描述当前 MVP 已真实实现的后端接口，接口边界与 `DEVELOPMENT_GUIDE.md` 保持一致。
+本文档描述当前仓库已经真实实现的后端接口，接口边界与 `DEVELOPMENT_GUIDE.md`、测试和简历表达保持一致。
 
 ## 1. 上传文件
 
@@ -52,9 +52,9 @@
 用途：
 
 - 基于上传文件创建分析任务
-- 运行轻量 JSONL 关键词检索
-- 用当前配置的 `LLMClient` 生成 `analysis_goal` 和 `analysis_plan`
-- 写入启动事件时间线
+- 运行轻量 JSONL 业务检索
+- 使用当前配置的 `LLMClient` 生成 `analysis_goal` 和 `analysis_plan`
+- 写入任务启动事件时间线
 
 请求体：
 
@@ -75,8 +75,8 @@
 失败：
 
 - 文件不存在时返回 `404`
-- `LLM_PROVIDER=qwen` 但缺少可用 key 时返回 `503`
-- 外部 Provider 调用失败时返回 `502`
+- `LLM_PROVIDER=qwen` 但没有可用 key 时返回 `503`
+- 外部 provider 调用失败时返回 `502`
 
 ## 4. 执行分析任务
 
@@ -168,6 +168,8 @@
 - `task_completed`
 - `task_failed`
 - `context_checkpoint_refreshed`
+- `session_store_warning`
+- `session_state_recovered`
 
 ## 7. 查询工具调用日志
 
@@ -255,11 +257,36 @@
 - 展示任务摘要
 - 预览基于 `chart_specs` 的图表结果
 - 展示最终报告、事件时间线和工具日志
+- 查看 LLM provider 状态并触发 smoke 检查
+- 查看 project runtime overview
+- 运行固定评测集并展示摘要
 
 说明：
 
 - 该页面由 FastAPI 直接返回 HTML
 - 它不是 React 前端，也不是独立前端工程
+
+### `GET /api/project-status`
+
+用途：
+
+- 查询当前项目运行总览状态
+- 统一展示 provider 解析、演示页可用性和 SQLite 表行数
+
+返回字段：
+
+- `summary.provider`
+- `summary.demo`
+- `summary.database.tables.files`
+- `summary.database.tables.analysis_tasks`
+- `summary.database.tables.analysis_events`
+- `summary.database.tables.tool_call_logs`
+- `summary.database.tables.eval_results`
+
+说明：
+
+- 这个接口只读取已有状态，不会写入业务数据
+- `/demo` 当前已经使用这个接口展示 project runtime overview
 
 ## 11. 相关验证命令
 
@@ -284,6 +311,13 @@ cd E:\bgagent1
 .\scripts\demo_mvp.ps1 -StartServer
 ```
 
+项目运行总览：
+
+```powershell
+Invoke-RestMethod -Method Get `
+  -Uri "http://127.0.0.1:8000/api/project-status"
+```
+
 ## 12. LLM Provider 状态与 smoke 检查
 
 ### `GET /api/llm/provider-status`
@@ -302,6 +336,7 @@ cd E:\bgagent1
 - `base_url`
 - `model`
 - `timeout_seconds`
+- `diagnostics`
 
 ### `POST /api/llm/provider-smoke`
 
@@ -317,6 +352,7 @@ cd E:\bgagent1
 - `ok`
 - `analysis_goal` 或 `error_type`
 - `error_message`
+- `diagnostics`
 
 说明：
 
