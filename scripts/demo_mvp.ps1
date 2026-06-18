@@ -52,6 +52,14 @@ try {
         -Method Get `
         -Uri "$BaseUrl/api/project-status"
 
+    $providerStatus = Invoke-RestMethod `
+        -Method Get `
+        -Uri "$BaseUrl/api/llm/provider-status"
+
+    $providerSmoke = Invoke-RestMethod `
+        -Method Post `
+        -Uri "$BaseUrl/api/llm/provider-smoke"
+
     $uploadRaw = & curl.exe -s -X POST -F "file=@$samplePath" "$BaseUrl/api/files/upload"
     if (-not $uploadRaw) {
         throw "Upload request returned an empty response."
@@ -96,6 +104,10 @@ try {
         -ContentType "application/json" `
         -Body (@{ task_id = $runs[-1].task_id } | ConvertTo-Json)
 
+    $fixedEval = Invoke-RestMethod `
+        -Method Post `
+        -Uri "$BaseUrl/api/eval/cases/run"
+
     [pscustomobject]@{
         upload_file_id = $upload.file_id
         upload_rows = $upload.row_count
@@ -104,6 +116,13 @@ try {
         project_status_demo_available = $projectStatus.summary.demo.available
         project_status_files = $projectStatus.summary.database.tables.files.row_count
         project_status_tasks = $projectStatus.summary.database.tables.analysis_tasks.row_count
+        provider_status_key_source = $providerStatus.api_key_source
+        provider_status_smoke_ready = $providerStatus.diagnostics.smoke_ready
+        provider_smoke_ok = $providerSmoke.ok
+        provider_smoke_client_type = $providerSmoke.client_type
+        fixed_eval_pass_rate = $fixedEval.pass_rate
+        fixed_eval_passed_cases = $fixedEval.passed_cases
+        fixed_eval_total_cases = $fixedEval.total_cases
         runs = $runs
         rerun_eval_task = $rerunEval.task_id
         rerun_eval_score = $rerunEval.eval_result.overall_score

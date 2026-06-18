@@ -27,3 +27,15 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "/api/project-status" in script
     assert "project_status_provider" in script
     assert "project_status_demo_available" in script
+
+
+def test_demo_script_mentions_provider_and_eval_summary_output():
+    repo_root = Path(__file__).resolve().parents[2]
+    script = (repo_root / "scripts" / "demo_mvp.ps1").read_text(encoding="utf-8")
+
+    assert "/api/llm/provider-status" in script
+    assert "/api/llm/provider-smoke" in script
+    assert "/api/eval/cases/run" in script
+    assert "provider_status_key_source" in script
+    assert "provider_smoke_ok" in script
+    assert "fixed_eval_pass_rate" in script
