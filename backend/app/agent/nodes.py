@@ -172,6 +172,8 @@ def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
         tool_name = tool_result.get("tool_name")
         if tool_name == "calculate_share" and "share_percent" in rows[0]:
             y_field = "share_percent"
+        elif tool_name == "anomaly_analysis" and "z_score" in rows[0]:
+            y_field = "z_score"
         else:
             y_field = next(key for key in rows[0].keys() if key != dimension_field)
         tool_request = {

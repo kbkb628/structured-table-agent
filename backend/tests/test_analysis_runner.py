@@ -489,6 +489,9 @@ def test_run_analysis_task_supports_category_sales_anomalies(tmp_path: Path):
     assert result["tool_results"][0]["tool_name"] == "anomaly_analysis"
     assert result["tool_results"][0]["data"]["rows"][0]["product_category"] == "beauty"
     assert result["tool_results"][0]["data"]["rows"][0]["is_anomaly"] is True
+    assert result["chart_specs"][0]["chart_type"] == "bar"
+    assert result["chart_specs"][0]["plotly_spec"]["layout"]["yaxis"]["title"] == "z_score"
+    assert result["chart_specs"][0]["plotly_spec"]["data"][0]["y"] == [2.2361]
 
 
 def test_run_analysis_task_marks_failed_when_llm_report_generation_fails(tmp_path: Path, monkeypatch):

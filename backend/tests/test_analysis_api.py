@@ -398,6 +398,9 @@ def test_run_anomaly_analysis_returns_anomaly_rows(tmp_path):
     assert run.json()["status"] == "completed"
     assert run.json()["tool_results"][0]["tool_name"] == "anomaly_analysis"
     assert run.json()["tool_results"][0]["data"]["rows"][0]["is_anomaly"] is True
+    assert run.json()["chart_specs"][0]["chart_type"] == "bar"
+    assert run.json()["chart_specs"][0]["plotly_spec"]["layout"]["yaxis"]["title"] == "z_score"
+    assert run.json()["chart_specs"][0]["plotly_spec"]["data"][0]["y"] == [2.2361]
 
 
 def test_eval_run_persists_eval_result(tmp_path):
