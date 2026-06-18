@@ -294,6 +294,7 @@
 - `summary.latest_task.process` 会暴露最新任务的过程追踪摘要，包括 `pending_metric_count`、`planned_tool_call_count`、`event_count`、`latest_event_type` 和 `llm_issue_count`
 - `summary.latest_task.report` 会暴露最新任务的报告摘要，包括 `chart_spec_count`、`key_finding_count`、`business_suggestion_count`、`data_limitation_count` 和 `next_step_count`
 - `summary.latest_task.context` 会暴露最新任务的上下文摘要，包括 `business_context_count`、`top_business_context_title`、`checkpoint_current_step`、`checkpoint_draft_report_status` 和 `checkpoint_latest_error_code`
+- `summary.latest_task.tools` 会暴露最新任务的工具执行摘要，包括 `tool_result_count`、`successful_tool_result_count`、`failed_tool_result_count`、`total_tool_elapsed_ms` 和 `latest_tool_name`
 
 ## 11. 相关验证命令
 
@@ -332,6 +333,8 @@ cd E:\bgagent1
 - `project_status_latest_task_key_finding_count`
 - `project_status_latest_task_business_context_count`
 - `project_status_latest_task_checkpoint_current_step`
+- `project_status_latest_task_tool_result_count`
+- `project_status_latest_task_total_tool_elapsed_ms`
 - `provider_smoke_error_message`
 - `fixed_eval_average_trace_completeness`
 - `fixed_eval_average_report_completeness`

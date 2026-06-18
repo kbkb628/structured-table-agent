@@ -483,6 +483,14 @@ def demo_page() -> HTMLResponse:
                 <div id="latest-task-context-meta" class="provider-meta">Latest RAG and checkpoint summary will appear here.</div>
                 <div id="latest_task_context_output" class="provider-diag">No latest task context summary loaded yet.</div>
               </div>
+              <div class="provider-card">
+                <div class="provider-card-head">
+                  <div class="provider-title">Latest Task Tools</div>
+                  <div id="latest-task-tools-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="latest-task-tools-meta" class="provider-meta">Latest tool execution summary will appear here.</div>
+                <div id="latest_task_tools_output" class="provider-diag">No latest task tool summary loaded yet.</div>
+              </div>
               <div id="project-status-summary" class="summary-grid">
                 <div class="summary-card">
                   <div class="summary-label">Demo</div>
@@ -631,6 +639,9 @@ def demo_page() -> HTMLResponse:
     const latestTaskContextPillEl = document.getElementById("latest-task-context-pill");
     const latestTaskContextMetaEl = document.getElementById("latest-task-context-meta");
     const latestTaskContextOutputEl = document.getElementById("latest_task_context_output");
+    const latestTaskToolsPillEl = document.getElementById("latest-task-tools-pill");
+    const latestTaskToolsMetaEl = document.getElementById("latest-task-tools-meta");
+    const latestTaskToolsOutputEl = document.getElementById("latest_task_tools_output");
     const projectStatusSummaryEl = document.getElementById("project-status-summary");
     const projectStatusOutputEl = document.getElementById("project-status-output");
     const evalSummaryEl = document.getElementById("eval-summary");
@@ -887,6 +898,9 @@ def demo_page() -> HTMLResponse:
         latestTaskContextPillEl.textContent = "Not loaded";
         latestTaskContextMetaEl.textContent = "Latest RAG and checkpoint summary will appear here.";
         latestTaskContextOutputEl.textContent = "No latest task context summary loaded yet.";
+        latestTaskToolsPillEl.textContent = "Not loaded";
+        latestTaskToolsMetaEl.textContent = "Latest tool execution summary will appear here.";
+        latestTaskToolsOutputEl.textContent = "No latest task tool summary loaded yet.";
         projectStatusOutputEl.textContent = "No project runtime overview loaded yet.";
         return;
       }
@@ -903,6 +917,7 @@ def demo_page() -> HTMLResponse:
       const latestTaskProcess = latestTask ? (latestTask.process || {}) : {};
       const latestTaskReport = latestTask ? (latestTask.report || {}) : {};
       const latestTaskContext = latestTask ? (latestTask.context || {}) : {};
+      const latestTaskTools = latestTask ? (latestTask.tools || {}) : {};
       const files = tables.files || { exists: false, row_count: 0 };
       const tasks = tables.analysis_tasks || { exists: false, row_count: 0 };
       const events = tables.analysis_events || { exists: false, row_count: 0 };
@@ -988,6 +1003,17 @@ def demo_page() -> HTMLResponse:
         `checkpoint_draft_report_status: ${latestTaskContext.checkpoint_draft_report_status || "none"}`,
         `checkpoint_latest_error_code: ${latestTaskContext.checkpoint_latest_error_code || "none"}`,
       ].join("\n") : "No latest task context summary loaded yet.";
+      latestTaskToolsPillEl.textContent = latestTask ? "Tools ready" : "No tasks";
+      latestTaskToolsMetaEl.textContent = latestTask
+        ? [`task_id: ${latestTask.task_id}`, `latest_tool_name: ${latestTaskTools.latest_tool_name || "none"}`].join(" | ")
+        : "No persisted task found yet.";
+      latestTaskToolsOutputEl.textContent = latestTask ? [
+        `tool_result_count: ${latestTaskTools.tool_result_count ?? 0}`,
+        `successful_tool_result_count: ${latestTaskTools.successful_tool_result_count ?? 0}`,
+        `failed_tool_result_count: ${latestTaskTools.failed_tool_result_count ?? 0}`,
+        `total_tool_elapsed_ms: ${latestTaskTools.total_tool_elapsed_ms ?? 0}`,
+        `latest_tool_name: ${latestTaskTools.latest_tool_name || "none"}`,
+      ].join("\n") : "No latest task tool summary loaded yet.";
 
       projectStatusSummaryEl.innerHTML = `
         <div class="summary-card">

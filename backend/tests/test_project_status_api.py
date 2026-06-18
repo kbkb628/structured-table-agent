@@ -66,20 +66,24 @@ def test_get_project_status_aggregates_session_store_event_summary():
     assert baseline_response.status_code == 200
     baseline_summary = baseline_response.json()["summary"]["session_store"]["event_summary"]
 
-    record_event(
-        warning_task_id,
-        "session_store_warning",
-        "session_store",
-        "session store downgraded to SQLite",
-        {"reason": "redis_unavailable"},
-    )
-    record_event(
-        recovered_task_id,
-        "session_state_recovered",
-        "session_store",
-        "session state recovered from granular Redis keys",
-        {"recovery_source": "sqlite_plus_granular_redis"},
-    )
+    with patch(
+        "app.storage.analysis_store._ts",
+        side_effect=["2099-12-31T23:59:58+00:00", "2099-12-31T23:59:59+00:00"],
+    ):
+        record_event(
+            warning_task_id,
+            "session_store_warning",
+            "session_store",
+            "session store downgraded to SQLite",
+            {"reason": "redis_unavailable"},
+        )
+        record_event(
+            recovered_task_id,
+            "session_state_recovered",
+            "session_store",
+            "session state recovered from granular Redis keys",
+            {"recovery_source": "sqlite_plus_granular_redis"},
+        )
 
     response = client.get("/api/project-status")
 
@@ -107,7 +111,18 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
         "current_step": "report",
         "completed_steps": ["match fields", "aggregate"],
         "intermediate_findings": [{"summary": "East leads."}],
-        "tool_results": [{"success": True, "tool_name": "groupby_aggregate"}],
+        "tool_results": [
+            {
+                "success": True,
+                "tool_name": "groupby_aggregate",
+                "metadata": {"elapsed_ms": 12},
+            },
+            {
+                "success": False,
+                "tool_name": "generate_chart",
+                "metadata": {"elapsed_ms": 7},
+            },
+        ],
         "chart_specs": [{"chart_type": "bar"}],
         "draft_report": {"title": "Draft report"},
         "final_report": {
@@ -215,3 +230,8 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["context"]["checkpoint_current_step"] == "report"
     assert latest_task["context"]["checkpoint_draft_report_status"] == "available"
     assert latest_task["context"]["checkpoint_latest_error_code"] == ""
+    assert latest_task["tools"]["tool_result_count"] == 2
+    assert latest_task["tools"]["successful_tool_result_count"] == 1
+    assert latest_task["tools"]["failed_tool_result_count"] == 1
+    assert latest_task["tools"]["total_tool_elapsed_ms"] == 19
+    assert latest_task["tools"]["latest_tool_name"] == "groupby_aggregate"

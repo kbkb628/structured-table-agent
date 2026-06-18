@@ -57,6 +57,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'business_context_count' in content
     assert 'top_business_context_title' in content
     assert 'checkpoint_current_step' in content
+    assert 'latest_task_tools_output' in content
+    assert 'tool_result_count' in content
+    assert 'successful_tool_result_count' in content
+    assert 'total_tool_elapsed_ms' in content
     assert 'id="project-status-summary"' in content
     assert 'id="project-status-output"' in content
     assert 'id="eval-summary"' in content

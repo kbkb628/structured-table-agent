@@ -96,6 +96,16 @@ def _latest_task_info() -> dict | None:
             "SELECT COUNT(*) FROM tool_call_logs WHERE task_id = ?",
             (task_id,),
         ).fetchone()
+        latest_tool_log = conn.execute(
+            """
+            SELECT tool_name
+            FROM tool_call_logs
+            WHERE task_id = ?
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (task_id,),
+        ).fetchone()
         event_count = conn.execute(
             "SELECT COUNT(*) FROM analysis_events WHERE task_id = ?",
             (task_id,),
@@ -125,6 +135,9 @@ def _latest_task_info() -> dict | None:
     chart_specs = state.get("chart_specs") or []
     context_checkpoint = state.get("context_checkpoint") or {}
     business_context = state.get("business_context") or []
+    tool_results = state.get("tool_results") or []
+    successful_tool_results = [item for item in tool_results if item.get("success") is True]
+    failed_tool_results = [item for item in tool_results if item.get("success") is False]
     return {
         "task_id": task_id,
         "status": status,
@@ -164,6 +177,20 @@ def _latest_task_info() -> dict | None:
             "checkpoint_current_step": context_checkpoint.get("current_step"),
             "checkpoint_draft_report_status": context_checkpoint.get("draft_report_status"),
             "checkpoint_latest_error_code": context_checkpoint.get("latest_error_code", ""),
+        },
+        "tools": {
+            "tool_result_count": len(tool_results),
+            "successful_tool_result_count": len(successful_tool_results),
+            "failed_tool_result_count": len(failed_tool_results),
+            "total_tool_elapsed_ms": sum(
+                int((item.get("metadata") or {}).get("elapsed_ms", 0))
+                for item in tool_results
+            ),
+            "latest_tool_name": (
+                latest_tool_log[0]
+                if latest_tool_log
+                else (tool_results[-1].get("tool_name") if tool_results else None)
+            ),
         },
     }
 

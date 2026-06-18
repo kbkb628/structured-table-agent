@@ -137,6 +137,10 @@ try {
         project_status_latest_task_top_business_context_title = $projectStatus.summary.latest_task.context.top_business_context_title
         project_status_latest_task_checkpoint_current_step = $projectStatus.summary.latest_task.context.checkpoint_current_step
         project_status_latest_task_checkpoint_draft_report_status = $projectStatus.summary.latest_task.context.checkpoint_draft_report_status
+        project_status_latest_task_tool_result_count = $projectStatus.summary.latest_task.tools.tool_result_count
+        project_status_latest_task_successful_tool_result_count = $projectStatus.summary.latest_task.tools.successful_tool_result_count
+        project_status_latest_task_failed_tool_result_count = $projectStatus.summary.latest_task.tools.failed_tool_result_count
+        project_status_latest_task_total_tool_elapsed_ms = $projectStatus.summary.latest_task.tools.total_tool_elapsed_ms
         project_status_files = $projectStatus.summary.database.tables.files.row_count
         project_status_tasks = $projectStatus.summary.database.tables.analysis_tasks.row_count
         provider_status_key_source = $providerStatus.api_key_source
