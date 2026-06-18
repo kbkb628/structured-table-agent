@@ -4,6 +4,7 @@
 如果需要把面试表述直接落到代码、接口、脚本和测试证据，可配合 [RESUME_EVIDENCE_MAP.md](./RESUME_EVIDENCE_MAP.md) 一起使用。
 如果需要按最短顺序做 2-5 分钟现场演示，可直接打开 [INTERVIEW_DEMO_CHECKLIST.md](./INTERVIEW_DEMO_CHECKLIST.md)。
 如果需要在演示前快速确认服务、provider 和脚本状态，可先按 [INTERVIEW_DEMO_PREFLIGHT.md](./INTERVIEW_DEMO_PREFLIGHT.md) 自检。
+如果需要判断当前仓库是否适合封板交付，可再查看 [RELEASE_READINESS_AUDIT.md](./RELEASE_READINESS_AUDIT.md)。
 
 ## 1. 项目目标
 

@@ -1,6 +1,7 @@
 # Interview Demo Preflight
 
 本文用于面试演示前的最后检查，目标是在 3-10 分钟内确认服务、provider、运行态聚合和演示脚本都处于可展示状态，避免现场临时排错。
+如果演示结束后需要判断当前版本是否已经适合封板，可再回看 [RELEASE_READINESS_AUDIT.md](./RELEASE_READINESS_AUDIT.md)。
 
 ## 演示前检查单
 

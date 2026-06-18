@@ -166,6 +166,7 @@ def test_interview_demo_preflight_checklist_covers_startup_and_failure_checks():
         encoding="utf-8"
     )
 
+    assert "RELEASE_READINESS_AUDIT.md" in content
     assert "演示前检查单" in content
     assert "uvicorn app.main:app" in content
     assert "/api/llm/provider-status" in content
@@ -176,6 +177,23 @@ def test_interview_demo_preflight_checklist_covers_startup_and_failure_checks():
     assert "预期现象" in content
     assert "失败排查" in content
     assert "fixed_eval_pass_rate" in content
+
+
+def test_release_readiness_audit_summarizes_ship_blockers_and_verification():
+    content = (Path(__file__).resolve().parents[2] / "docs" / "RELEASE_READINESS_AUDIT.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "可封板状态审计" in content
+    assert "已具备" in content
+    assert "仍未实现" in content
+    assert "建议封板前确认" in content
+    assert "uvicorn app.main:app" in content
+    assert "pytest -q" in content
+    assert "/api/project-status" in content
+    assert "demo_mvp.ps1" in content
+    assert "embedding / 向量检索 / rerank" in content
+    assert "DockerSandbox" in content
 
 
 def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
@@ -269,6 +287,7 @@ def test_root_readme_matches_current_runtime_truth():
     assert "docs/RESUME_EVIDENCE_MAP.md" in content
     assert "docs/INTERVIEW_DEMO_CHECKLIST.md" in content
     assert "docs/INTERVIEW_DEMO_PREFLIGHT.md" in content
+    assert "docs/RELEASE_READINESS_AUDIT.md" in content
     assert "真实 Tongyi Qianwen Provider" in content or "真实通义千问 Provider" in content
     assert "GET /api/project-status" in content
     assert "demo_mvp.ps1" in content
@@ -368,6 +387,7 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "RESUME_EVIDENCE_MAP.md" in content
     assert "INTERVIEW_DEMO_CHECKLIST.md" in content
     assert "INTERVIEW_DEMO_PREFLIGHT.md" in content
+    assert "RELEASE_READINESS_AUDIT.md" in content
     assert "demo_mvp.ps1" in content
     assert "provider smoke" in content or "provider smoke failed" in content or "provider 解析结果" in content
     assert "fixed eval" in content or "质量指标" in content
