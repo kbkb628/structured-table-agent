@@ -115,12 +115,12 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
             {
                 "success": True,
                 "tool_name": "groupby_aggregate",
-                "metadata": {"elapsed_ms": 12},
+                "metadata": {"elapsed_ms": 12, "retry_attempts": 1, "retry_status": "recovered"},
             },
             {
                 "success": False,
                 "tool_name": "generate_chart",
-                "metadata": {"elapsed_ms": 7},
+                "metadata": {"elapsed_ms": 7, "retry_attempts": 2, "retry_status": "exhausted"},
             },
         ],
         "chart_specs": [{"chart_type": "bar"}],
@@ -251,6 +251,9 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["tools"]["failed_tool_result_count"] == 1
     assert latest_task["tools"]["total_tool_elapsed_ms"] == 19
     assert latest_task["tools"]["latest_tool_name"] == "groupby_aggregate"
+    assert latest_task["tools"]["retried_tool_result_count"] == 2
+    assert latest_task["tools"]["retry_attempts_total"] == 3
+    assert latest_task["tools"]["latest_retry_status"] == "exhausted"
     assert latest_task["errors"]["error_count"] == 1
     assert latest_task["errors"]["latest_error_code"] == "CHART_DEGRADED"
     assert latest_task["errors"]["latest_error_message"] == "chart generation degraded to empty preview"

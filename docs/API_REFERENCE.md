@@ -297,7 +297,7 @@
 - `summary.latest_task.context` 会暴露最新任务的上下文摘要，包括 `business_context_count`、`top_business_context_title`、`checkpoint_current_step`、`checkpoint_draft_report_status` 和 `checkpoint_latest_error_code`
 - `summary.latest_task.semantics` 会暴露最新任务的语义与规划摘要，包括 `analysis_goal`、`analysis_plan_count`、`current_step`、`completed_step_count`、`finding_count`、`dimension_field` 和 `metric_count`
 - `summary.latest_task.errors` 会暴露最新任务的失败与降级摘要，包括 `error_count`、`latest_error_code`、`latest_error_message` 和 `has_degradation`
-- `summary.latest_task.tools` 会暴露最新任务的工具执行摘要，包括 `tool_result_count`、`successful_tool_result_count`、`failed_tool_result_count`、`total_tool_elapsed_ms` 和 `latest_tool_name`
+- `summary.latest_task.tools` 会暴露最新任务的工具执行摘要，包括 `tool_result_count`、`successful_tool_result_count`、`failed_tool_result_count`、`retried_tool_result_count`、`retry_attempts_total`、`latest_retry_status`、`total_tool_elapsed_ms` 和 `latest_tool_name`
 
 ## 11. 相关验证命令
 
@@ -342,6 +342,8 @@ cd E:\bgagent1
 - `project_status_latest_task_analysis_plan_count`
 - `project_status_latest_task_dimension_field`
 - `project_status_latest_task_tool_result_count`
+- `project_status_latest_task_retried_tool_result_count`
+- `project_status_latest_task_retry_attempts_total`
 - `project_status_latest_task_total_tool_elapsed_ms`
 - `project_status_latest_task_error_count`
 - `project_status_latest_task_has_degradation`

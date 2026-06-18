@@ -143,6 +143,11 @@ def _latest_task_info() -> dict | None:
     errors = state.get("errors") or []
     successful_tool_results = [item for item in tool_results if item.get("success") is True]
     failed_tool_results = [item for item in tool_results if item.get("success") is False]
+    retried_tool_results = [
+        item
+        for item in tool_results
+        if int((item.get("metadata") or {}).get("retry_attempts", 0) or 0) > 0
+    ]
     latest_error = errors[-1] if errors else {}
     return {
         "task_id": task_id,
@@ -223,10 +228,20 @@ def _latest_task_info() -> dict | None:
                 int((item.get("metadata") or {}).get("elapsed_ms", 0))
                 for item in tool_results
             ),
+            "retried_tool_result_count": len(retried_tool_results),
+            "retry_attempts_total": sum(
+                int((item.get("metadata") or {}).get("retry_attempts", 0) or 0)
+                for item in tool_results
+            ),
             "latest_tool_name": (
                 latest_tool_log[0]
                 if latest_tool_log
                 else (tool_results[-1].get("tool_name") if tool_results else None)
+            ),
+            "latest_retry_status": (
+                (tool_results[-1].get("metadata") or {}).get("retry_status")
+                if tool_results
+                else None
             ),
         },
     }

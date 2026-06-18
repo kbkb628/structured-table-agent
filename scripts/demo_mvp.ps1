@@ -148,6 +148,9 @@ try {
         project_status_latest_task_successful_tool_result_count = $projectStatus.summary.latest_task.tools.successful_tool_result_count
         project_status_latest_task_failed_tool_result_count = $projectStatus.summary.latest_task.tools.failed_tool_result_count
         project_status_latest_task_total_tool_elapsed_ms = $projectStatus.summary.latest_task.tools.total_tool_elapsed_ms
+        project_status_latest_task_retried_tool_result_count = $projectStatus.summary.latest_task.tools.retried_tool_result_count
+        project_status_latest_task_retry_attempts_total = $projectStatus.summary.latest_task.tools.retry_attempts_total
+        project_status_latest_task_latest_retry_status = $projectStatus.summary.latest_task.tools.latest_retry_status
         project_status_latest_task_error_count = $projectStatus.summary.latest_task.errors.error_count
         project_status_latest_task_latest_error_code = $projectStatus.summary.latest_task.errors.latest_error_code
         project_status_latest_task_has_degradation = $projectStatus.summary.latest_task.errors.has_degradation

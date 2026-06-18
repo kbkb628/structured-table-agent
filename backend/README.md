@@ -245,6 +245,8 @@ Key summary fields exposed by the script include:
 - `project_status_latest_task_analysis_plan_count`
 - `project_status_latest_task_dimension_field`
 - `project_status_latest_task_tool_result_count`
+- `project_status_latest_task_retried_tool_result_count`
+- `project_status_latest_task_retry_attempts_total`
 - `project_status_latest_task_total_tool_elapsed_ms`
 - `project_status_latest_task_error_count`
 - `project_status_latest_task_has_degradation`

@@ -194,6 +194,9 @@
   - `project_status_latest_task_tool_result_count`
   - `project_status_latest_task_successful_tool_result_count`
   - `project_status_latest_task_failed_tool_result_count`
+  - `project_status_latest_task_retried_tool_result_count`
+  - `project_status_latest_task_retry_attempts_total`
+  - `project_status_latest_task_latest_retry_status`
   - `project_status_latest_task_total_tool_elapsed_ms`
   - `project_status_latest_task_error_count`
   - `project_status_latest_task_latest_error_code`

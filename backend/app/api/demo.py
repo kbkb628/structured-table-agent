@@ -1079,6 +1079,9 @@ def demo_page() -> HTMLResponse:
         `successful_tool_result_count: ${latestTaskTools.successful_tool_result_count ?? 0}`,
         `failed_tool_result_count: ${latestTaskTools.failed_tool_result_count ?? 0}`,
         `total_tool_elapsed_ms: ${latestTaskTools.total_tool_elapsed_ms ?? 0}`,
+        `retried_tool_result_count: ${latestTaskTools.retried_tool_result_count ?? 0}`,
+        `retry_attempts_total: ${latestTaskTools.retry_attempts_total ?? 0}`,
+        `latest_retry_status: ${latestTaskTools.latest_retry_status || "none"}`,
         `latest_tool_name: ${latestTaskTools.latest_tool_name || "none"}`,
       ].join("\n") : "No latest task tool summary loaded yet.";
       latestTaskErrorsPillEl.textContent = latestTask
