@@ -21,6 +21,26 @@ def test_match_fields_detects_region_sales_question():
     assert result.data["planned_tool_calls"][0]["group_by"] == "region"
 
 
+def test_match_fields_detects_chinese_region_sales_question():
+    file_profile = {
+        "columns": [
+            {"name": "region", "type": "string"},
+            {"name": "sales_amount", "type": "number"},
+            {"name": "channel", "type": "string"},
+        ]
+    }
+
+    result = match_fields("按地区汇总销售额并给出结论", file_profile)
+
+    assert result.success is True
+    assert result.data["dimension_field"] == "region"
+    assert result.data["metric_field"] == "sales_amount"
+    assert result.data["aggregation"] == "sum"
+    assert result.data["planned_tool_sequence"] == ["groupby_aggregate", "generate_chart", "generate_report"]
+    assert result.data["planned_tool_calls"][0]["tool_name"] == "groupby_aggregate"
+    assert result.data["planned_tool_calls"][0]["group_by"] == "region"
+
+
 def test_match_fields_builds_channel_dual_metric_plan():
     file_profile = {
         "columns": [

@@ -83,6 +83,81 @@ class QwenClient(LLMClient):
         except json.JSONDecodeError as exc:
             raise QwenResponseError("Qwen message content was not valid JSON.") from exc
 
+    def _normalize_string_list(self, values: object, preferred_keys: tuple[str, ...]) -> list[str]:
+        if not isinstance(values, list):
+            return []
+
+        normalized: list[str] = []
+        for item in values:
+            if isinstance(item, str) and item.strip():
+                normalized.append(item.strip())
+                continue
+            if not isinstance(item, dict):
+                continue
+            for key in preferred_keys:
+                value = item.get(key)
+                if isinstance(value, str) and value.strip():
+                    normalized.append(value.strip())
+                    break
+        return normalized
+
+    def _normalize_key_findings(self, values: object) -> list[dict]:
+        if not isinstance(values, list):
+            return []
+
+        normalized: list[dict] = []
+        for item in values:
+            if not isinstance(item, dict):
+                continue
+            finding = item.get("finding")
+            if not isinstance(finding, str) or not finding.strip():
+                continue
+            evidence = item.get("evidence") or item.get("reason") or item.get("details")
+            if not isinstance(evidence, str) or not evidence.strip():
+                scalar_details = []
+                for key, value in item.items():
+                    if key == "finding" or isinstance(value, (dict, list)):
+                        continue
+                    scalar_details.append(f"{key}={value}")
+                evidence = "; ".join(scalar_details) if scalar_details else "Derived from deterministic tool findings."
+            source_tool = item.get("source_tool")
+            if not isinstance(source_tool, str) or not source_tool.strip():
+                source_tool = "deterministic_tool_results"
+            normalized.append(
+                {
+                    "finding": finding.strip(),
+                    "evidence": evidence.strip(),
+                    "source_tool": source_tool.strip(),
+                }
+            )
+        return normalized
+
+    def _normalize_report_payload(self, payload: dict, analysis_goal: str) -> dict:
+        normalized = dict(payload)
+        normalized["analysis_goal"] = (
+            normalized.get("analysis_goal").strip()
+            if isinstance(normalized.get("analysis_goal"), str) and normalized.get("analysis_goal").strip()
+            else analysis_goal
+        )
+        normalized["key_findings"] = self._normalize_key_findings(normalized.get("key_findings"))
+        normalized["chart_explanations"] = self._normalize_string_list(
+            normalized.get("chart_explanations"),
+            ("description", "explanation", "summary"),
+        )
+        normalized["business_suggestions"] = self._normalize_string_list(
+            normalized.get("business_suggestions"),
+            ("suggestion", "advice", "recommendation"),
+        )
+        normalized["data_limitations"] = self._normalize_string_list(
+            normalized.get("data_limitations"),
+            ("limitation", "description", "detail"),
+        )
+        normalized["next_steps"] = self._normalize_string_list(
+            normalized.get("next_steps"),
+            ("step", "description", "suggestion"),
+        )
+        return normalized
+
     def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
         payload = self._chat_json(
             GOAL_SYSTEM_PROMPT,
@@ -132,7 +207,8 @@ class QwenClient(LLMClient):
                 "business_context": business_context,
             },
         )
-        return FinalReport.model_validate(payload).model_dump()
+        normalized_payload = self._normalize_report_payload(payload, analysis_goal)
+        return FinalReport.model_validate(normalized_payload).model_dump()
 
     def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
         payload = self._chat_json(

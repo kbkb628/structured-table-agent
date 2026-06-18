@@ -119,6 +119,62 @@ def test_qwen_client_generates_schema_valid_report(monkeypatch):
     assert validated.title == "Regional Sales Report"
 
 
+def test_qwen_client_normalizes_report_like_real_qwen_response(monkeypatch):
+    from app.llm.qwen_client import QwenClient
+
+    monkeypatch.setattr(
+        "app.llm.qwen_client.urlopen",
+        lambda request, timeout: StubResponse(
+            200,
+            _chat_payload(
+                json.dumps(
+                    {
+                        "title": "地区销售分析报告",
+                        "analysis_goal": "按地区汇总销售额并给出结论",
+                        "key_findings": [
+                            {
+                                "finding": "东部地区销售额最高。",
+                                "reason": "东部地区销售额总和显著领先。",
+                            },
+                            {
+                                "finding": "四大区域之间存在小幅差异。",
+                                "delta_avg": 876.0,
+                            },
+                        ],
+                        "chart_explanations": [
+                            {
+                                "chart_type": "bar",
+                                "description": "柱状图展示各地区销售额对比。",
+                            }
+                        ],
+                        "business_suggestions": [
+                            {"suggestion": "优先复用东部地区的销售策略。"},
+                            {"suggestion": "持续跟踪区域销售变化。"},
+                        ],
+                        "data_limitations": ["当前仅基于已上传销售数据。"],
+                        "next_steps": ["继续分析不同渠道的地区表现。"],
+                    }
+                )
+            ),
+        ),
+    )
+
+    client = QwenClient(api_key="test-key", base_url="https://example.com/v1", model="qwen-plus")
+    report = client.generate_report(
+        analysis_goal="按地区汇总销售额并给出结论",
+        intermediate_findings=[{"summary": "东部地区销售额最高。"}],
+        chart_specs=[{"chart_type": "bar"}],
+        business_context=[{"title": "Region"}],
+    )
+
+    validated = FinalReport.model_validate(report)
+    assert validated.key_findings[0].finding == "东部地区销售额最高。"
+    assert validated.key_findings[0].evidence == "东部地区销售额总和显著领先。"
+    assert validated.key_findings[0].source_tool == "deterministic_tool_results"
+    assert validated.chart_explanations == ["柱状图展示各地区销售额对比。"]
+    assert validated.business_suggestions == ["优先复用东部地区的销售策略。", "持续跟踪区域销售变化。"]
+
+
 def test_qwen_client_raises_on_invalid_json(monkeypatch):
     from app.llm.qwen_client import QwenClient, QwenResponseError
 

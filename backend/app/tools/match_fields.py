@@ -72,16 +72,19 @@ def match_fields(question: str, file_profile: dict) -> ToolResponse:
     lowered = question.lower()
     column_names = [column["name"] for column in file_profile["columns"]]
 
+    def contains_any(*terms: str) -> bool:
+        return any(term in question or term in lowered for term in terms)
+
     def pick_dimension() -> str | None:
-        if ("trend" in lowered or "date" in lowered or "time" in lowered) and "order_date" in column_names:
+        if contains_any("trend", "date", "time", "趋势", "日期", "时间") and "order_date" in column_names:
             return "order_date"
         keyword_pairs = [
-            ("category", "product_category"),
-            ("region", "region"),
-            ("channel", "channel"),
+            (("category", "品类", "类别"), "product_category"),
+            (("region", "地区", "区域"), "region"),
+            (("channel", "渠道"), "channel"),
         ]
-        for keyword, field_name in keyword_pairs:
-            if keyword in lowered and field_name in column_names:
+        for keywords, field_name in keyword_pairs:
+            if any(keyword in question or keyword in lowered for keyword in keywords) and field_name in column_names:
                 return field_name
         return None
 
@@ -93,11 +96,11 @@ def match_fields(question: str, file_profile: dict) -> ToolResponse:
     warnings: list[str] = []
     analysis_type = "single_metric"
 
-    wants_order_count = has_term("order", "count")
-    wants_sales = "sales" in lowered
-    wants_share = "share" in lowered
-    wants_trend = "trend" in lowered or ("date" in lowered and wants_sales)
-    wants_anomaly = "anomal" in lowered or "outlier" in lowered
+    wants_order_count = has_term("order", "count") or contains_any("订单数", "订单量", "单量")
+    wants_sales = contains_any("sales", "sale", "revenue", "gmv", "销售额", "销售金额", "金额", "成交额")
+    wants_share = contains_any("share", "占比", "比例", "贡献")
+    wants_trend = contains_any("trend", "趋势") or (contains_any("date", "日期", "时间") and wants_sales)
+    wants_anomaly = contains_any("anomal", "outlier", "异常", "离群")
 
     if dimension_field == "channel" and wants_order_count and wants_sales:
         analysis_type = "channel_performance"
