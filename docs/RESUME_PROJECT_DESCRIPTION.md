@@ -13,7 +13,7 @@
 - 使用 LangGraph 编排“字段匹配 - 工具执行 - 结果校验 - 下一步路由 - 图表生成 - 报告生成 - 规则评估”的最小状态流，并通过 `route_next_step` 支持多指标问题的最小动态推进。
 - 封装 pandas / DuckDB 与生成 Plotly 风格图表配置的受控分析工具，通过统一 `ToolResponse` 和 Pydantic schema 约束参数、返回值和错误信息，降低字段错配和结构漂移风险。
 - 在受控工具链中补齐占比分析、趋势分析和基于 z-score 的异常检测能力，持续保持数值结论来自确定性聚合结果而非模型臆断。
-- 设计可替换 `LLMClient` 抽象，完成 `QwenClient` 与 `MockLLMClient` 双实现，并通过 provider 工厂支持真实 Tongyi Qianwen 接入、显式降级与本地回退。
+- 设计可替换 `LLMClient` 抽象，完成 `QwenClient` 与 `MockLLMClient` 双实现，并通过 provider 工厂支持真实 Tongyi Qianwen 接入、缺少可用 API key 时的显式降级与本地回退。
 - 将真实 LLM 接入到分析目标生成、分析计划生成、最终报告组织和补充型 `llm_judgement`，同时保持数值计算仍由 DuckDB / 工具链完成，避免模型直接编造结果。
 - 构建本地混合检索模块，基于 JSONL 知识库实现关键词、短语命中、字段加权和 BM25 风格评分，为字段语义理解和分析计划生成提供轻量业务上下文增强。
 - 设计 Redis 优先、SQLite 降级的会话状态存储方案，并将 `draft_report`、中间发现、业务上下文和 `context_checkpoint` 拆分为细粒度 key，增强过程恢复和追踪能力。

@@ -128,6 +128,7 @@ def test_resume_project_description_mentions_qwen_and_project_status_delivery():
     assert "z-score" in content
     assert "QwenClient" in content
     assert "MockLLMClient" in content
+    assert "缺少可用 API key 时的显式降级" in content
     assert "llm_judgement" in content
     assert "BM25" in content
     assert "context_checkpoint" in content
@@ -153,6 +154,7 @@ def test_resume_evidence_map_links_resume_claims_to_runtime_evidence():
     assert "z-score" in content
     assert "QwenClient" in content
     assert "MockLLMClient" in content
+    assert "缺少可用 API key 时" in content
     assert "llm_judgement" in content
     assert "score_breakdown" in content
     assert "context_checkpoint" in content
@@ -420,6 +422,7 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "RELEASE_READINESS_AUDIT.md" in content
     assert "demo_mvp.ps1" in content
     assert "Plotly 风格图表配置" in content or "plotly_spec" in content
+    assert "缺少可用 API key" in content
     assert "provider smoke" in content or "provider smoke failed" in content or "provider 解析结果" in content
     assert "fixed eval" in content or "质量指标" in content
     assert "project_status_latest_task_has_context_checkpoint" in content

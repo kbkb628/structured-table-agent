@@ -47,7 +47,7 @@ Runtime finding summary fields for demo diagnostics: `project_status_latest_task
 
 - `LLMClient` 抽象接口
 - `QwenClient` 真实实现
-- `MockLLMClient` 本地回退实现
+- `MockLLMClient` 本地回退实现，用于 `LLM_PROVIDER=qwen` 但缺少可用 API key 且允许 fallback 的场景
 - `get_llm_client()` provider 工厂
 - `GET /api/llm/provider-status`
 - `POST /api/llm/provider-smoke`
@@ -125,7 +125,7 @@ Runtime finding summary fields for demo diagnostics: `project_status_latest_task
 
 - 已经接入真实 Tongyi Qianwen Provider
 - 默认可以通过 `LLM_PROVIDER=qwen` 切到真实模型
-- 本地仍保留 `mock` 回退路径
+- 本地仍保留 `mock` 回退路径；如果选择 `qwen` 但缺少可用 API key，也可以通过 `LLM_ALLOW_FALLBACK=true` 走显式本地回退
 - 当前 RAG 是 `knowledge_base.jsonl + keyword_retriever` 的本地混合检索实现，不是纯关键词版本
 - 当前 SessionStore 会优先尝试 Redis，不可用时显式降级到 SQLite
 - 当前已经实现 `draft_report`、`final_report`、`llm_judgement`、`business_context`、`intermediate_findings` 和 `context_checkpoint` 的 Redis 细粒度持久化与回填

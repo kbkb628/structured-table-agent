@@ -87,7 +87,7 @@
   - `backend/tests/test_analysis_runner.py`
   - `backend/tests/test_analysis_api.py`
 
-### 5. 简历说法：设计可替换 `LLMClient` 抽象，完成 `QwenClient` 与 `MockLLMClient` 双实现，并通过 provider 工厂支持真实 Tongyi Qianwen 接入
+### 5. 简历说法：设计可替换 `LLMClient` 抽象，完成 `QwenClient` 与 `MockLLMClient` 双实现，并通过 provider 工厂支持真实 Tongyi Qianwen 接入，以及在缺少可用 API key 时按配置执行显式本地回退
 
 - 代码证据
   - `backend/app/llm/base.py`
