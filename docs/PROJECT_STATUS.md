@@ -218,9 +218,19 @@
   - `project_status_latest_task_checkpoint_business_context_title_count`
   - `project_status_latest_task_checkpoint_business_context_titles`
   - `project_status_latest_task_checkpoint_draft_report_status`
+  - `project_status_latest_task_has_context_checkpoint`
+  - `project_status_latest_task_has_draft_report`
+  - `project_status_latest_task_has_final_report`
+  - `project_status_latest_task_eval_has_dimension_scores`
+  - `project_status_latest_task_latest_event_at`
+  - `project_status_latest_task_llm_issue_count`
+  - `project_status_latest_task_next_step_count`
+  - `project_status_latest_task_checkpoint_latest_error_code`
   - `project_status_latest_task_analysis_goal`
   - `project_status_latest_task_analysis_plan_count`
+  - `project_status_latest_task_current_step`
   - `project_status_latest_task_completed_step_count`
+  - `project_status_latest_task_finding_count`
   - `project_status_latest_task_dimension_field`
   - `project_status_latest_task_match_analysis_type`
   - `project_status_latest_task_candidate_field_count`
@@ -233,9 +243,11 @@
   - `project_status_latest_task_retried_tool_result_count`
   - `project_status_latest_task_retry_attempts_total`
   - `project_status_latest_task_latest_retry_status`
+  - `project_status_latest_task_latest_tool_name`
   - `project_status_latest_task_total_tool_elapsed_ms`
   - `project_status_latest_task_error_count`
   - `project_status_latest_task_latest_error_code`
+  - `project_status_latest_task_latest_error_message`
   - `project_status_latest_task_has_degradation`
   - `project_status_latest_task_has_llm_judgement`
   - `project_status_latest_task_supported_by_tools`

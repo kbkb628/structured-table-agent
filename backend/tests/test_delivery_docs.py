@@ -22,6 +22,16 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "summary.session_store" in content or "session store" in content
     assert "当前 6 个真实支持 case" in content
     assert "provider_smoke_error_message" in content
+    assert "project_status_latest_task_has_context_checkpoint" in content
+    assert "project_status_latest_task_eval_has_dimension_scores" in content
+    assert "project_status_latest_task_latest_event_at" in content
+    assert "project_status_latest_task_llm_issue_count" in content
+    assert "project_status_latest_task_next_step_count" in content
+    assert "project_status_latest_task_checkpoint_latest_error_code" in content
+    assert "project_status_latest_task_current_step" in content
+    assert "project_status_latest_task_finding_count" in content
+    assert "project_status_latest_task_latest_tool_name" in content
+    assert "project_status_latest_task_latest_error_message" in content
     assert "fixed_eval_average_trace_completeness" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content
     assert "fixed_eval_average_chart_validity" in content
@@ -49,6 +59,16 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "TONGYI_API_KEY" in content or "OPENAI_API_KEY_0011AI" in content
     assert "provider smoke returned `ok = true`" in content or "401 invalid_api_key" in content
     assert "provider_smoke_error_message" in content
+    assert "project_status_latest_task_has_context_checkpoint" in content
+    assert "project_status_latest_task_eval_has_dimension_scores" in content
+    assert "project_status_latest_task_latest_event_at" in content
+    assert "project_status_latest_task_llm_issue_count" in content
+    assert "project_status_latest_task_next_step_count" in content
+    assert "project_status_latest_task_checkpoint_latest_error_code" in content
+    assert "project_status_latest_task_current_step" in content
+    assert "project_status_latest_task_finding_count" in content
+    assert "project_status_latest_task_latest_tool_name" in content
+    assert "project_status_latest_task_latest_error_message" in content
     assert "fixed_eval_average_trace_completeness" in content
     assert "fixed_eval_retried_tool_calls" in content
     assert "fixed_eval_retry_attempts_total" in content
@@ -67,6 +87,16 @@ def test_root_readme_matches_current_runtime_truth():
     assert "demo_mvp.ps1" in content
     assert "未实现真实 LLM Provider" not in content
     assert "provider_smoke_error_message" in content
+    assert "project_status_latest_task_has_context_checkpoint" in content
+    assert "project_status_latest_task_eval_has_dimension_scores" in content
+    assert "project_status_latest_task_latest_event_at" in content
+    assert "project_status_latest_task_llm_issue_count" in content
+    assert "project_status_latest_task_next_step_count" in content
+    assert "project_status_latest_task_checkpoint_latest_error_code" in content
+    assert "project_status_latest_task_current_step" in content
+    assert "project_status_latest_task_finding_count" in content
+    assert "project_status_latest_task_latest_tool_name" in content
+    assert "project_status_latest_task_latest_error_message" in content
     assert "fixed_eval_average_report_completeness" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content
     assert "fixed_eval_average_chart_validity" in content
@@ -97,6 +127,16 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "demo_mvp.ps1" in content
     assert "provider smoke" in content or "provider smoke failed" in content or "provider 解析结果" in content
     assert "fixed eval" in content or "质量指标" in content
+    assert "project_status_latest_task_has_context_checkpoint" in content
+    assert "project_status_latest_task_eval_has_dimension_scores" in content
+    assert "project_status_latest_task_latest_event_at" in content
+    assert "project_status_latest_task_llm_issue_count" in content
+    assert "project_status_latest_task_next_step_count" in content
+    assert "project_status_latest_task_checkpoint_latest_error_code" in content
+    assert "project_status_latest_task_current_step" in content
+    assert "project_status_latest_task_finding_count" in content
+    assert "project_status_latest_task_latest_tool_name" in content
+    assert "project_status_latest_task_latest_error_message" in content
     assert "fixed_eval_retried_tool_calls" in content
     assert "fixed_eval_retry_attempts_total" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content

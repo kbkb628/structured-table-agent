@@ -51,6 +51,9 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_session_store_latest_recovered_segment_count" in script
     assert "project_status_session_store_latest_recovered_segments" in script
     assert "project_status_latest_task_has_business_context" in script
+    assert "project_status_latest_task_has_context_checkpoint" in script
+    assert "project_status_latest_task_has_draft_report" in script
+    assert "project_status_latest_task_has_final_report" in script
     assert "project_status_latest_task_has_llm_judgement" in script
     assert "project_status_latest_task_supported_by_tools" in script
     assert "project_status_latest_task_has_findings" in script
@@ -59,6 +62,7 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_eval_overall_score" in script
     assert "project_status_latest_task_eval_issue_count" in script
     assert "project_status_latest_task_eval_suggestion_count" in script
+    assert "project_status_latest_task_eval_has_dimension_scores" in script
     assert "project_status_latest_task_eval_schema_valid" in script
     assert "project_status_latest_task_eval_tool_success_rate" in script
     assert "project_status_latest_task_eval_tool_elapsed_ms_total" in script
@@ -70,6 +74,8 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_planned_tool_call_count" in script
     assert "project_status_latest_task_event_count" in script
     assert "project_status_latest_task_latest_event_type" in script
+    assert "project_status_latest_task_latest_event_at" in script
+    assert "project_status_latest_task_llm_issue_count" in script
     assert "project_status_latest_task_route_decision_count" in script
     assert "project_status_latest_task_continued_route_decision_count" in script
     assert "project_status_latest_task_finished_route_decision_count" in script
@@ -78,6 +84,7 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_key_finding_count" in script
     assert "project_status_latest_task_business_suggestion_count" in script
     assert "project_status_latest_task_data_limitation_count" in script
+    assert "project_status_latest_task_next_step_count" in script
     assert "project_status_latest_task_business_context_count" in script
     assert "project_status_latest_task_top_business_context_title" in script
     assert "project_status_latest_task_top_business_context_score" in script
@@ -94,9 +101,12 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_checkpoint_business_context_title_count" in script
     assert "project_status_latest_task_checkpoint_business_context_titles" in script
     assert "project_status_latest_task_checkpoint_draft_report_status" in script
+    assert "project_status_latest_task_checkpoint_latest_error_code" in script
     assert "project_status_latest_task_analysis_goal" in script
     assert "project_status_latest_task_analysis_plan_count" in script
+    assert "project_status_latest_task_current_step" in script
     assert "project_status_latest_task_completed_step_count" in script
+    assert "project_status_latest_task_finding_count" in script
     assert "project_status_latest_task_dimension_field" in script
     assert "project_status_latest_task_metric_count" in script
     assert "project_status_latest_task_match_analysis_type" in script
@@ -109,9 +119,11 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_total_tool_elapsed_ms" in script
     assert "project_status_latest_task_retried_tool_result_count" in script
     assert "project_status_latest_task_retry_attempts_total" in script
+    assert "project_status_latest_task_latest_tool_name" in script
     assert "project_status_latest_task_latest_retry_status" in script
     assert "project_status_latest_task_error_count" in script
     assert "project_status_latest_task_latest_error_code" in script
+    assert "project_status_latest_task_latest_error_message" in script
     assert "project_status_latest_task_has_degradation" in script
 
 

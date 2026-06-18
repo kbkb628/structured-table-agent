@@ -123,6 +123,9 @@ try {
         project_status_session_store_latest_recovered_segment_count = $projectStatus.summary.session_store.event_summary.latest_recovered_segment_count
         project_status_session_store_latest_recovered_segments = $projectStatus.summary.session_store.event_summary.latest_recovered_segments
         project_status_latest_task_has_business_context = $projectStatus.summary.latest_task.artifacts.has_business_context
+        project_status_latest_task_has_context_checkpoint = $projectStatus.summary.latest_task.artifacts.has_context_checkpoint
+        project_status_latest_task_has_draft_report = $projectStatus.summary.latest_task.artifacts.has_draft_report
+        project_status_latest_task_has_final_report = $projectStatus.summary.latest_task.artifacts.has_final_report
         project_status_latest_task_has_llm_judgement = $projectStatus.summary.latest_task.artifacts.has_llm_judgement
         project_status_latest_task_supported_by_tools = $projectStatus.summary.latest_task.judgement.supported_by_tools
         project_status_latest_task_has_findings = $projectStatus.summary.latest_task.judgement.has_findings
@@ -131,6 +134,7 @@ try {
         project_status_latest_task_eval_overall_score = $projectStatus.summary.latest_task.evaluation.overall_score
         project_status_latest_task_eval_issue_count = $projectStatus.summary.latest_task.evaluation.issue_count
         project_status_latest_task_eval_suggestion_count = $projectStatus.summary.latest_task.evaluation.suggestion_count
+        project_status_latest_task_eval_has_dimension_scores = $projectStatus.summary.latest_task.evaluation.has_dimension_scores
         project_status_latest_task_eval_schema_valid = $projectStatus.summary.latest_task.evaluation.schema_valid
         project_status_latest_task_eval_tool_success_rate = $projectStatus.summary.latest_task.evaluation.tool_success_rate
         project_status_latest_task_eval_tool_elapsed_ms_total = $projectStatus.summary.latest_task.evaluation.tool_elapsed_ms_total
@@ -142,6 +146,8 @@ try {
         project_status_latest_task_planned_tool_call_count = $projectStatus.summary.latest_task.process.planned_tool_call_count
         project_status_latest_task_event_count = $projectStatus.summary.latest_task.process.event_count
         project_status_latest_task_latest_event_type = $projectStatus.summary.latest_task.process.latest_event_type
+        project_status_latest_task_latest_event_at = $projectStatus.summary.latest_task.process.latest_event_at
+        project_status_latest_task_llm_issue_count = $projectStatus.summary.latest_task.process.llm_issue_count
         project_status_latest_task_route_decision_count = $projectStatus.summary.latest_task.process.route_decision_count
         project_status_latest_task_continued_route_decision_count = $projectStatus.summary.latest_task.process.continued_route_decision_count
         project_status_latest_task_finished_route_decision_count = $projectStatus.summary.latest_task.process.finished_route_decision_count
@@ -150,6 +156,7 @@ try {
         project_status_latest_task_key_finding_count = $projectStatus.summary.latest_task.report.key_finding_count
         project_status_latest_task_business_suggestion_count = $projectStatus.summary.latest_task.report.business_suggestion_count
         project_status_latest_task_data_limitation_count = $projectStatus.summary.latest_task.report.data_limitation_count
+        project_status_latest_task_next_step_count = $projectStatus.summary.latest_task.report.next_step_count
         project_status_latest_task_business_context_count = $projectStatus.summary.latest_task.context.business_context_count
         project_status_latest_task_top_business_context_title = $projectStatus.summary.latest_task.context.top_business_context_title
         project_status_latest_task_top_business_context_score = $projectStatus.summary.latest_task.context.top_business_context_score
@@ -166,9 +173,12 @@ try {
         project_status_latest_task_checkpoint_business_context_title_count = $projectStatus.summary.latest_task.context.checkpoint_business_context_title_count
         project_status_latest_task_checkpoint_business_context_titles = $projectStatus.summary.latest_task.context.checkpoint_business_context_titles
         project_status_latest_task_checkpoint_draft_report_status = $projectStatus.summary.latest_task.context.checkpoint_draft_report_status
+        project_status_latest_task_checkpoint_latest_error_code = $projectStatus.summary.latest_task.context.checkpoint_latest_error_code
         project_status_latest_task_analysis_goal = $projectStatus.summary.latest_task.semantics.analysis_goal
         project_status_latest_task_analysis_plan_count = $projectStatus.summary.latest_task.semantics.analysis_plan_count
+        project_status_latest_task_current_step = $projectStatus.summary.latest_task.semantics.current_step
         project_status_latest_task_completed_step_count = $projectStatus.summary.latest_task.semantics.completed_step_count
+        project_status_latest_task_finding_count = $projectStatus.summary.latest_task.semantics.finding_count
         project_status_latest_task_dimension_field = $projectStatus.summary.latest_task.semantics.dimension_field
         project_status_latest_task_metric_count = $projectStatus.summary.latest_task.semantics.metric_count
         project_status_latest_task_match_analysis_type = $projectStatus.summary.latest_task.semantics.match_analysis_type
@@ -181,9 +191,11 @@ try {
         project_status_latest_task_total_tool_elapsed_ms = $projectStatus.summary.latest_task.tools.total_tool_elapsed_ms
         project_status_latest_task_retried_tool_result_count = $projectStatus.summary.latest_task.tools.retried_tool_result_count
         project_status_latest_task_retry_attempts_total = $projectStatus.summary.latest_task.tools.retry_attempts_total
+        project_status_latest_task_latest_tool_name = $projectStatus.summary.latest_task.tools.latest_tool_name
         project_status_latest_task_latest_retry_status = $projectStatus.summary.latest_task.tools.latest_retry_status
         project_status_latest_task_error_count = $projectStatus.summary.latest_task.errors.error_count
         project_status_latest_task_latest_error_code = $projectStatus.summary.latest_task.errors.latest_error_code
+        project_status_latest_task_latest_error_message = $projectStatus.summary.latest_task.errors.latest_error_message
         project_status_latest_task_has_degradation = $projectStatus.summary.latest_task.errors.has_degradation
         project_status_files = $projectStatus.summary.database.tables.files.row_count
         project_status_tasks = $projectStatus.summary.database.tables.analysis_tasks.row_count
