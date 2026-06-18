@@ -549,7 +549,14 @@ def test_eval_run_uses_redis_snapshot_even_when_sqlite_row_is_missing():
         },
         "llm_judgement": {},
         "eval_result": {},
-        "events": [],
+        "events": [
+            {"event_type": "task_created"},
+            {"event_type": "fields_matched"},
+            {"event_type": "tool_succeeded"},
+            {"event_type": "chart_generated"},
+            {"event_type": "report_generated"},
+            {"event_type": "task_completed"},
+        ],
         "errors": [],
         "status": "completed",
     }
@@ -565,6 +572,7 @@ def test_eval_run_uses_redis_snapshot_even_when_sqlite_row_is_missing():
     payload = response.json()
     assert payload["task_id"] == task_id
     assert payload["eval_result"]["overall_score"] > 0
+    assert payload["eval_result"]["trace_completeness"] == 1.0
 
 
 def test_eval_run_returns_404_for_missing_task():
@@ -734,7 +742,16 @@ def test_get_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():
         "final_report": {"title": "Redis final report", "analysis_goal": "compare region sales"},
         "llm_judgement": {"supported_by_tools": True, "issue_count": 0},
         "eval_result": {},
-        "events": [],
+        "events": [
+            {
+                "event_id": "evt_redis_only_1",
+                "event_type": "task_created",
+                "node": "start_analysis",
+                "message": "task created",
+                "payload": {"status": "created"},
+                "created_at": "2026-06-18T10:00:00+00:00",
+            }
+        ],
         "errors": [],
         "status": "running",
         "context_checkpoint": {
@@ -760,6 +777,7 @@ def test_get_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():
     assert body["final_report"]["title"] == "Redis final report"
     assert body["llm_judgement"]["supported_by_tools"] is True
     assert body["business_context"][0]["title"] == "Redis Sales Amount"
+    assert body["events"][0]["event_type"] == "task_created"
 
 
 def test_get_analysis_uses_granular_redis_recovery_when_snapshot_is_missing(tmp_path):

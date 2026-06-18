@@ -56,7 +56,9 @@ def get_analysis(task_id: str) -> AnalysisTaskState:
     state, _ = SessionStore().load_state(task_id)
     if state is None:
         raise HTTPException(status_code=404, detail="Task not found.")
-    state["events"] = list_analysis_events(task_id)
+    persisted_events = list_analysis_events(task_id)
+    if persisted_events or not state.get("events"):
+        state["events"] = persisted_events
     state["tool_call_logs"] = get_tool_call_logs(task_id)
     if "context_checkpoint" not in state:
         state["context_checkpoint"] = SessionStore()._build_context_checkpoint(state)
