@@ -203,6 +203,13 @@ def test_demo_script_contract_matches_pscustomobject_output_shape():
     assert "provider_status_key_source_kind" in object_fields[1]
     assert "provider_status_warnings" in object_fields[1]
     assert "provider_status_recommendations" in object_fields[1]
+    assert "provider_smoke_ok" in contract["documented_summary_fields"]
+    assert "provider_smoke_client_type" in contract["documented_summary_fields"]
+    assert "provider_smoke_error_type" in contract["documented_summary_fields"]
+    assert "fixed_eval_pass_rate" in contract["documented_summary_fields"]
+    assert "fixed_eval_passed_cases" in contract["documented_summary_fields"]
+    assert "fixed_eval_total_cases" in contract["documented_summary_fields"]
+    assert "fixed_eval_average_tool_success_rate" in contract["documented_summary_fields"]
 
 
 def test_demo_script_contract_is_documented_across_delivery_docs():
