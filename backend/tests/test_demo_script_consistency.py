@@ -68,6 +68,10 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_data_limitation_count" in script
     assert "project_status_latest_task_business_context_count" in script
     assert "project_status_latest_task_top_business_context_title" in script
+    assert "project_status_latest_task_top_business_context_score" in script
+    assert "project_status_latest_task_top_business_context_related_field_count" in script
+    assert "project_status_latest_task_top_business_context_has_score_breakdown" in script
+    assert "project_status_latest_task_top_business_context_bm25_score" in script
     assert "project_status_latest_task_checkpoint_current_step" in script
     assert "project_status_latest_task_checkpoint_draft_report_status" in script
     assert "project_status_latest_task_analysis_goal" in script

@@ -140,6 +140,10 @@ try {
         project_status_latest_task_data_limitation_count = $projectStatus.summary.latest_task.report.data_limitation_count
         project_status_latest_task_business_context_count = $projectStatus.summary.latest_task.context.business_context_count
         project_status_latest_task_top_business_context_title = $projectStatus.summary.latest_task.context.top_business_context_title
+        project_status_latest_task_top_business_context_score = $projectStatus.summary.latest_task.context.top_business_context_score
+        project_status_latest_task_top_business_context_related_field_count = $projectStatus.summary.latest_task.context.top_business_context_related_field_count
+        project_status_latest_task_top_business_context_has_score_breakdown = $projectStatus.summary.latest_task.context.top_business_context_has_score_breakdown
+        project_status_latest_task_top_business_context_bm25_score = $projectStatus.summary.latest_task.context.top_business_context_bm25_score
         project_status_latest_task_checkpoint_current_step = $projectStatus.summary.latest_task.context.checkpoint_current_step
         project_status_latest_task_checkpoint_draft_report_status = $projectStatus.summary.latest_task.context.checkpoint_draft_report_status
         project_status_latest_task_analysis_goal = $projectStatus.summary.latest_task.semantics.analysis_goal

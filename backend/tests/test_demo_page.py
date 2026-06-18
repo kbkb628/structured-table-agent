@@ -62,6 +62,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'latest_task_context_output' in content
     assert 'business_context_count' in content
     assert 'top_business_context_title' in content
+    assert 'top_business_context_score' in content
+    assert 'top_business_context_related_field_count' in content
+    assert 'top_business_context_has_score_breakdown' in content
+    assert 'top_business_context_bm25_score' in content
     assert 'checkpoint_current_step' in content
     assert 'latest_task_semantics_output' in content
     assert 'analysis_goal' in content

@@ -140,6 +140,8 @@ def _latest_task_info() -> dict | None:
     chart_specs = state.get("chart_specs") or []
     context_checkpoint = state.get("context_checkpoint") or {}
     business_context = state.get("business_context") or []
+    top_business_context = business_context[0] if business_context else {}
+    top_business_context_score_breakdown = top_business_context.get("score_breakdown") or {}
     field_understanding = state.get("field_understanding") or {}
     metrics = field_understanding.get("metrics") or []
     completed_steps = state.get("completed_steps") or []
@@ -194,7 +196,11 @@ def _latest_task_info() -> dict | None:
         },
         "context": {
             "business_context_count": len(business_context),
-            "top_business_context_title": business_context[0].get("title") if business_context else None,
+            "top_business_context_title": top_business_context.get("title"),
+            "top_business_context_score": top_business_context.get("score"),
+            "top_business_context_related_field_count": len(top_business_context.get("related_fields") or []),
+            "top_business_context_has_score_breakdown": bool(top_business_context_score_breakdown),
+            "top_business_context_bm25_score": top_business_context_score_breakdown.get("bm25_score"),
             "checkpoint_current_step": context_checkpoint.get("current_step"),
             "checkpoint_draft_report_status": context_checkpoint.get("draft_report_status"),
             "checkpoint_latest_error_code": context_checkpoint.get("latest_error_code", ""),

@@ -243,6 +243,11 @@ Key summary fields exposed by the script include:
 - `project_status_latest_task_chart_spec_count`
 - `project_status_latest_task_key_finding_count`
 - `project_status_latest_task_business_context_count`
+- `project_status_latest_task_top_business_context_title`
+- `project_status_latest_task_top_business_context_score`
+- `project_status_latest_task_top_business_context_related_field_count`
+- `project_status_latest_task_top_business_context_has_score_breakdown`
+- `project_status_latest_task_top_business_context_bm25_score`
 - `project_status_latest_task_checkpoint_current_step`
 - `project_status_latest_task_analysis_goal`
 - `project_status_latest_task_analysis_plan_count`

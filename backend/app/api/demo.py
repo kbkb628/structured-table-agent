@@ -1056,6 +1056,10 @@ def demo_page() -> HTMLResponse:
       latestTaskContextOutputEl.textContent = latestTask ? [
         `business_context_count: ${latestTaskContext.business_context_count ?? 0}`,
         `top_business_context_title: ${latestTaskContext.top_business_context_title || "none"}`,
+        `top_business_context_score: ${latestTaskContext.top_business_context_score ?? "none"}`,
+        `top_business_context_related_field_count: ${latestTaskContext.top_business_context_related_field_count ?? 0}`,
+        `top_business_context_has_score_breakdown: ${latestTaskContext.top_business_context_has_score_breakdown ?? false}`,
+        `top_business_context_bm25_score: ${latestTaskContext.top_business_context_bm25_score ?? "none"}`,
         `checkpoint_current_step: ${latestTaskContext.checkpoint_current_step || "none"}`,
         `checkpoint_draft_report_status: ${latestTaskContext.checkpoint_draft_report_status || "none"}`,
         `checkpoint_latest_error_code: ${latestTaskContext.checkpoint_latest_error_code || "none"}`,

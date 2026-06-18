@@ -116,7 +116,20 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
         "analysis_goal": "compare region sales",
         "file_profile": {},
         "field_understanding": {"dimension_field": "region"},
-        "business_context": [{"id": "metric_sales_amount", "title": "Sales Amount"}],
+        "business_context": [
+            {
+                "id": "metric_sales_amount",
+                "title": "Sales Amount",
+                "related_fields": ["sales_amount", "order_status"],
+                "score": 12.48,
+                "score_breakdown": {
+                    "keyword_score": 6.0,
+                    "field_score": 4.0,
+                    "phrase_score": 0.0,
+                    "bm25_score": 2.48,
+                },
+            }
+        ],
         "analysis_plan": ["match fields", "aggregate", "report"],
         "current_step": "report",
         "completed_steps": ["match fields", "aggregate"],
@@ -246,6 +259,10 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["report"]["next_step_count"] == 1
     assert latest_task["context"]["business_context_count"] == 1
     assert latest_task["context"]["top_business_context_title"] == "Sales Amount"
+    assert latest_task["context"]["top_business_context_score"] == 12.48
+    assert latest_task["context"]["top_business_context_related_field_count"] == 2
+    assert latest_task["context"]["top_business_context_has_score_breakdown"] is True
+    assert latest_task["context"]["top_business_context_bm25_score"] == 2.48
     assert latest_task["context"]["checkpoint_current_step"] == "report"
     assert latest_task["context"]["checkpoint_draft_report_status"] == "available"
     assert latest_task["context"]["checkpoint_latest_error_code"] == "CHART_DEGRADED"
