@@ -45,6 +45,9 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'has_eval_result' in content
     assert 'overall_score' in content
     assert 'issue_count' in content
+    assert 'latest_task_judgement_output' in content
+    assert 'supported_by_tools' in content
+    assert 'has_findings' in content
     assert 'latest_task_process_output' in content
     assert 'pending_metric_count' in content
     assert 'planned_tool_call_count' in content

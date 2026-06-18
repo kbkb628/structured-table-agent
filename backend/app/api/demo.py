@@ -461,6 +461,14 @@ def demo_page() -> HTMLResponse:
               </div>
               <div class="provider-card">
                 <div class="provider-card-head">
+                  <div class="provider-title">Latest Task Judgement</div>
+                  <div id="latest-task-judgement-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="latest-task-judgement-meta" class="provider-meta">Latest supplementary llm_judgement summary will appear here.</div>
+                <div id="latest_task_judgement_output" class="provider-diag">No latest task judgement summary loaded yet.</div>
+              </div>
+              <div class="provider-card">
+                <div class="provider-card-head">
                   <div class="provider-title">Latest Task Process</div>
                   <div id="latest-task-process-pill" class="provider-pill">Not loaded</div>
                 </div>
@@ -646,6 +654,9 @@ def demo_page() -> HTMLResponse:
     const latestTaskEvalPillEl = document.getElementById("latest-task-eval-pill");
     const latestTaskEvalMetaEl = document.getElementById("latest-task-eval-meta");
     const latestTaskEvalOutputEl = document.getElementById("latest_task_eval_output");
+    const latestTaskJudgementPillEl = document.getElementById("latest-task-judgement-pill");
+    const latestTaskJudgementMetaEl = document.getElementById("latest-task-judgement-meta");
+    const latestTaskJudgementOutputEl = document.getElementById("latest_task_judgement_output");
     const latestTaskProcessPillEl = document.getElementById("latest-task-process-pill");
     const latestTaskProcessMetaEl = document.getElementById("latest-task-process-meta");
     const latestTaskProcessOutputEl = document.getElementById("latest_task_process_output");
@@ -911,6 +922,9 @@ def demo_page() -> HTMLResponse:
         latestTaskEvalPillEl.textContent = "Not loaded";
         latestTaskEvalMetaEl.textContent = "Latest persisted eval_result summary will appear here.";
         latestTaskEvalOutputEl.textContent = "No latest task evaluation summary loaded yet.";
+        latestTaskJudgementPillEl.textContent = "Not loaded";
+        latestTaskJudgementMetaEl.textContent = "Latest supplementary llm_judgement summary will appear here.";
+        latestTaskJudgementOutputEl.textContent = "No latest task judgement summary loaded yet.";
         latestTaskProcessPillEl.textContent = "Not loaded";
         latestTaskProcessMetaEl.textContent = "Latest task trace and state summary will appear here.";
         latestTaskProcessOutputEl.textContent = "No latest task process summary loaded yet.";
@@ -942,6 +956,7 @@ def demo_page() -> HTMLResponse:
       const latestTask = summary.latest_task || null;
       const latestTaskArtifacts = latestTask ? (latestTask.artifacts || {}) : {};
       const latestTaskEvaluation = latestTask ? (latestTask.evaluation || {}) : {};
+      const latestTaskJudgement = latestTask ? (latestTask.judgement || {}) : {};
       const latestTaskProcess = latestTask ? (latestTask.process || {}) : {};
       const latestTaskReport = latestTask ? (latestTask.report || {}) : {};
       const latestTaskContext = latestTask ? (latestTask.context || {}) : {};
@@ -1000,6 +1015,15 @@ def demo_page() -> HTMLResponse:
         `issue_count: ${latestTaskEvaluation.issue_count ?? 0}`,
         `has_dimension_scores: ${latestTaskEvaluation.has_dimension_scores}`,
       ].join("\n") : "No latest task evaluation summary loaded yet.";
+      latestTaskJudgementPillEl.textContent = latestTask ? "Judgement ready" : "No tasks";
+      latestTaskJudgementMetaEl.textContent = latestTask
+        ? [`task_id: ${latestTask.task_id}`, `supported_by_tools: ${latestTaskJudgement.supported_by_tools}`].join(" | ")
+        : "No persisted task found yet.";
+      latestTaskJudgementOutputEl.textContent = latestTask ? [
+        `supported_by_tools: ${latestTaskJudgement.supported_by_tools ?? false}`,
+        `has_findings: ${latestTaskJudgement.has_findings ?? false}`,
+        `issue_count: ${latestTaskJudgement.issue_count ?? 0}`,
+      ].join("\n") : "No latest task judgement summary loaded yet.";
       latestTaskProcessPillEl.textContent = latestTask ? "Trace ready" : "No tasks";
       latestTaskProcessMetaEl.textContent = latestTask
         ? [`task_id: ${latestTask.task_id}`, `latest_event_at: ${latestTaskProcess.latest_event_at || "none"}`].join(" | ")

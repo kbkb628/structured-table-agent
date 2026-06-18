@@ -140,7 +140,7 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
             "data_limitations": ["Uploaded CSV only."],
             "next_steps": ["Drill down by channel."],
         },
-        "llm_judgement": {"supported_by_tools": True, "issue_count": 0},
+        "llm_judgement": {"supported_by_tools": True, "has_findings": True, "issue_count": 0},
         "eval_result": {
             "overall_score": 0.91,
             "schema_valid": True,
@@ -221,6 +221,9 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["evaluation"]["overall_score"] == 0.91
     assert latest_task["evaluation"]["issue_count"] == 0
     assert latest_task["evaluation"]["has_dimension_scores"] is True
+    assert latest_task["judgement"]["supported_by_tools"] is True
+    assert latest_task["judgement"]["has_findings"] is True
+    assert latest_task["judgement"]["issue_count"] == 0
     assert latest_task["process"]["pending_metric_count"] == 1
     assert latest_task["process"]["planned_tool_call_count"] == 1
     assert latest_task["process"]["event_count"] >= 2

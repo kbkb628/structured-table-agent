@@ -162,6 +162,11 @@ def _latest_task_info() -> dict | None:
             "issue_count": len(issues),
             "has_dimension_scores": any(key in eval_result for key in dimension_score_keys),
         },
+        "judgement": {
+            "supported_by_tools": llm_judgement.get("supported_by_tools"),
+            "has_findings": llm_judgement.get("has_findings"),
+            "issue_count": int(llm_judgement.get("issue_count", 0) or 0),
+        },
         "process": {
             "pending_metric_count": len(state.get("pending_metrics") or []),
             "planned_tool_call_count": len(state.get("pending_tool_calls") or []),

@@ -49,6 +49,8 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_session_store_recovered_count" in script
     assert "project_status_latest_task_has_business_context" in script
     assert "project_status_latest_task_has_llm_judgement" in script
+    assert "project_status_latest_task_supported_by_tools" in script
+    assert "project_status_latest_task_has_findings" in script
     assert "project_status_latest_task_tool_call_log_count" in script
     assert "project_status_latest_task_has_eval_result" in script
     assert "project_status_latest_task_eval_overall_score" in script
