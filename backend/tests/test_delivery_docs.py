@@ -148,6 +148,8 @@ def test_resume_evidence_map_links_resume_claims_to_runtime_evidence():
     assert "CSV / Excel" in content
     assert "route_next_step" in content
     assert "ToolResponse" in content
+    assert "Plotly 风格图表配置" in content
+    assert "plotly_spec" in content
     assert "z-score" in content
     assert "QwenClient" in content
     assert "MockLLMClient" in content
@@ -417,6 +419,7 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "INTERVIEW_DEMO_PREFLIGHT.md" in content
     assert "RELEASE_READINESS_AUDIT.md" in content
     assert "demo_mvp.ps1" in content
+    assert "Plotly 风格图表配置" in content or "plotly_spec" in content
     assert "provider smoke" in content or "provider smoke failed" in content or "provider 解析结果" in content
     assert "fixed eval" in content or "质量指标" in content
     assert "project_status_latest_task_has_context_checkpoint" in content

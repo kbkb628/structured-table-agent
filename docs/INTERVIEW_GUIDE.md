@@ -32,6 +32,7 @@ Runtime finding summary fields for demo diagnostics: `project_status_latest_task
 
 - 语义理解层：`QwenClient` / `MockLLMClient`
 - 数据计算层：DuckDB / pandas 工具
+- 图表层：输出 `plotly_spec` 形式的 Plotly 风格图表配置
 - 报告数字来源：`tool_results`
 
 ## 3. 为什么要做可替换 LLM Provider
