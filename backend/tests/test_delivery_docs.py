@@ -100,6 +100,17 @@ def test_resume_project_description_mentions_qwen_and_project_status_delivery():
     assert "Tongyi Qianwen" in content or "通义千问" in content
     assert "project-status" in content
     assert "demo_mvp.ps1" in content
+    assert "CSV / Excel" in content
+    assert "route_next_step" in content
+    assert "ToolResponse" in content
+    assert "Pydantic schema" in content
+    assert "z-score" in content
+    assert "QwenClient" in content
+    assert "MockLLMClient" in content
+    assert "llm_judgement" in content
+    assert "BM25" in content
+    assert "context_checkpoint" in content
+    assert "SQLite 降级" in content or "SQLite" in content
 
 
 def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
