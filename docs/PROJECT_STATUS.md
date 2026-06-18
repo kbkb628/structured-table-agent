@@ -174,6 +174,10 @@
   - `project_status_latest_task_has_eval_result`
   - `project_status_latest_task_eval_overall_score`
   - `project_status_latest_task_eval_issue_count`
+  - `project_status_latest_task_pending_metric_count`
+  - `project_status_latest_task_planned_tool_call_count`
+  - `project_status_latest_task_event_count`
+  - `project_status_latest_task_latest_event_type`
   - `project_status_latest_task_has_llm_judgement`
   - `project_status_latest_task_tool_call_log_count`
   - `project_status_files`

@@ -53,6 +53,10 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_has_eval_result" in script
     assert "project_status_latest_task_eval_overall_score" in script
     assert "project_status_latest_task_eval_issue_count" in script
+    assert "project_status_latest_task_pending_metric_count" in script
+    assert "project_status_latest_task_planned_tool_call_count" in script
+    assert "project_status_latest_task_event_count" in script
+    assert "project_status_latest_task_latest_event_type" in script
 
 
 def test_demo_script_mentions_provider_and_eval_summary_output():

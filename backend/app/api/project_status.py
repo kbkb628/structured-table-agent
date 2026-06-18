@@ -96,6 +96,20 @@ def _latest_task_info() -> dict | None:
             "SELECT COUNT(*) FROM tool_call_logs WHERE task_id = ?",
             (task_id,),
         ).fetchone()
+        event_count = conn.execute(
+            "SELECT COUNT(*) FROM analysis_events WHERE task_id = ?",
+            (task_id,),
+        ).fetchone()
+        latest_event = conn.execute(
+            """
+            SELECT event_type, created_at
+            FROM analysis_events
+            WHERE task_id = ?
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (task_id,),
+        ).fetchone()
     eval_result = state.get("eval_result") or {}
     issues = eval_result.get("issues") if isinstance(eval_result.get("issues"), list) else []
     dimension_score_keys = {
@@ -106,6 +120,7 @@ def _latest_task_info() -> dict | None:
         "report_completeness",
         "trace_completeness",
     }
+    llm_judgement = state.get("llm_judgement") or {}
     return {
         "task_id": task_id,
         "status": status,
@@ -123,6 +138,14 @@ def _latest_task_info() -> dict | None:
             "overall_score": eval_result.get("overall_score"),
             "issue_count": len(issues),
             "has_dimension_scores": any(key in eval_result for key in dimension_score_keys),
+        },
+        "process": {
+            "pending_metric_count": len(state.get("pending_metrics") or []),
+            "planned_tool_call_count": len(state.get("pending_tool_calls") or []),
+            "event_count": int(event_count[0]) if event_count else 0,
+            "latest_event_type": latest_event[0] if latest_event else None,
+            "latest_event_at": latest_event[1] if latest_event else None,
+            "llm_issue_count": int(llm_judgement.get("issue_count", 0) or 0),
         },
     }
 

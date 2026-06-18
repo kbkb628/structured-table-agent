@@ -45,6 +45,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'has_eval_result' in content
     assert 'overall_score' in content
     assert 'issue_count' in content
+    assert 'latest_task_process_output' in content
+    assert 'pending_metric_count' in content
+    assert 'planned_tool_call_count' in content
+    assert 'latest_event_type' in content
     assert 'id="project-status-summary"' in content
     assert 'id="project-status-output"' in content
     assert 'id="eval-summary"' in content

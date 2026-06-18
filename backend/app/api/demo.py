@@ -459,6 +459,14 @@ def demo_page() -> HTMLResponse:
                 <div id="latest-task-eval-meta" class="provider-meta">Latest persisted eval_result summary will appear here.</div>
                 <div id="latest_task_eval_output" class="provider-diag">No latest task evaluation summary loaded yet.</div>
               </div>
+              <div class="provider-card">
+                <div class="provider-card-head">
+                  <div class="provider-title">Latest Task Process</div>
+                  <div id="latest-task-process-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="latest-task-process-meta" class="provider-meta">Latest task trace and state summary will appear here.</div>
+                <div id="latest_task_process_output" class="provider-diag">No latest task process summary loaded yet.</div>
+              </div>
               <div id="project-status-summary" class="summary-grid">
                 <div class="summary-card">
                   <div class="summary-label">Demo</div>
@@ -598,6 +606,9 @@ def demo_page() -> HTMLResponse:
     const latestTaskEvalPillEl = document.getElementById("latest-task-eval-pill");
     const latestTaskEvalMetaEl = document.getElementById("latest-task-eval-meta");
     const latestTaskEvalOutputEl = document.getElementById("latest_task_eval_output");
+    const latestTaskProcessPillEl = document.getElementById("latest-task-process-pill");
+    const latestTaskProcessMetaEl = document.getElementById("latest-task-process-meta");
+    const latestTaskProcessOutputEl = document.getElementById("latest_task_process_output");
     const projectStatusSummaryEl = document.getElementById("project-status-summary");
     const projectStatusOutputEl = document.getElementById("project-status-output");
     const evalSummaryEl = document.getElementById("eval-summary");
@@ -845,6 +856,9 @@ def demo_page() -> HTMLResponse:
         latestTaskEvalPillEl.textContent = "Not loaded";
         latestTaskEvalMetaEl.textContent = "Latest persisted eval_result summary will appear here.";
         latestTaskEvalOutputEl.textContent = "No latest task evaluation summary loaded yet.";
+        latestTaskProcessPillEl.textContent = "Not loaded";
+        latestTaskProcessMetaEl.textContent = "Latest task trace and state summary will appear here.";
+        latestTaskProcessOutputEl.textContent = "No latest task process summary loaded yet.";
         projectStatusOutputEl.textContent = "No project runtime overview loaded yet.";
         return;
       }
@@ -858,6 +872,7 @@ def demo_page() -> HTMLResponse:
       const latestTask = summary.latest_task || null;
       const latestTaskArtifacts = latestTask ? (latestTask.artifacts || {}) : {};
       const latestTaskEvaluation = latestTask ? (latestTask.evaluation || {}) : {};
+      const latestTaskProcess = latestTask ? (latestTask.process || {}) : {};
       const files = tables.files || { exists: false, row_count: 0 };
       const tasks = tables.analysis_tasks || { exists: false, row_count: 0 };
       const events = tables.analysis_events || { exists: false, row_count: 0 };
@@ -910,6 +925,17 @@ def demo_page() -> HTMLResponse:
         `issue_count: ${latestTaskEvaluation.issue_count ?? 0}`,
         `has_dimension_scores: ${latestTaskEvaluation.has_dimension_scores}`,
       ].join("\n") : "No latest task evaluation summary loaded yet.";
+      latestTaskProcessPillEl.textContent = latestTask ? "Trace ready" : "No tasks";
+      latestTaskProcessMetaEl.textContent = latestTask
+        ? [`task_id: ${latestTask.task_id}`, `latest_event_at: ${latestTaskProcess.latest_event_at || "none"}`].join(" | ")
+        : "No persisted task found yet.";
+      latestTaskProcessOutputEl.textContent = latestTask ? [
+        `pending_metric_count: ${latestTaskProcess.pending_metric_count ?? 0}`,
+        `planned_tool_call_count: ${latestTaskProcess.planned_tool_call_count ?? 0}`,
+        `event_count: ${latestTaskProcess.event_count ?? 0}`,
+        `latest_event_type: ${latestTaskProcess.latest_event_type || "none"}`,
+        `llm_issue_count: ${latestTaskProcess.llm_issue_count ?? 0}`,
+      ].join("\n") : "No latest task process summary loaded yet.";
 
       projectStatusSummaryEl.innerHTML = `
         <div class="summary-card">

@@ -6,6 +6,7 @@ from app.storage.analysis_store import create_task
 from app.storage.analysis_store import record_tool_call
 from app.storage.analysis_store import update_task_state
 from app.storage.analysis_store import record_event
+from app.storage.analysis_store import backfill_task_events
 from app.storage.session_store import SessionStore
 
 
@@ -121,19 +122,39 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
             "trace_completeness": 1.0,
             "issues": [],
         },
+        "pending_metrics": [{"label": "sales_amount_sum"}],
+        "pending_tool_calls": [{"tool_name": "groupby_aggregate", "label": "sales_amount_sum"}],
         "context_checkpoint": {
             "analysis_goal": "compare region sales",
             "current_step": "report",
             "draft_report_status": "available",
         },
         "tool_call_logs": [{"tool_name": "groupby_aggregate"}],
-        "events": [],
+        "events": [
+            {
+                "event_id": "evt_project_status_latest_artifacts_1",
+                "event_type": "task_created",
+                "node": "start_analysis",
+                "message": "task created",
+                "payload": {"status": "created"},
+                "created_at": "2099-12-31T23:59:51+00:00",
+            },
+            {
+                "event_id": "evt_project_status_latest_artifacts_2",
+                "event_type": "report_generated",
+                "node": "generate_report",
+                "message": "report generated",
+                "payload": {"title": "Final report"},
+                "created_at": "2099-12-31T23:59:58+00:00",
+            },
+        ],
         "errors": [],
         "status": "completed",
     }
     with patch("app.storage.analysis_store._ts", return_value="2099-12-31T23:59:59+00:00"):
         create_task(task_id, state["file_id"], state["question"], state)
         update_task_state(task_id, state)
+    backfill_task_events(task_id, state["events"])
     record_tool_call(
         task_id,
         "groupby_aggregate",
@@ -165,3 +186,8 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["evaluation"]["overall_score"] == 0.91
     assert latest_task["evaluation"]["issue_count"] == 0
     assert latest_task["evaluation"]["has_dimension_scores"] is True
+    assert latest_task["process"]["pending_metric_count"] == 1
+    assert latest_task["process"]["planned_tool_call_count"] == 1
+    assert latest_task["process"]["event_count"] >= 2
+    assert latest_task["process"]["latest_event_type"] == "report_generated"
+    assert latest_task["process"]["llm_issue_count"] == 0
