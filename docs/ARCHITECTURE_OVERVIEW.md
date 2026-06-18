@@ -13,6 +13,7 @@
 5. `LLMClient` 生成分析目标和分析计划
 6. LangGraph 驱动字段匹配、DuckDB 聚合、`validate_tool_result` 校验、`route_next_step` 路由、图表生成、报告生成和评估
 7. 任务状态、事件时间线、工具调用日志和评估结果写入 SQLite / SessionStore
+8. `/demo`、`GET /api/llm/provider-status`、`POST /api/llm/provider-smoke` 和 `GET /api/project-status` 复用真实后端状态做演示与诊断
 
 ## 2. 模块职责
 
@@ -20,9 +21,12 @@
 
 负责 HTTP 接口：
 
-- `files.py`：上传文件与查询字段画像
+- `files.py`：上传文件、上传内置样例、查询字段画像
 - `analysis.py`：创建任务、执行任务、查询任务状态、事件和工具日志
 - `eval.py`：手动重跑规则评估与 fixed cases
+- `llm.py`：provider status 与 provider smoke 诊断接口
+- `project_status.py`：项目运行总览接口
+- `demo.py`：极简本地演示页 `/demo`
 
 ### `app/services`
 
@@ -46,7 +50,10 @@
 - `data_profile.py`：字段画像
 - `match_fields.py`：字段匹配
 - `duckdb_tools.py`：分组聚合
-- `chart_tool.py`：柱状图配置生成
+- `share_tool.py`：占比分析
+- `trend_tool.py`：趋势分析
+- `anomaly_tool.py`：异常检测
+- `chart_tool.py`：图表配置生成
 - `report_tool.py`：结构化基础报告生成
 
 ### `app/rag`
@@ -100,6 +107,12 @@
 
 `SessionStore` 会优先尝试 Redis；当 Redis 不可用时，会显式降级到 SQLite 并记录 `session_store_warning`。若 Redis 可用，系统还会把 `draft_report`、`final_report`、`llm_judgement`、`intermediate_findings`、`business_context`、压缩后的 `context_checkpoint` 和 `task_lock` 分别写入细粒度 key。
 
+`GET /api/project-status` 会在只读前提下聚合这些运行时状态，包括：
+
+- provider 解析与 diagnostics
+- demo 可用性和路径
+- SQLite 核心表行数
+
 ## 4. 运行时状态流
 
 任务启动阶段统一构造：
@@ -130,7 +143,18 @@
 - `LLMClient.judge_report` 形成补充型 `llm_judgement`
 - `evaluate_report` 持久化 `eval_result`
 
-## 5. 真实性边界
+## 5. 演示与诊断层
+
+当前交付层不是独立前端工程，而是直接复用真实后端接口：
+
+- `/demo`：聚合上传、任务执行、provider 诊断、project runtime overview 和 fixed eval cases
+- `GET /api/llm/provider-status`：展示当前 provider 解析与 diagnostics
+- `POST /api/llm/provider-smoke`：执行最小 provider 调用
+- `GET /api/project-status`：展示项目运行总览
+- `scripts/demo_mvp.ps1`：一键跑通样例上传、固定问题执行和 project status 摘要输出
+- `scripts/qwen_provider_smoke.ps1`：独立 provider smoke 检查
+
+## 6. 真实性边界
 
 当前系统真实提供的是：
 
@@ -142,6 +166,7 @@
 - 真实 Tongyi Qianwen Provider 接入
 - SQLite / Redis 状态持久化
 - 规则评估与固定 case 回归
+- `/demo` 演示页与 `GET /api/project-status` 运行总览
 
 当前没有实现：
 

@@ -52,3 +52,16 @@ def test_root_readme_matches_current_runtime_truth():
     assert "GET /api/project-status" in content
     assert "demo_mvp.ps1" in content
     assert "未实现真实 LLM Provider" not in content
+
+
+def test_architecture_overview_mentions_runtime_overview_and_demo_layers():
+    content = (Path(__file__).resolve().parents[2] / "docs" / "ARCHITECTURE_OVERVIEW.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "QwenClient" in content
+    assert "route_next_step" in content
+    assert "/demo" in content
+    assert "GET /api/project-status" in content
+    assert "llm.py" in content
+    assert "project_status.py" in content
