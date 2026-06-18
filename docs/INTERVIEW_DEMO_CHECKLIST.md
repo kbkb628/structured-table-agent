@@ -1,6 +1,7 @@
 # Interview Demo Checklist
 
 本文用于面试时做最短演示路径，目标是在 2-5 分钟内用最少页面切换证明项目不是纸面设计，而是有真实后端闭环、真实 provider 接入、真实运行态诊断和真实评估指标。
+如果演示前还没确认服务、provider 和脚本是否处于可展示状态，先按 [INTERVIEW_DEMO_PREFLIGHT.md](./INTERVIEW_DEMO_PREFLIGHT.md) 做一遍预检查。
 
 ## 最短演示路径
 

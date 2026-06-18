@@ -110,6 +110,8 @@ docs/
   面试讲解稿与边界表达
 - [docs/INTERVIEW_DEMO_CHECKLIST.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/INTERVIEW_DEMO_CHECKLIST.md)
   2-5 分钟最短面试演示路径
+- [docs/INTERVIEW_DEMO_PREFLIGHT.md](/e:/bgagent1/.worktrees/day1-mvp-backend/docs/INTERVIEW_DEMO_PREFLIGHT.md)
+  演示前启动、自检与失败排查清单
 - [backend/README.md](/e:/bgagent1/.worktrees/day1-mvp-backend/backend/README.md)
   后端启动、测试、Provider 配置和 Windows API 示例
 - [scripts/demo_mvp.ps1](/e:/bgagent1/.worktrees/day1-mvp-backend/scripts/demo_mvp.ps1)

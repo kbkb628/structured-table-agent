@@ -147,6 +147,7 @@ def test_interview_demo_checklist_provides_short_demo_path():
         encoding="utf-8"
     )
 
+    assert "INTERVIEW_DEMO_PREFLIGHT.md" in content
     assert "最短演示路径" in content
     assert "/demo" in content
     assert "/api/llm/provider-status" in content
@@ -157,6 +158,23 @@ def test_interview_demo_checklist_provides_short_demo_path():
     assert "project_status_latest_task_latest_route_decision" in content
     assert "project_status_latest_task_top_business_context_bm25_score" in content
     assert "project_status_latest_task_checkpoint_status" in content
+    assert "fixed_eval_pass_rate" in content
+
+
+def test_interview_demo_preflight_checklist_covers_startup_and_failure_checks():
+    content = (Path(__file__).resolve().parents[2] / "docs" / "INTERVIEW_DEMO_PREFLIGHT.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "演示前检查单" in content
+    assert "uvicorn app.main:app" in content
+    assert "/api/llm/provider-status" in content
+    assert "/api/llm/provider-smoke" in content
+    assert "/demo" in content
+    assert "/api/project-status" in content
+    assert "demo_mvp.ps1" in content
+    assert "预期现象" in content
+    assert "失败排查" in content
     assert "fixed_eval_pass_rate" in content
 
 
@@ -250,6 +268,7 @@ def test_root_readme_matches_current_runtime_truth():
 
     assert "docs/RESUME_EVIDENCE_MAP.md" in content
     assert "docs/INTERVIEW_DEMO_CHECKLIST.md" in content
+    assert "docs/INTERVIEW_DEMO_PREFLIGHT.md" in content
     assert "真实 Tongyi Qianwen Provider" in content or "真实通义千问 Provider" in content
     assert "GET /api/project-status" in content
     assert "demo_mvp.ps1" in content
@@ -348,6 +367,7 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
 
     assert "RESUME_EVIDENCE_MAP.md" in content
     assert "INTERVIEW_DEMO_CHECKLIST.md" in content
+    assert "INTERVIEW_DEMO_PREFLIGHT.md" in content
     assert "demo_mvp.ps1" in content
     assert "provider smoke" in content or "provider smoke failed" in content or "provider 解析结果" in content
     assert "fixed eval" in content or "质量指标" in content
