@@ -272,6 +272,25 @@
   - `fixed_eval_average_tool_success_rate`
   - `fixed_eval_average_chart_validity`
   - `fixed_eval_average_field_validity`
+  - `project_status_demo_available`
+  - `project_status_session_store_redis_available`
+  - `project_status_session_store_degraded_to_sqlite`
+  - `project_status_session_store_recovered_count`
+  - `project_status_latest_task_eval_issue_count`
+  - `project_status_latest_task_planned_tool_call_count`
+  - `project_status_latest_task_event_count`
+  - `project_status_latest_task_business_suggestion_count`
+  - `project_status_latest_task_data_limitation_count`
+  - `project_status_latest_task_top_business_context_title`
+  - `project_status_latest_task_checkpoint_draft_report_status`
+  - `project_status_latest_task_completed_step_count`
+  - `project_status_latest_task_metric_count`
+  - `project_status_latest_task_successful_tool_result_count`
+  - `project_status_latest_task_failed_tool_result_count`
+  - `project_status_latest_task_latest_retry_status`
+  - `project_status_latest_task_latest_error_code`
+  - `project_status_files`
+  - `project_status_tasks`
   - 六个固定 demo 问题的任务结果摘要
 
 ## 当前结论

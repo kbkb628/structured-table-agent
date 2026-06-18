@@ -32,6 +32,27 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "project_status_latest_task_finding_count" in content
     assert "project_status_latest_task_latest_tool_name" in content
     assert "project_status_latest_task_latest_error_message" in content
+    assert "project_status_demo_available" in content
+    assert "project_status_session_store_redis_available" in content
+    assert "project_status_session_store_degraded_to_sqlite" in content
+    assert "project_status_session_store_recovered_count" in content
+    assert "project_status_latest_task_has_llm_judgement" in content
+    assert "project_status_latest_task_tool_call_log_count" in content
+    assert "project_status_latest_task_eval_issue_count" in content
+    assert "project_status_latest_task_planned_tool_call_count" in content
+    assert "project_status_latest_task_event_count" in content
+    assert "project_status_latest_task_business_suggestion_count" in content
+    assert "project_status_latest_task_data_limitation_count" in content
+    assert "project_status_latest_task_top_business_context_title" in content
+    assert "project_status_latest_task_checkpoint_draft_report_status" in content
+    assert "project_status_latest_task_completed_step_count" in content
+    assert "project_status_latest_task_metric_count" in content
+    assert "project_status_latest_task_successful_tool_result_count" in content
+    assert "project_status_latest_task_failed_tool_result_count" in content
+    assert "project_status_latest_task_latest_retry_status" in content
+    assert "project_status_latest_task_latest_error_code" in content
+    assert "project_status_files" in content
+    assert "project_status_tasks" in content
     assert "fixed_eval_average_trace_completeness" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content
     assert "fixed_eval_average_chart_validity" in content
@@ -69,6 +90,27 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "project_status_latest_task_finding_count" in content
     assert "project_status_latest_task_latest_tool_name" in content
     assert "project_status_latest_task_latest_error_message" in content
+    assert "project_status_demo_available" in content
+    assert "project_status_session_store_redis_available" in content
+    assert "project_status_session_store_degraded_to_sqlite" in content
+    assert "project_status_session_store_recovered_count" in content
+    assert "project_status_latest_task_has_llm_judgement" in content
+    assert "project_status_latest_task_tool_call_log_count" in content
+    assert "project_status_latest_task_eval_issue_count" in content
+    assert "project_status_latest_task_planned_tool_call_count" in content
+    assert "project_status_latest_task_event_count" in content
+    assert "project_status_latest_task_business_suggestion_count" in content
+    assert "project_status_latest_task_data_limitation_count" in content
+    assert "project_status_latest_task_top_business_context_title" in content
+    assert "project_status_latest_task_checkpoint_draft_report_status" in content
+    assert "project_status_latest_task_completed_step_count" in content
+    assert "project_status_latest_task_metric_count" in content
+    assert "project_status_latest_task_successful_tool_result_count" in content
+    assert "project_status_latest_task_failed_tool_result_count" in content
+    assert "project_status_latest_task_latest_retry_status" in content
+    assert "project_status_latest_task_latest_error_code" in content
+    assert "project_status_files" in content
+    assert "project_status_tasks" in content
     assert "fixed_eval_average_trace_completeness" in content
     assert "fixed_eval_retried_tool_calls" in content
     assert "fixed_eval_retry_attempts_total" in content
@@ -97,6 +139,27 @@ def test_root_readme_matches_current_runtime_truth():
     assert "project_status_latest_task_finding_count" in content
     assert "project_status_latest_task_latest_tool_name" in content
     assert "project_status_latest_task_latest_error_message" in content
+    assert "project_status_demo_available" in content
+    assert "project_status_session_store_redis_available" in content
+    assert "project_status_session_store_degraded_to_sqlite" in content
+    assert "project_status_session_store_recovered_count" in content
+    assert "project_status_latest_task_has_llm_judgement" in content
+    assert "project_status_latest_task_tool_call_log_count" in content
+    assert "project_status_latest_task_eval_issue_count" in content
+    assert "project_status_latest_task_planned_tool_call_count" in content
+    assert "project_status_latest_task_event_count" in content
+    assert "project_status_latest_task_business_suggestion_count" in content
+    assert "project_status_latest_task_data_limitation_count" in content
+    assert "project_status_latest_task_top_business_context_title" in content
+    assert "project_status_latest_task_checkpoint_draft_report_status" in content
+    assert "project_status_latest_task_completed_step_count" in content
+    assert "project_status_latest_task_metric_count" in content
+    assert "project_status_latest_task_successful_tool_result_count" in content
+    assert "project_status_latest_task_failed_tool_result_count" in content
+    assert "project_status_latest_task_latest_retry_status" in content
+    assert "project_status_latest_task_latest_error_code" in content
+    assert "project_status_files" in content
+    assert "project_status_tasks" in content
     assert "fixed_eval_average_report_completeness" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content
     assert "fixed_eval_average_chart_validity" in content
@@ -137,6 +200,27 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "project_status_latest_task_finding_count" in content
     assert "project_status_latest_task_latest_tool_name" in content
     assert "project_status_latest_task_latest_error_message" in content
+    assert "project_status_demo_available" in content
+    assert "project_status_session_store_redis_available" in content
+    assert "project_status_session_store_degraded_to_sqlite" in content
+    assert "project_status_session_store_recovered_count" in content
+    assert "project_status_latest_task_has_llm_judgement" in content
+    assert "project_status_latest_task_tool_call_log_count" in content
+    assert "project_status_latest_task_eval_issue_count" in content
+    assert "project_status_latest_task_planned_tool_call_count" in content
+    assert "project_status_latest_task_event_count" in content
+    assert "project_status_latest_task_business_suggestion_count" in content
+    assert "project_status_latest_task_data_limitation_count" in content
+    assert "project_status_latest_task_top_business_context_title" in content
+    assert "project_status_latest_task_checkpoint_draft_report_status" in content
+    assert "project_status_latest_task_completed_step_count" in content
+    assert "project_status_latest_task_metric_count" in content
+    assert "project_status_latest_task_successful_tool_result_count" in content
+    assert "project_status_latest_task_failed_tool_result_count" in content
+    assert "project_status_latest_task_latest_retry_status" in content
+    assert "project_status_latest_task_latest_error_code" in content
+    assert "project_status_files" in content
+    assert "project_status_tasks" in content
     assert "fixed_eval_retried_tool_calls" in content
     assert "fixed_eval_retry_attempts_total" in content
     assert "fixed_eval_average_tool_elapsed_ms_total" in content
