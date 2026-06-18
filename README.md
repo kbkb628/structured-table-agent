@@ -185,6 +185,7 @@ cd E:\bgagent1
 - 输出 project status 摘要、任务状态、图表数量、工具调用数量和评估分数摘要
 - 输出 `project_status_provider` 作为 project runtime overview 的 provider 摘要字段
 - 输出 `project_status_session_store_active_backend`、`project_status_session_store_warning_count` 等 session store runtime mode 与事件摘要字段
+- 输出 `project_status_latest_task_has_business_context` 等 latest task artifact coverage 摘要字段
 - 输出 `provider_smoke_error_message` 等 provider smoke 失败细节字段
 - 输出 `fixed_eval_average_trace_completeness`、`fixed_eval_average_report_completeness` 等 fixed eval 质量指标
 

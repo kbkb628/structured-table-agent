@@ -443,6 +443,14 @@ def demo_page() -> HTMLResponse:
                 <div id="session-store-meta" class="provider-meta">Redis-first / SQLite-fallback summary will appear here.</div>
                 <div id="session-store-output" class="provider-diag">No session store runtime summary loaded yet.</div>
               </div>
+              <div class="provider-card">
+                <div class="provider-card-head">
+                  <div class="provider-title">Latest Task Artifacts</div>
+                  <div id="latest-task-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="latest-task-meta" class="provider-meta">Latest persisted task artifact coverage will appear here.</div>
+                <div id="latest_task_artifacts_output" class="provider-diag">No latest task artifact summary loaded yet.</div>
+              </div>
               <div id="project-status-summary" class="summary-grid">
                 <div class="summary-card">
                   <div class="summary-label">Demo</div>
@@ -576,6 +584,9 @@ def demo_page() -> HTMLResponse:
     const sessionStorePillEl = document.getElementById("session-store-pill");
     const sessionStoreMetaEl = document.getElementById("session-store-meta");
     const sessionStoreOutputEl = document.getElementById("session-store-output");
+    const latestTaskPillEl = document.getElementById("latest-task-pill");
+    const latestTaskMetaEl = document.getElementById("latest-task-meta");
+    const latestTaskArtifactsOutputEl = document.getElementById("latest_task_artifacts_output");
     const projectStatusSummaryEl = document.getElementById("project-status-summary");
     const projectStatusOutputEl = document.getElementById("project-status-output");
     const evalSummaryEl = document.getElementById("eval-summary");
@@ -817,6 +828,9 @@ def demo_page() -> HTMLResponse:
         sessionStorePillEl.textContent = "Not loaded";
         sessionStoreMetaEl.textContent = "Redis-first / SQLite-fallback summary will appear here.";
         sessionStoreOutputEl.textContent = "No session store runtime summary loaded yet.";
+        latestTaskPillEl.textContent = "Not loaded";
+        latestTaskMetaEl.textContent = "Latest persisted task artifact coverage will appear here.";
+        latestTaskArtifactsOutputEl.textContent = "No latest task artifact summary loaded yet.";
         projectStatusOutputEl.textContent = "No project runtime overview loaded yet.";
         return;
       }
@@ -827,6 +841,8 @@ def demo_page() -> HTMLResponse:
       const providerDiagnostics = provider.diagnostics || {};
       const sessionStore = summary.session_store || {};
       const sessionStoreEvents = sessionStore.event_summary || {};
+      const latestTask = summary.latest_task || null;
+      const latestTaskArtifacts = latestTask ? (latestTask.artifacts || {}) : {};
       const files = tables.files || { exists: false, row_count: 0 };
       const tasks = tables.analysis_tasks || { exists: false, row_count: 0 };
       const events = tables.analysis_events || { exists: false, row_count: 0 };
@@ -857,6 +873,18 @@ def demo_page() -> HTMLResponse:
         `latest_warning_task_id: ${sessionStoreEvents.latest_warning_task_id || "none"}`,
         `latest_recovered_task_id: ${sessionStoreEvents.latest_recovered_task_id || "none"}`,
       ].join("\n");
+      latestTaskPillEl.textContent = latestTask ? (latestTask.status || "available") : "No tasks";
+      latestTaskMetaEl.textContent = latestTask
+        ? [`task_id: ${latestTask.task_id}`, `updated_at: ${latestTask.updated_at}`].join(" | ")
+        : "No persisted task found yet.";
+      latestTaskArtifactsOutputEl.textContent = latestTask ? [
+        `has_business_context: ${latestTaskArtifacts.has_business_context}`,
+        `has_context_checkpoint: ${latestTaskArtifacts.has_context_checkpoint}`,
+        `has_draft_report: ${latestTaskArtifacts.has_draft_report}`,
+        `has_final_report: ${latestTaskArtifacts.has_final_report}`,
+        `has_llm_judgement: ${latestTaskArtifacts.has_llm_judgement}`,
+        `tool_call_log_count: ${latestTaskArtifacts.tool_call_log_count}`,
+      ].join("\n") : "No latest task artifact summary loaded yet.";
 
       projectStatusSummaryEl.innerHTML = `
         <div class="summary-card">

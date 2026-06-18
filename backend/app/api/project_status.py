@@ -1,4 +1,5 @@
 import os
+import json
 
 from fastapi import APIRouter
 
@@ -76,6 +77,40 @@ def _session_store_info() -> dict:
     }
 
 
+def _latest_task_info() -> dict | None:
+    init_db()
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            SELECT task_id, status, state_json, updated_at
+            FROM analysis_tasks
+            ORDER BY updated_at DESC
+            LIMIT 1
+            """
+        ).fetchone()
+        if row is None:
+            return None
+        task_id, status, state_json, updated_at = row
+        state = json.loads(state_json)
+        tool_log_count = conn.execute(
+            "SELECT COUNT(*) FROM tool_call_logs WHERE task_id = ?",
+            (task_id,),
+        ).fetchone()
+    return {
+        "task_id": task_id,
+        "status": status,
+        "updated_at": updated_at,
+        "artifacts": {
+            "has_business_context": bool(state.get("business_context")),
+            "has_context_checkpoint": bool(state.get("context_checkpoint")),
+            "has_draft_report": bool(state.get("draft_report")),
+            "has_final_report": bool(state.get("final_report")),
+            "has_llm_judgement": bool(state.get("llm_judgement")),
+            "tool_call_log_count": int(tool_log_count[0]) if tool_log_count else 0,
+        },
+    }
+
+
 @router.get("/api/project-status")
 def get_project_status() -> dict:
     provider_resolution = describe_llm_provider_resolution()
@@ -88,6 +123,7 @@ def get_project_status() -> dict:
                 "path": "/demo",
             },
             "session_store": _session_store_info(),
+            "latest_task": _latest_task_info(),
             "database": {
                 "tables": {
                     "files": _table_info("files"),

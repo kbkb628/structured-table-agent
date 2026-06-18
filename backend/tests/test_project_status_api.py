@@ -2,6 +2,9 @@ from fastapi.testclient import TestClient
 from unittest.mock import patch
 
 from app.main import app
+from app.storage.analysis_store import create_task
+from app.storage.analysis_store import record_tool_call
+from app.storage.analysis_store import update_task_state
 from app.storage.analysis_store import record_event
 from app.storage.session_store import SessionStore
 
@@ -87,3 +90,65 @@ def test_get_project_status_aggregates_session_store_event_summary():
     assert event_summary["latest_recovered_task_id"] == recovered_task_id
     assert event_summary["latest_warning_at"]
     assert event_summary["latest_recovered_at"]
+
+
+def test_get_project_status_reports_latest_task_artifact_coverage():
+    task_id = "task_project_status_latest_artifacts"
+    state = {
+        "task_id": task_id,
+        "file_id": "file_project_status_latest_artifacts",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {"dimension_field": "region"},
+        "business_context": [{"id": "metric_sales_amount", "title": "Sales Amount"}],
+        "analysis_plan": ["match fields", "aggregate", "report"],
+        "current_step": "report",
+        "completed_steps": ["match fields", "aggregate"],
+        "intermediate_findings": [{"summary": "East leads."}],
+        "tool_results": [{"success": True, "tool_name": "groupby_aggregate"}],
+        "chart_specs": [{"chart_type": "bar"}],
+        "draft_report": {"title": "Draft report"},
+        "final_report": {"title": "Final report", "analysis_goal": "compare region sales"},
+        "llm_judgement": {"supported_by_tools": True, "issue_count": 0},
+        "eval_result": {"overall_score": 0.91},
+        "context_checkpoint": {
+            "analysis_goal": "compare region sales",
+            "current_step": "report",
+            "draft_report_status": "available",
+        },
+        "tool_call_logs": [{"tool_name": "groupby_aggregate"}],
+        "events": [],
+        "errors": [],
+        "status": "completed",
+    }
+    with patch("app.storage.analysis_store._ts", return_value="2099-12-31T23:59:59+00:00"):
+        create_task(task_id, state["file_id"], state["question"], state)
+        update_task_state(task_id, state)
+    record_tool_call(
+        task_id,
+        "groupby_aggregate",
+        {"group_by": "region", "metric_column": "sales_amount"},
+        {
+            "success": True,
+            "tool_name": "groupby_aggregate",
+            "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]},
+            "summary": "ok",
+            "error": None,
+            "metadata": {"elapsed_ms": 12},
+        },
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    latest_task = response.json()["summary"]["latest_task"]
+    assert latest_task["task_id"] == task_id
+    assert latest_task["status"] == "completed"
+    assert latest_task["artifacts"]["has_business_context"] is True
+    assert latest_task["artifacts"]["has_context_checkpoint"] is True
+    assert latest_task["artifacts"]["has_draft_report"] is True
+    assert latest_task["artifacts"]["has_final_report"] is True
+    assert latest_task["artifacts"]["has_llm_judgement"] is True
+    assert latest_task["artifacts"]["tool_call_log_count"] >= 1
