@@ -130,6 +130,14 @@ try {
         project_status_latest_task_has_eval_result = $projectStatus.summary.latest_task.evaluation.has_eval_result
         project_status_latest_task_eval_overall_score = $projectStatus.summary.latest_task.evaluation.overall_score
         project_status_latest_task_eval_issue_count = $projectStatus.summary.latest_task.evaluation.issue_count
+        project_status_latest_task_eval_suggestion_count = $projectStatus.summary.latest_task.evaluation.suggestion_count
+        project_status_latest_task_eval_schema_valid = $projectStatus.summary.latest_task.evaluation.schema_valid
+        project_status_latest_task_eval_tool_success_rate = $projectStatus.summary.latest_task.evaluation.tool_success_rate
+        project_status_latest_task_eval_tool_elapsed_ms_total = $projectStatus.summary.latest_task.evaluation.tool_elapsed_ms_total
+        project_status_latest_task_eval_field_validity = $projectStatus.summary.latest_task.evaluation.field_validity
+        project_status_latest_task_eval_chart_validity = $projectStatus.summary.latest_task.evaluation.chart_validity
+        project_status_latest_task_eval_report_completeness = $projectStatus.summary.latest_task.evaluation.report_completeness
+        project_status_latest_task_eval_trace_completeness = $projectStatus.summary.latest_task.evaluation.trace_completeness
         project_status_latest_task_pending_metric_count = $projectStatus.summary.latest_task.process.pending_metric_count
         project_status_latest_task_planned_tool_call_count = $projectStatus.summary.latest_task.process.planned_tool_call_count
         project_status_latest_task_event_count = $projectStatus.summary.latest_task.process.event_count

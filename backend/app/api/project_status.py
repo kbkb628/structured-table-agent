@@ -127,6 +127,7 @@ def _latest_task_info() -> dict | None:
         ).fetchone()
     eval_result = state.get("eval_result") or {}
     issues = eval_result.get("issues") if isinstance(eval_result.get("issues"), list) else []
+    suggestions = eval_result.get("suggestions") if isinstance(eval_result.get("suggestions"), list) else []
     dimension_score_keys = {
         "schema_valid",
         "tool_success_rate",
@@ -177,7 +178,15 @@ def _latest_task_info() -> dict | None:
             "has_eval_result": bool(eval_result),
             "overall_score": eval_result.get("overall_score"),
             "issue_count": len(issues),
+            "suggestion_count": len(suggestions),
             "has_dimension_scores": any(key in eval_result for key in dimension_score_keys),
+            "schema_valid": eval_result.get("schema_valid"),
+            "tool_success_rate": eval_result.get("tool_success_rate"),
+            "tool_elapsed_ms_total": eval_result.get("tool_elapsed_ms_total"),
+            "field_validity": eval_result.get("field_validity"),
+            "chart_validity": eval_result.get("chart_validity"),
+            "report_completeness": eval_result.get("report_completeness"),
+            "trace_completeness": eval_result.get("trace_completeness"),
         },
         "judgement": {
             "supported_by_tools": llm_judgement.get("supported_by_tools"),

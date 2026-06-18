@@ -1016,7 +1016,15 @@ def demo_page() -> HTMLResponse:
         `has_eval_result: ${latestTaskEvaluation.has_eval_result}`,
         `overall_score: ${latestTaskEvaluation.overall_score ?? "none"}`,
         `issue_count: ${latestTaskEvaluation.issue_count ?? 0}`,
+        `suggestion_count: ${latestTaskEvaluation.suggestion_count ?? 0}`,
         `has_dimension_scores: ${latestTaskEvaluation.has_dimension_scores}`,
+        `schema_valid: ${latestTaskEvaluation.schema_valid ?? false}`,
+        `tool_success_rate: ${latestTaskEvaluation.tool_success_rate ?? "none"}`,
+        `tool_elapsed_ms_total: ${latestTaskEvaluation.tool_elapsed_ms_total ?? 0}`,
+        `field_validity: ${latestTaskEvaluation.field_validity ?? false}`,
+        `chart_validity: ${latestTaskEvaluation.chart_validity ?? false}`,
+        `report_completeness: ${latestTaskEvaluation.report_completeness ?? "none"}`,
+        `trace_completeness: ${latestTaskEvaluation.trace_completeness ?? "none"}`,
       ].join("\n") : "No latest task evaluation summary loaded yet.";
       latestTaskJudgementPillEl.textContent = latestTask ? "Judgement ready" : "No tasks";
       latestTaskJudgementMetaEl.textContent = latestTask

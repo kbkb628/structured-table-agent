@@ -293,7 +293,7 @@
 - `/demo` 当前已经使用这个接口展示 project runtime overview
 - `summary.session_store` 会直接暴露 session store runtime mode，包括 `preferred_backend`、`active_backend`、`redis_available`、`degraded_to_sqlite` 和 `redis_url`
 - `summary.session_store.event_summary` 还会暴露最近一次恢复事件的摘要，包括 `latest_recovered_recovery_source`、`latest_recovered_segment_count` 和 `latest_recovered_segments`
-- `summary.latest_task` 会同时暴露最新任务的 artifact 覆盖率和 evaluation 摘要，包括 `has_eval_result`、`overall_score`、`issue_count` 和 `has_dimension_scores`
+- `summary.latest_task` 会同时暴露最新任务的 artifact 覆盖率和 evaluation 摘要，包括 `has_eval_result`、`overall_score`、`issue_count`、`suggestion_count`、`has_dimension_scores`、`schema_valid`、`tool_success_rate`、`tool_elapsed_ms_total`、`field_validity`、`chart_validity`、`report_completeness` 和 `trace_completeness`
 - `summary.latest_task.judgement` 会暴露最新任务的补充型 `llm_judgement` 摘要，包括 `supported_by_tools`、`has_findings` 和 `issue_count`
 - `summary.latest_task.process` 会暴露最新任务的过程追踪摘要，包括 `pending_metric_count`、`planned_tool_call_count`、`event_count`、`latest_event_type`、`llm_issue_count`、`route_decision_count`、`continued_route_decision_count`、`finished_route_decision_count` 和 `latest_route_decision`
 - `summary.latest_task.report` 会暴露最新任务的报告摘要，包括 `chart_spec_count`、`key_finding_count`、`business_suggestion_count`、`data_limitation_count` 和 `next_step_count`
@@ -338,6 +338,14 @@ cd E:\bgagent1
 - `project_status_latest_task_has_findings`
 - `project_status_latest_task_has_eval_result`
 - `project_status_latest_task_eval_overall_score`
+- `project_status_latest_task_eval_suggestion_count`
+- `project_status_latest_task_eval_schema_valid`
+- `project_status_latest_task_eval_tool_success_rate`
+- `project_status_latest_task_eval_tool_elapsed_ms_total`
+- `project_status_latest_task_eval_field_validity`
+- `project_status_latest_task_eval_chart_validity`
+- `project_status_latest_task_eval_report_completeness`
+- `project_status_latest_task_eval_trace_completeness`
 - `project_status_latest_task_pending_metric_count`
 - `project_status_latest_task_latest_event_type`
 - `project_status_latest_task_route_decision_count`

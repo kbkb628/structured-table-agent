@@ -180,11 +180,13 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
             "overall_score": 0.91,
             "schema_valid": True,
             "tool_success_rate": 1.0,
+            "tool_elapsed_ms_total": 19,
             "field_validity": True,
             "chart_validity": True,
             "report_completeness": 1.0,
             "trace_completeness": 1.0,
             "issues": [],
+            "suggestions": ["Keep chart output and trace coverage aligned with the latest task state."],
         },
         "pending_metrics": [{"label": "sales_amount_sum"}],
         "pending_tool_calls": [{"tool_name": "groupby_aggregate", "label": "sales_amount_sum"}],
@@ -255,7 +257,15 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["evaluation"]["has_eval_result"] is True
     assert latest_task["evaluation"]["overall_score"] == 0.91
     assert latest_task["evaluation"]["issue_count"] == 0
+    assert latest_task["evaluation"]["suggestion_count"] == 1
     assert latest_task["evaluation"]["has_dimension_scores"] is True
+    assert latest_task["evaluation"]["schema_valid"] is True
+    assert latest_task["evaluation"]["tool_success_rate"] == 1.0
+    assert latest_task["evaluation"]["tool_elapsed_ms_total"] == 19
+    assert latest_task["evaluation"]["field_validity"] is True
+    assert latest_task["evaluation"]["chart_validity"] is True
+    assert latest_task["evaluation"]["report_completeness"] == 1.0
+    assert latest_task["evaluation"]["trace_completeness"] == 1.0
     assert latest_task["judgement"]["supported_by_tools"] is True
     assert latest_task["judgement"]["has_findings"] is True
     assert latest_task["judgement"]["issue_count"] == 0

@@ -58,6 +58,14 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_latest_task_has_eval_result" in script
     assert "project_status_latest_task_eval_overall_score" in script
     assert "project_status_latest_task_eval_issue_count" in script
+    assert "project_status_latest_task_eval_suggestion_count" in script
+    assert "project_status_latest_task_eval_schema_valid" in script
+    assert "project_status_latest_task_eval_tool_success_rate" in script
+    assert "project_status_latest_task_eval_tool_elapsed_ms_total" in script
+    assert "project_status_latest_task_eval_field_validity" in script
+    assert "project_status_latest_task_eval_chart_validity" in script
+    assert "project_status_latest_task_eval_report_completeness" in script
+    assert "project_status_latest_task_eval_trace_completeness" in script
     assert "project_status_latest_task_pending_metric_count" in script
     assert "project_status_latest_task_planned_tool_call_count" in script
     assert "project_status_latest_task_event_count" in script
