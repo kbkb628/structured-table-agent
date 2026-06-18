@@ -35,6 +35,9 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'id="session-store-pill"' in content
     assert 'id="session-store-meta"' in content
     assert 'id="session-store-output"' in content
+    assert 'warning_count' in content
+    assert 'latest_warning_task_id' in content
+    assert 'latest_recovered_task_id' in content
     assert 'id="project-status-summary"' in content
     assert 'id="project-status-output"' in content
     assert 'id="eval-summary"' in content

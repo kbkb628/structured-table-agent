@@ -168,6 +168,8 @@
   - `project_status_session_store_active_backend`
   - `project_status_session_store_redis_available`
   - `project_status_session_store_degraded_to_sqlite`
+  - `project_status_session_store_warning_count`
+  - `project_status_session_store_recovered_count`
   - `project_status_files`
   - `project_status_tasks`
   - `provider_status_key_source`

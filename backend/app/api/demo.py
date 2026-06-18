@@ -826,6 +826,7 @@ def demo_page() -> HTMLResponse:
       const provider = summary.provider || {};
       const providerDiagnostics = provider.diagnostics || {};
       const sessionStore = summary.session_store || {};
+      const sessionStoreEvents = sessionStore.event_summary || {};
       const files = tables.files || { exists: false, row_count: 0 };
       const tasks = tables.analysis_tasks || { exists: false, row_count: 0 };
       const events = tables.analysis_events || { exists: false, row_count: 0 };
@@ -851,6 +852,10 @@ def demo_page() -> HTMLResponse:
         `redis_available: ${sessionStore.redis_available}`,
         `degraded_to_sqlite: ${sessionStore.degraded_to_sqlite}`,
         `redis_url: ${sessionStore.redis_url || "unknown"}`,
+        `warning_count: ${sessionStoreEvents.warning_count ?? 0}`,
+        `recovered_count: ${sessionStoreEvents.recovered_count ?? 0}`,
+        `latest_warning_task_id: ${sessionStoreEvents.latest_warning_task_id || "none"}`,
+        `latest_recovered_task_id: ${sessionStoreEvents.latest_recovered_task_id || "none"}`,
       ].join("\n");
 
       projectStatusSummaryEl.innerHTML = `

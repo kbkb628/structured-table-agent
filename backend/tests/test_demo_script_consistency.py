@@ -45,6 +45,8 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_session_store_active_backend" in script
     assert "project_status_session_store_redis_available" in script
     assert "project_status_session_store_degraded_to_sqlite" in script
+    assert "project_status_session_store_warning_count" in script
+    assert "project_status_session_store_recovered_count" in script
 
 
 def test_demo_script_mentions_provider_and_eval_summary_output():
