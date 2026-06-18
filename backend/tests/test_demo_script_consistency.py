@@ -42,11 +42,17 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "/api/project-status" in script
     assert "project_status_provider" in script
     assert "project_status_demo_available" in script
+    assert "project_status_session_store_preferred_backend" in script
     assert "project_status_session_store_active_backend" in script
     assert "project_status_session_store_redis_available" in script
     assert "project_status_session_store_degraded_to_sqlite" in script
+    assert "project_status_session_store_redis_url" in script
     assert "project_status_session_store_warning_count" in script
     assert "project_status_session_store_recovered_count" in script
+    assert "project_status_session_store_latest_warning_task_id" in script
+    assert "project_status_session_store_latest_warning_at" in script
+    assert "project_status_session_store_latest_recovered_task_id" in script
+    assert "project_status_session_store_latest_recovered_at" in script
     assert "project_status_session_store_latest_recovered_recovery_source" in script
     assert "project_status_session_store_latest_recovered_segment_count" in script
     assert "project_status_session_store_latest_recovered_segments" in script

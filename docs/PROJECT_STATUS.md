@@ -170,11 +170,17 @@
 - `scripts/demo_mvp.ps1` 当前输出：
   - `project_status_provider`
   - `project_status_demo_available`
+  - `project_status_session_store_preferred_backend`
   - `project_status_session_store_active_backend`
   - `project_status_session_store_redis_available`
   - `project_status_session_store_degraded_to_sqlite`
+  - `project_status_session_store_redis_url`
   - `project_status_session_store_warning_count`
   - `project_status_session_store_recovered_count`
+  - `project_status_session_store_latest_warning_task_id`
+  - `project_status_session_store_latest_warning_at`
+  - `project_status_session_store_latest_recovered_task_id`
+  - `project_status_session_store_latest_recovered_at`
   - `project_status_session_store_latest_recovered_recovery_source`
   - `project_status_session_store_latest_recovered_segment_count`
   - `project_status_session_store_latest_recovered_segments`

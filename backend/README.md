@@ -228,8 +228,17 @@ The script uploads the sample CSV, queries `GET /api/project-status`, checks `GE
 Key summary fields exposed by the script include:
 
 - `project_status_provider`
+- `project_status_session_store_preferred_backend`
 - `project_status_session_store_active_backend`
+- `project_status_session_store_redis_available`
+- `project_status_session_store_degraded_to_sqlite`
+- `project_status_session_store_redis_url`
 - `project_status_session_store_warning_count`
+- `project_status_session_store_recovered_count`
+- `project_status_session_store_latest_warning_task_id`
+- `project_status_session_store_latest_warning_at`
+- `project_status_session_store_latest_recovered_task_id`
+- `project_status_session_store_latest_recovered_at`
 - `project_status_session_store_latest_recovered_recovery_source`
 - `project_status_session_store_latest_recovered_segment_count`
 - `project_status_session_store_latest_recovered_segments`
@@ -306,9 +315,6 @@ Key summary fields exposed by the script include:
 Additional runtime-summary fields that are also exposed by the script include:
 
 - `project_status_demo_available`
-- `project_status_session_store_redis_available`
-- `project_status_session_store_degraded_to_sqlite`
-- `project_status_session_store_recovered_count`
 - `project_status_latest_task_has_llm_judgement`
 - `project_status_latest_task_tool_call_log_count`
 - `project_status_latest_task_eval_issue_count`

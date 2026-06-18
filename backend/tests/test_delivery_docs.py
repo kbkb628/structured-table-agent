@@ -33,9 +33,15 @@ def test_api_reference_mentions_demo_route_and_current_eval_case_count():
     assert "project_status_latest_task_latest_tool_name" in content
     assert "project_status_latest_task_latest_error_message" in content
     assert "project_status_demo_available" in content
+    assert "project_status_session_store_preferred_backend" in content
     assert "project_status_session_store_redis_available" in content
     assert "project_status_session_store_degraded_to_sqlite" in content
+    assert "project_status_session_store_redis_url" in content
     assert "project_status_session_store_recovered_count" in content
+    assert "project_status_session_store_latest_warning_task_id" in content
+    assert "project_status_session_store_latest_warning_at" in content
+    assert "project_status_session_store_latest_recovered_task_id" in content
+    assert "project_status_session_store_latest_recovered_at" in content
     assert "project_status_latest_task_has_llm_judgement" in content
     assert "project_status_latest_task_tool_call_log_count" in content
     assert "project_status_latest_task_eval_issue_count" in content
@@ -91,9 +97,15 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "project_status_latest_task_latest_tool_name" in content
     assert "project_status_latest_task_latest_error_message" in content
     assert "project_status_demo_available" in content
+    assert "project_status_session_store_preferred_backend" in content
     assert "project_status_session_store_redis_available" in content
     assert "project_status_session_store_degraded_to_sqlite" in content
+    assert "project_status_session_store_redis_url" in content
     assert "project_status_session_store_recovered_count" in content
+    assert "project_status_session_store_latest_warning_task_id" in content
+    assert "project_status_session_store_latest_warning_at" in content
+    assert "project_status_session_store_latest_recovered_task_id" in content
+    assert "project_status_session_store_latest_recovered_at" in content
     assert "project_status_latest_task_has_llm_judgement" in content
     assert "project_status_latest_task_tool_call_log_count" in content
     assert "project_status_latest_task_eval_issue_count" in content
@@ -140,9 +152,15 @@ def test_root_readme_matches_current_runtime_truth():
     assert "project_status_latest_task_latest_tool_name" in content
     assert "project_status_latest_task_latest_error_message" in content
     assert "project_status_demo_available" in content
+    assert "project_status_session_store_preferred_backend" in content
     assert "project_status_session_store_redis_available" in content
     assert "project_status_session_store_degraded_to_sqlite" in content
+    assert "project_status_session_store_redis_url" in content
     assert "project_status_session_store_recovered_count" in content
+    assert "project_status_session_store_latest_warning_task_id" in content
+    assert "project_status_session_store_latest_warning_at" in content
+    assert "project_status_session_store_latest_recovered_task_id" in content
+    assert "project_status_session_store_latest_recovered_at" in content
     assert "project_status_latest_task_has_llm_judgement" in content
     assert "project_status_latest_task_tool_call_log_count" in content
     assert "project_status_latest_task_eval_issue_count" in content
@@ -201,9 +219,15 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "project_status_latest_task_latest_tool_name" in content
     assert "project_status_latest_task_latest_error_message" in content
     assert "project_status_demo_available" in content
+    assert "project_status_session_store_preferred_backend" in content
     assert "project_status_session_store_redis_available" in content
     assert "project_status_session_store_degraded_to_sqlite" in content
+    assert "project_status_session_store_redis_url" in content
     assert "project_status_session_store_recovered_count" in content
+    assert "project_status_session_store_latest_warning_task_id" in content
+    assert "project_status_session_store_latest_warning_at" in content
+    assert "project_status_session_store_latest_recovered_task_id" in content
+    assert "project_status_session_store_latest_recovered_at" in content
     assert "project_status_latest_task_has_llm_judgement" in content
     assert "project_status_latest_task_tool_call_log_count" in content
     assert "project_status_latest_task_eval_issue_count" in content

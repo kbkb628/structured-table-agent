@@ -114,11 +114,17 @@ try {
         upload_columns = $upload.column_count
         project_status_provider = $projectStatus.summary.provider.provider
         project_status_demo_available = $projectStatus.summary.demo.available
+        project_status_session_store_preferred_backend = $projectStatus.summary.session_store.preferred_backend
         project_status_session_store_active_backend = $projectStatus.summary.session_store.active_backend
         project_status_session_store_redis_available = $projectStatus.summary.session_store.redis_available
         project_status_session_store_degraded_to_sqlite = $projectStatus.summary.session_store.degraded_to_sqlite
+        project_status_session_store_redis_url = $projectStatus.summary.session_store.redis_url
         project_status_session_store_warning_count = $projectStatus.summary.session_store.event_summary.warning_count
         project_status_session_store_recovered_count = $projectStatus.summary.session_store.event_summary.recovered_count
+        project_status_session_store_latest_warning_task_id = $projectStatus.summary.session_store.event_summary.latest_warning_task_id
+        project_status_session_store_latest_warning_at = $projectStatus.summary.session_store.event_summary.latest_warning_at
+        project_status_session_store_latest_recovered_task_id = $projectStatus.summary.session_store.event_summary.latest_recovered_task_id
+        project_status_session_store_latest_recovered_at = $projectStatus.summary.session_store.event_summary.latest_recovered_at
         project_status_session_store_latest_recovered_recovery_source = $projectStatus.summary.session_store.event_summary.latest_recovered_recovery_source
         project_status_session_store_latest_recovered_segment_count = $projectStatus.summary.session_store.event_summary.latest_recovered_segment_count
         project_status_session_store_latest_recovered_segments = $projectStatus.summary.session_store.event_summary.latest_recovered_segments
