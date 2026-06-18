@@ -77,6 +77,9 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'top_business_context_score' in content
     assert 'top_business_context_related_field_count' in content
     assert 'top_business_context_has_score_breakdown' in content
+    assert 'top_business_context_keyword_score' in content
+    assert 'top_business_context_field_score' in content
+    assert 'top_business_context_phrase_score' in content
     assert 'top_business_context_bm25_score' in content
     assert 'checkpoint_current_step' in content
     assert 'checkpoint_status' in content

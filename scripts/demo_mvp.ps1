@@ -155,6 +155,9 @@ try {
         project_status_latest_task_top_business_context_score = $projectStatus.summary.latest_task.context.top_business_context_score
         project_status_latest_task_top_business_context_related_field_count = $projectStatus.summary.latest_task.context.top_business_context_related_field_count
         project_status_latest_task_top_business_context_has_score_breakdown = $projectStatus.summary.latest_task.context.top_business_context_has_score_breakdown
+        project_status_latest_task_top_business_context_keyword_score = $projectStatus.summary.latest_task.context.top_business_context_keyword_score
+        project_status_latest_task_top_business_context_field_score = $projectStatus.summary.latest_task.context.top_business_context_field_score
+        project_status_latest_task_top_business_context_phrase_score = $projectStatus.summary.latest_task.context.top_business_context_phrase_score
         project_status_latest_task_top_business_context_bm25_score = $projectStatus.summary.latest_task.context.top_business_context_bm25_score
         project_status_latest_task_checkpoint_current_step = $projectStatus.summary.latest_task.context.checkpoint_current_step
         project_status_latest_task_checkpoint_status = $projectStatus.summary.latest_task.context.checkpoint_status

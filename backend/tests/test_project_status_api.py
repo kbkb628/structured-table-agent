@@ -292,6 +292,9 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["context"]["top_business_context_score"] == 12.48
     assert latest_task["context"]["top_business_context_related_field_count"] == 2
     assert latest_task["context"]["top_business_context_has_score_breakdown"] is True
+    assert latest_task["context"]["top_business_context_keyword_score"] == 6.0
+    assert latest_task["context"]["top_business_context_field_score"] == 4.0
+    assert latest_task["context"]["top_business_context_phrase_score"] == 0.0
     assert latest_task["context"]["top_business_context_bm25_score"] == 2.48
     assert latest_task["context"]["checkpoint_current_step"] == "report"
     assert latest_task["context"]["checkpoint_status"] == "completed"
