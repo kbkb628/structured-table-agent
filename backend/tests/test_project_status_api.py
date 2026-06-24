@@ -390,6 +390,50 @@ def test_get_project_status_surfaces_embedding_and_rerank_evidence():
     assert context["top_business_context_retrieval_sources"] == ["bm25", "embedding"]
 
 
+def test_get_project_status_surfaces_memory_runtime_evidence():
+    task_id = "task_project_status_memory"
+    state = {
+        "task_id": task_id,
+        "file_id": "file_project_status_memory",
+        "question": "analyse sales by region again",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [],
+        "memory_context": {
+            "scope": {"file_id": "file_project_status_memory"},
+            "recent_turns": [{"task_id": "task_prev", "question": "analyse sales by region"}],
+            "summary_memory": {"summary_text": "Previous analysis focused on regional sales.", "turn_count": 2},
+            "stats": {"recent_turn_count": 1, "summary_turn_count": 2, "memory_enabled": True},
+        },
+        "analysis_plan": ["match fields"],
+        "current_step": "created",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "created",
+    }
+    create_task(task_id, state["file_id"], state["question"], state)
+    update_task_state(task_id, state)
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    latest_task = response.json()["summary"]["latest_task"]
+    assert latest_task["memory"]["memory_enabled"] is True
+    assert latest_task["memory"]["recent_turn_count"] == 1
+    assert latest_task["memory"]["summary_turn_count"] == 2
+    assert latest_task["memory"]["summary_text"] == "Previous analysis focused on regional sales."
+
+
 def test_get_project_status_ignores_future_dated_fixture_task_for_latest_summary():
     frozen_now = "2099-12-31T23:59:59+00:00"
     future_task_id = "task_project_status_future_fixture"

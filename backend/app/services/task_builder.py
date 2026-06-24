@@ -33,9 +33,11 @@ def build_analysis_state(
     llm_client: LLMClient | None = None,
 ) -> tuple[dict, list[dict], str, list[str]]:
     client = llm_client or get_llm_client()
+    session_store = SessionStore()
+    memory_context = session_store.load_file_memory(file_id)
     business_context = retrieve_business_context(question, file_profile)["items"]
-    analysis_goal = client.generate_analysis_goal(question, file_profile, business_context)
-    analysis_plan = client.generate_analysis_plan(analysis_goal, file_profile, business_context)
+    analysis_goal = client.generate_analysis_goal(question, file_profile, business_context, memory_context)
+    analysis_plan = client.generate_analysis_plan(analysis_goal, file_profile, business_context, memory_context)
 
     state = {
         "task_id": task_id,
@@ -45,6 +47,7 @@ def build_analysis_state(
         "file_profile": file_profile,
         "field_understanding": {},
         "business_context": business_context,
+        "memory_context": memory_context,
         "analysis_plan": analysis_plan,
         "current_step": "created",
         "completed_steps": [],

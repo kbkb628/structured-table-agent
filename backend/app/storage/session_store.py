@@ -5,6 +5,7 @@ import time
 import uuid
 from contextlib import contextmanager
 
+from app.core import config
 from app.observability.event_logger import record_analysis_event
 from app.observability.event_logger import record_session_state_recovered
 from app.storage.analysis_store import get_task_state
@@ -36,6 +37,51 @@ class SessionStore:
             "latest_context": f"latest_context:{task_id}",
             "task_lock": f"task_lock:{task_id}",
         }
+
+    def _build_file_memory_keys(self, file_id: str) -> dict[str, str]:
+        return {
+            "memory_snapshot": f"file_memory:{file_id}",
+            "memory_recent_turns": f"file_memory_recent_turns:{file_id}",
+            "memory_summary": f"file_memory_summary:{file_id}",
+        }
+
+    def _default_file_memory(self, file_id: str) -> dict:
+        return {
+            "scope": {"file_id": file_id},
+            "recent_turns": [],
+            "summary_memory": {"summary_text": "", "turn_count": 0},
+            "stats": {"recent_turn_count": 0, "summary_turn_count": 0, "memory_enabled": config.MEMORY_ENABLED},
+        }
+
+    def _normalize_file_memory(self, file_id: str, memory: dict | None) -> dict:
+        base = self._default_file_memory(file_id)
+        if not isinstance(memory, dict):
+            return base
+        recent_turns = memory.get("recent_turns") if isinstance(memory.get("recent_turns"), list) else []
+        summary_memory = memory.get("summary_memory") if isinstance(memory.get("summary_memory"), dict) else {}
+        return {
+            "scope": memory.get("scope") if isinstance(memory.get("scope"), dict) else {"file_id": file_id},
+            "recent_turns": recent_turns,
+            "summary_memory": {
+                "summary_text": str(summary_memory.get("summary_text") or ""),
+                "turn_count": int(summary_memory.get("turn_count", 0) or 0),
+            },
+            "stats": {
+                "recent_turn_count": len(recent_turns),
+                "summary_turn_count": int(summary_memory.get("turn_count", 0) or 0),
+                "memory_enabled": config.MEMORY_ENABLED,
+            },
+        }
+
+    def _build_summary_text(self, archived_turns: list[dict], current_summary: str, max_chars: int) -> str:
+        fragments = [current_summary.strip()] if current_summary.strip() else []
+        for turn in archived_turns:
+            report = turn.get("final_report") or {}
+            fragments.append(
+                f"Q: {turn.get('question', '')}; Goal: {turn.get('analysis_goal', '')}; Report: {report.get('title', '')}"
+            )
+        summary = " | ".join(fragment for fragment in fragments if fragment).strip()
+        return summary[:max_chars]
 
     def _build_context_checkpoint(self, state: dict) -> dict:
         business_context = state.get("business_context", []) or []
@@ -189,6 +235,93 @@ class SessionStore:
         self._record_context_checkpoint_refreshed(task_id, context_checkpoint)
         update_task_state(task_id, state)
         return False
+
+    def save_file_memory(self, file_id: str, memory: dict) -> bool:
+        normalized = self._normalize_file_memory(file_id, memory)
+        client = self._connect()
+        if client is None:
+            return False
+        keys = self._build_file_memory_keys(file_id)
+        client.set(keys["memory_snapshot"], json.dumps(normalized, ensure_ascii=False))
+        client.set(keys["memory_recent_turns"], json.dumps(normalized["recent_turns"], ensure_ascii=False))
+        client.set(keys["memory_summary"], json.dumps(normalized["summary_memory"], ensure_ascii=False))
+        return True
+
+    def load_file_memory(self, file_id: str) -> dict:
+        if not config.MEMORY_ENABLED:
+            disabled = self._default_file_memory(file_id)
+            disabled["stats"]["memory_enabled"] = False
+            return disabled
+
+        client = self._connect()
+        if client is None:
+            return self._default_file_memory(file_id)
+
+        keys = self._build_file_memory_keys(file_id)
+        payload = client.get(keys["memory_snapshot"])
+        if payload:
+            return self._normalize_file_memory(file_id, json.loads(payload))
+
+        recent_turns_payload = client.get(keys["memory_recent_turns"])
+        summary_payload = client.get(keys["memory_summary"])
+        if not recent_turns_payload and not summary_payload:
+            return self._default_file_memory(file_id)
+
+        memory = self._default_file_memory(file_id)
+        if recent_turns_payload:
+            memory["recent_turns"] = json.loads(recent_turns_payload)
+        if summary_payload:
+            memory["summary_memory"] = json.loads(summary_payload)
+        normalized = self._normalize_file_memory(file_id, memory)
+        client.set(keys["memory_snapshot"], json.dumps(normalized, ensure_ascii=False))
+        return normalized
+
+    def append_turn_memory(
+        self,
+        file_id: str,
+        task_id: str,
+        question: str,
+        analysis_goal: str,
+        analysis_plan: list[str],
+        final_report: dict,
+        max_recent_turns: int,
+        max_summary_chars: int | None = None,
+    ) -> dict:
+        if not config.MEMORY_ENABLED:
+            disabled = self._default_file_memory(file_id)
+            disabled["stats"]["memory_enabled"] = False
+            return disabled
+
+        effective_summary_chars = max_summary_chars or config.MEMORY_SUMMARY_MAX_CHARS
+        memory = self.load_file_memory(file_id)
+        turn = {
+            "task_id": task_id,
+            "question": question,
+            "analysis_goal": analysis_goal,
+            "analysis_plan": analysis_plan,
+            "final_report": final_report,
+        }
+        all_recent_turns = [*(memory.get("recent_turns") or []), turn]
+        archived_turns = all_recent_turns[:-max_recent_turns] if len(all_recent_turns) > max_recent_turns else []
+        recent_turns = all_recent_turns[-max_recent_turns:]
+        previous_summary = (memory.get("summary_memory") or {}).get("summary_text", "")
+        previous_summary_turn_count = int((memory.get("summary_memory") or {}).get("turn_count", 0) or 0)
+        summary_turn_count = previous_summary_turn_count + len(archived_turns)
+        updated_memory = {
+            "scope": {"file_id": file_id},
+            "recent_turns": recent_turns,
+            "summary_memory": {
+                "summary_text": self._build_summary_text(archived_turns, previous_summary, effective_summary_chars),
+                "turn_count": summary_turn_count,
+            },
+            "stats": {
+                "recent_turn_count": len(recent_turns),
+                "summary_turn_count": summary_turn_count,
+                "memory_enabled": True,
+            },
+        }
+        self.save_file_memory(file_id, updated_memory)
+        return updated_memory
 
     def acquire_task_lock(self, task_id: str, ttl_seconds: int = 900) -> str | None:
         token = uuid.uuid4().hex

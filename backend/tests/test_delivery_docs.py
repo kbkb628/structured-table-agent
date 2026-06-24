@@ -424,6 +424,28 @@ def test_architecture_overview_mentions_runtime_overview_and_demo_layers():
     assert "fixed eval" in content or "fixed_eval_average_trace_completeness" in content
 
 
+def test_delivery_docs_mention_real_redis_memory_runtime_evidence():
+    repo_root = Path(__file__).resolve().parents[2]
+    resume_description = (repo_root / "docs" / "RESUME_PROJECT_DESCRIPTION.md").read_text(encoding="utf-8")
+    evidence_map = (repo_root / "docs" / "RESUME_EVIDENCE_MAP.md").read_text(encoding="utf-8")
+    project_status = (repo_root / "docs" / "PROJECT_STATUS.md").read_text(encoding="utf-8")
+
+    assert "memory_context" in resume_description
+    assert "sliding window" in resume_description
+    assert "summary_memory" in resume_description
+    assert "summary_text" in resume_description
+
+    assert "memory_context" in evidence_map
+    assert "recent_turns" in evidence_map
+    assert "summary_memory" in evidence_map
+    assert "project_status_latest_task_recent_turn_count" in evidence_map
+
+    assert "memory_context" in project_status
+    assert "recent_turns" in project_status
+    assert "summary_memory" in project_status
+    assert "summary_text" in project_status
+
+
 def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     content = (Path(__file__).resolve().parents[2] / "docs" / "INTERVIEW_GUIDE.md").read_text(
         encoding="utf-8"

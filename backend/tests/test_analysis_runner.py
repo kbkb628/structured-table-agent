@@ -10,10 +10,17 @@ from app.storage.models import FileRecord
 
 
 class RunnerStubLLMClient:
-    def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+    def generate_analysis_goal(
+        self,
+        question: str,
+        file_profile: dict,
+        business_context: list[dict],
+        memory_context: dict,
+    ) -> str:
         del question
         del file_profile
         del business_context
+        del memory_context
         return "runner stub goal"
 
     def generate_analysis_plan(
@@ -21,10 +28,12 @@ class RunnerStubLLMClient:
         analysis_goal: str,
         file_profile: dict,
         business_context: list[dict],
+        memory_context: dict,
     ) -> list[str]:
         del analysis_goal
         del file_profile
         del business_context
+        del memory_context
         return ["runner stub plan"]
 
     def generate_report(
@@ -67,10 +76,17 @@ class RunnerStubLLMClient:
 
 
 class FailingReportLLMClient:
-    def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+    def generate_analysis_goal(
+        self,
+        question: str,
+        file_profile: dict,
+        business_context: list[dict],
+        memory_context: dict,
+    ) -> str:
         del question
         del file_profile
         del business_context
+        del memory_context
         return "failing report goal"
 
     def generate_analysis_plan(
@@ -78,10 +94,12 @@ class FailingReportLLMClient:
         analysis_goal: str,
         file_profile: dict,
         business_context: list[dict],
+        memory_context: dict,
     ) -> list[str]:
         del analysis_goal
         del file_profile
         del business_context
+        del memory_context
         return ["failing report plan"]
 
     def generate_report(

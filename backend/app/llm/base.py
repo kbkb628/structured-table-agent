@@ -3,7 +3,13 @@ from abc import ABC, abstractmethod
 
 class LLMClient(ABC):
     @abstractmethod
-    def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+    def generate_analysis_goal(
+        self,
+        question: str,
+        file_profile: dict,
+        business_context: list[dict],
+        memory_context: dict,
+    ) -> str:
         raise NotImplementedError
 
     @abstractmethod
@@ -12,6 +18,7 @@ class LLMClient(ABC):
         analysis_goal: str,
         file_profile: dict,
         business_context: list[dict],
+        memory_context: dict,
     ) -> list[str]:
         raise NotImplementedError
 

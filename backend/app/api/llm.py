@@ -57,6 +57,7 @@ def run_provider_smoke() -> LLMProviderSmokeResponse:
                     "content": "region can be used for regional comparison",
                 },
             ],
+            memory_context={},
         )
         payload["ok"] = True
     except Exception as exc:

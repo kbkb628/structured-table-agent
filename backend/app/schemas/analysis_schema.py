@@ -41,6 +41,7 @@ class AnalysisTaskState(BaseModel):
     file_profile: dict[str, Any]
     field_understanding: dict[str, Any]
     business_context: list[dict[str, Any]]
+    memory_context: dict[str, Any] = Field(default_factory=dict)
     analysis_plan: list[str]
     current_step: str
     completed_steps: list[str]

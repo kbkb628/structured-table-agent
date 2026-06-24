@@ -35,3 +35,12 @@
 - 不能说已经实现完整 React 前端
 - 不能说所有分析都由大模型自动完成
 - 不能说项目已经是生产级多租户或高并发系统
+
+## Redis Memory Runtime Evidence
+
+- Real Redis memory is now implemented through `memory_context`, not only `analysis_state` persistence.
+- The system stores `recent_turns` plus `summary_memory` for the same `file_id`.
+- Recent turns follow a sliding window policy controlled by `MEMORY_MAX_RECENT_TURNS`.
+- Older turns are compressed into summary memory text and surfaced as `summary_text`.
+- `task_builder` passes `memory_context` into `generate_analysis_goal` and `generate_analysis_plan`.
+- `GET /api/project-status` and `/demo` expose `recent_turn_count`, `summary_turn_count`, and `summary_text`.

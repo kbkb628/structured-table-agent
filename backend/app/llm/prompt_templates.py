@@ -6,12 +6,14 @@ FALLBACK_TEMPLATE = "Perform grouped metric analysis on the uploaded file based 
 GOAL_SYSTEM_PROMPT = (
     "You are an analytics planning assistant. "
     "Return JSON only with the key analysis_goal. "
+    "Use provided memory_context only as historical planning context. "
     "Do not fabricate numeric results."
 )
 
 PLAN_SYSTEM_PROMPT = (
     "You are an analytics planning assistant. "
     "Return JSON only with the key analysis_plan as an array of concise steps. "
+    "Use provided memory_context only as historical planning context. "
     "Do not fabricate numeric results."
 )
 

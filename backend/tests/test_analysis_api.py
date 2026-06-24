@@ -41,16 +41,30 @@ class FakeRedisClient:
 
 
 class FailingGoalLLMClient:
-    def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+    def generate_analysis_goal(
+        self,
+        question: str,
+        file_profile: dict,
+        business_context: list[dict],
+        memory_context: dict,
+    ) -> str:
         del question
         del file_profile
         del business_context
+        del memory_context
         raise QwenResponseError("simulated provider failure")
 
-    def generate_analysis_plan(self, analysis_goal: str, file_profile: dict, business_context: list[dict]) -> list[str]:
+    def generate_analysis_plan(
+        self,
+        analysis_goal: str,
+        file_profile: dict,
+        business_context: list[dict],
+        memory_context: dict,
+    ) -> list[str]:
         del analysis_goal
         del file_profile
         del business_context
+        del memory_context
         return []
 
     def generate_report(
@@ -843,6 +857,30 @@ def test_run_analysis_returns_409_when_task_is_already_locked(tmp_path):
 
     assert run.status_code == 409
     assert run.json()["detail"] == f"Task {task_id} is already running."
+
+
+def test_start_analysis_second_task_reads_memory_from_first_completed_task(monkeypatch):
+    fake_client = FakeRedisClient()
+    monkeypatch.setattr(SessionStore, "_connect", lambda self: fake_client)
+
+    client = TestClient(app)
+    upload = client.post("/api/files/upload-sample")
+    assert upload.status_code == 200
+    file_id = upload.json()["file_id"]
+
+    first_start = client.post("/api/analysis/start", json={"file_id": file_id, "question": "analyse sales by region"})
+    assert first_start.status_code == 200
+    first_task_id = first_start.json()["task_id"]
+
+    first_run = client.post(f"/api/analysis/{first_task_id}/run")
+    assert first_run.status_code == 200
+
+    second_start = client.post("/api/analysis/start", json={"file_id": file_id, "question": "analyse sales by region again"})
+    assert second_start.status_code == 200
+
+    second_state = client.get(f"/api/analysis/{second_start.json()['task_id']}").json()
+    assert second_state["memory_context"]["recent_turns"]
+    assert second_state["memory_context"]["recent_turns"][-1]["task_id"] == first_task_id
 
 
 def test_run_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():

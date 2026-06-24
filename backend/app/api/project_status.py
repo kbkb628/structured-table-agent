@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 
 from fastapi import APIRouter
 
+from app.core import config
 from app.llm.factory import describe_llm_provider_diagnostics
 from app.llm.factory import describe_llm_provider_resolution
 from app.storage.database import get_connection
@@ -98,6 +99,11 @@ def _session_store_info() -> dict:
         "redis_available": redis_available,
         "degraded_to_sqlite": not redis_available,
         "redis_url": redis_url,
+        "memory_capabilities": {
+            "memory_enabled": config.MEMORY_ENABLED,
+            "max_recent_turns": config.MEMORY_MAX_RECENT_TURNS,
+            "summary_max_chars": config.MEMORY_SUMMARY_MAX_CHARS,
+        },
         "event_summary": {
             "warning_count": int(warning_count[0]) if warning_count else 0,
             "recovered_count": int(recovered_count[0]) if recovered_count else 0,
@@ -213,6 +219,11 @@ def _latest_task_info() -> dict | None:
     field_understanding = state.get("field_understanding") or {}
     metrics = field_understanding.get("metrics") or []
     completed_steps = state.get("completed_steps") or []
+    memory_context = state.get("memory_context") or {}
+    memory_summary = memory_context.get("summary_memory") or {}
+    memory_stats = memory_context.get("stats") or {}
+    recent_turns = memory_context.get("recent_turns") or []
+    latest_memory_turn = recent_turns[-1] if recent_turns else {}
     route_decisions = [
         step.split("route_next_step:", 1)[1]
         for step in completed_steps
@@ -358,6 +369,14 @@ def _latest_task_info() -> dict | None:
                 if tool_results
                 else None
             ),
+        },
+        "memory": {
+            "memory_enabled": bool(memory_stats.get("memory_enabled")),
+            "recent_turn_count": len(recent_turns),
+            "summary_turn_count": int(memory_summary.get("turn_count", 0) or 0),
+            "summary_text": memory_summary.get("summary_text"),
+            "latest_memory_task_id": latest_memory_turn.get("task_id"),
+            "latest_memory_question": latest_memory_turn.get("question"),
         },
     }
 

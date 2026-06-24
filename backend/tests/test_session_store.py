@@ -463,6 +463,31 @@ def test_session_store_persists_granular_redis_keys(monkeypatch):
     assert restored_snapshot["context_checkpoint"]["draft_report_status"] == "available"
 
 
+def test_session_store_persists_file_memory_and_sliding_window(monkeypatch):
+    fake_client = FakeRedisClient()
+    monkeypatch.setattr(SessionStore, "_connect", lambda self: fake_client)
+    store = SessionStore()
+
+    for index in range(1, 5):
+        store.append_turn_memory(
+            file_id="file_memory_case",
+            task_id=f"task_memory_{index}",
+            question=f"analyse question {index}",
+            analysis_goal=f"goal {index}",
+            analysis_plan=[f"plan {index}"],
+            final_report={"title": f"Report {index}"},
+            max_recent_turns=2,
+        )
+
+    memory = store.load_file_memory("file_memory_case")
+
+    assert memory["scope"]["file_id"] == "file_memory_case"
+    assert memory["stats"]["recent_turn_count"] == 2
+    assert [turn["task_id"] for turn in memory["recent_turns"]] == ["task_memory_3", "task_memory_4"]
+    assert memory["summary_memory"]["turn_count"] == 2
+    assert "question 1" in memory["summary_memory"]["summary_text"]
+
+
 def test_session_store_load_state_hydrates_context_checkpoint_from_redis(monkeypatch):
     task_id = f"task_session_checkpoint_{uuid.uuid4().hex[:8]}"
     fake_client = FakeRedisClient()

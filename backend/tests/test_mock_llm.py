@@ -13,6 +13,7 @@ def test_mock_llm_generates_region_goal_from_question_and_context():
         question="analyse sales by region",
         file_profile=file_profile,
         business_context=business_context,
+        memory_context={},
     )
 
     assert "region" in goal.lower()
@@ -29,6 +30,7 @@ def test_mock_llm_generates_channel_plan_with_two_steps():
         analysis_goal=analysis_goal,
         file_profile=file_profile,
         business_context=business_context,
+        memory_context={},
     )
 
     assert len(plan) >= 4
@@ -57,3 +59,19 @@ def test_mock_llm_can_generate_structured_report_and_judge_result():
     assert len(report["key_findings"]) > 0
     assert judgement["supported_by_tools"] is True
     assert judgement["issue_count"] == 0
+
+
+def test_mock_llm_goal_uses_memory_context_note():
+    client = MockLLMClient()
+    goal = client.generate_analysis_goal(
+        question="analyse sales by region",
+        file_profile={"columns": [{"name": "region", "type": "string"}]},
+        business_context=[{"title": "Region"}],
+        memory_context={
+            "recent_turns": [{"question": "analyse sales by region last week"}],
+            "summary_memory": {"summary_text": "Historical focus: regional sales comparison."},
+            "stats": {"recent_turn_count": 1, "summary_turn_count": 1, "memory_enabled": True},
+        },
+    )
+
+    assert "historical focus" in goal.lower()

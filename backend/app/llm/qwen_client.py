@@ -158,13 +158,20 @@ class QwenClient(LLMClient):
         )
         return normalized
 
-    def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+    def generate_analysis_goal(
+        self,
+        question: str,
+        file_profile: dict,
+        business_context: list[dict],
+        memory_context: dict,
+    ) -> str:
         payload = self._chat_json(
             GOAL_SYSTEM_PROMPT,
             {
                 "question": question,
                 "file_profile": file_profile,
                 "business_context": business_context,
+                "memory_context": memory_context,
             },
         )
         goal = payload.get("analysis_goal")
@@ -177,6 +184,7 @@ class QwenClient(LLMClient):
         analysis_goal: str,
         file_profile: dict,
         business_context: list[dict],
+        memory_context: dict,
     ) -> list[str]:
         payload = self._chat_json(
             PLAN_SYSTEM_PROMPT,
@@ -184,6 +192,7 @@ class QwenClient(LLMClient):
                 "analysis_goal": analysis_goal,
                 "file_profile": file_profile,
                 "business_context": business_context,
+                "memory_context": memory_context,
             },
         )
         plan = payload.get("analysis_plan")

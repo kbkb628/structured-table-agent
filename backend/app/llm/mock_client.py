@@ -6,28 +6,47 @@ class MockLLMClient(LLMClient):
     def _context_titles(self, business_context: list[dict]) -> list[str]:
         return [item["title"] for item in business_context if item.get("title")]
 
-    def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+    def _memory_note(self, memory_context: dict) -> str:
+        summary_text = ((memory_context.get("summary_memory") or {}).get("summary_text") or "").strip()
+        recent_turns = memory_context.get("recent_turns") or []
+        if summary_text:
+            return f" Historical focus: {summary_text}"
+        if recent_turns:
+            latest_question = recent_turns[-1].get("question", "")
+            return f" Historical focus: {latest_question}." if latest_question else ""
+        return ""
+
+    def generate_analysis_goal(
+        self,
+        question: str,
+        file_profile: dict,
+        business_context: list[dict],
+        memory_context: dict,
+    ) -> str:
         del file_profile
         lowered = question.lower()
         titles = self._context_titles(business_context)
         context_note = f" Context: {', '.join(titles)}." if titles else ""
+        memory_note = self._memory_note(memory_context)
 
         if "category" in lowered and "sales" in lowered:
-            return CATEGORY_TEMPLATE + context_note
+            return CATEGORY_TEMPLATE + context_note + memory_note
         if "region" in lowered and "sales" in lowered:
-            return REGION_TEMPLATE + context_note
+            return REGION_TEMPLATE + context_note + memory_note
         if "channel" in lowered and ("sales" in lowered or "order" in lowered):
-            return CHANNEL_TEMPLATE + context_note
-        return FALLBACK_TEMPLATE + context_note
+            return CHANNEL_TEMPLATE + context_note + memory_note
+        return FALLBACK_TEMPLATE + context_note + memory_note
 
     def generate_analysis_plan(
         self,
         analysis_goal: str,
         file_profile: dict,
         business_context: list[dict],
+        memory_context: dict,
     ) -> list[str]:
         del file_profile
         del business_context
+        del memory_context
         lowered = analysis_goal.lower()
         if "category" in lowered:
             return [

@@ -235,3 +235,25 @@
 2. 再用 [INTERVIEW_GUIDE.md](./INTERVIEW_GUIDE.md) 讲“为什么这么设计”
 3. 用 [INTERVIEW_DEMO_CHECKLIST.md](./INTERVIEW_DEMO_CHECKLIST.md) 走最短演示路径
 4. 被追问真实性时，回到本文按“简历说法 -> 代码证据 -> 演示证据 -> 测试证据”逐条展开
+
+### Redis Memory Addendum
+
+- Resume wording: real Redis analysis memory with sliding window and summary memory.
+- Code evidence:
+  - `backend/app/storage/session_store.py`
+  - `backend/app/services/task_builder.py`
+  - `backend/app/services/analysis_runner.py`
+  - `backend/app/api/project_status.py`
+- Runtime evidence:
+  - `memory_context`
+  - `recent_turns`
+  - `summary_memory`
+  - `summary_text`
+  - `project_status_latest_task_memory_enabled`
+  - `project_status_latest_task_recent_turn_count`
+  - `project_status_latest_task_summary_turn_count`
+- Test evidence:
+  - `backend/tests/test_session_store.py`
+  - `backend/tests/test_task_builder.py`
+  - `backend/tests/test_analysis_api.py`
+  - `backend/tests/test_project_status_api.py`

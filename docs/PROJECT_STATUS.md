@@ -371,3 +371,11 @@ Latest real smoke evidence on this machine:
 - provider smoke returned `ok = true`
 - `client_type = QwenClient`
 - example `analysis_goal`: `Summarize total sales amount by region`
+
+## Redis Memory Realization Update
+
+- Added real Redis-backed `memory_context` for file-scoped historical analysis reuse.
+- Runtime memory now includes `recent_turns`, `summary_memory`, `summary_text`, and windowed `recent_turn_count`.
+- `SessionStore` now writes both task-scoped `analysis_state` and file-scoped memory snapshots.
+- `task_builder` injects memory into startup planning, and completed tasks append back into Redis memory.
+- `GET /api/project-status` and `/demo` now surface memory runtime evidence alongside retrieval, report, and tool evidence.

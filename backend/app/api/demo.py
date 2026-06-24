@@ -505,6 +505,14 @@ def demo_page() -> HTMLResponse:
               </div>
               <div class="provider-card">
                 <div class="provider-card-head">
+                  <div class="provider-title">Latest Task Memory</div>
+                  <div id="latest-task-memory-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="latest-task-memory-meta" class="provider-meta">Latest Redis-backed analysis memory summary will appear here.</div>
+                <div id="latest_task_memory_output" class="provider-diag">No latest task memory summary loaded yet.</div>
+              </div>
+              <div class="provider-card">
+                <div class="provider-card-head">
                   <div class="provider-title">Latest Task Tools</div>
                   <div id="latest-task-tools-pill" class="provider-pill">Not loaded</div>
                 </div>
@@ -677,6 +685,9 @@ def demo_page() -> HTMLResponse:
     const latestTaskSemanticsPillEl = document.getElementById("latest-task-semantics-pill");
     const latestTaskSemanticsMetaEl = document.getElementById("latest-task-semantics-meta");
     const latestTaskSemanticsOutputEl = document.getElementById("latest_task_semantics_output");
+    const latestTaskMemoryPillEl = document.getElementById("latest-task-memory-pill");
+    const latestTaskMemoryMetaEl = document.getElementById("latest-task-memory-meta");
+    const latestTaskMemoryOutputEl = document.getElementById("latest_task_memory_output");
     const latestTaskToolsPillEl = document.getElementById("latest-task-tools-pill");
     const latestTaskToolsMetaEl = document.getElementById("latest-task-tools-meta");
     const latestTaskToolsOutputEl = document.getElementById("latest_task_tools_output");
@@ -1016,6 +1027,7 @@ def demo_page() -> HTMLResponse:
       const latestTaskReport = latestTask ? (latestTask.report || {}) : {};
       const latestTaskContext = latestTask ? (latestTask.context || {}) : {};
       const latestTaskSemantics = latestTask ? (latestTask.semantics || {}) : {};
+      const latestTaskMemory = latestTask ? (latestTask.memory || {}) : {};
       const latestTaskTools = latestTask ? (latestTask.tools || {}) : {};
       const latestTaskErrors = latestTask ? (latestTask.errors || {}) : {};
       const files = tables.files || { exists: false, row_count: 0 };
@@ -1158,6 +1170,18 @@ def demo_page() -> HTMLResponse:
         `planned_tool_sequence: ${Array.isArray(latestTaskSemantics.planned_tool_sequence) ? latestTaskSemantics.planned_tool_sequence.join(", ") || "none" : "none"}`,
         `metric_count: ${latestTaskSemantics.metric_count ?? 0}`,
       ].join("\n") : "No latest task semantics summary loaded yet.";
+      latestTaskMemoryPillEl.textContent = latestTask ? "Memory ready" : "No tasks";
+      latestTaskMemoryMetaEl.textContent = latestTask
+        ? [`task_id: ${latestTask.task_id}`, `recent_turns: ${latestTaskMemory.recent_turn_count ?? 0}`].join(" | ")
+        : "No persisted task found yet.";
+      latestTaskMemoryOutputEl.textContent = latestTask ? [
+        `memory_enabled: ${latestTaskMemory.memory_enabled ?? false}`,
+        `recent_turn_count: ${latestTaskMemory.recent_turn_count ?? 0}`,
+        `summary_turn_count: ${latestTaskMemory.summary_turn_count ?? 0}`,
+        `latest_memory_task_id: ${latestTaskMemory.latest_memory_task_id || "none"}`,
+        `latest_memory_question: ${latestTaskMemory.latest_memory_question || "none"}`,
+        `summary_text: ${latestTaskMemory.summary_text || "none"}`,
+      ].join("\n") : "No latest task memory summary loaded yet.";
       latestTaskToolsPillEl.textContent = latestTask ? "Tools ready" : "No tasks";
       latestTaskToolsMetaEl.textContent = latestTask
         ? [`task_id: ${latestTask.task_id}`, `latest_tool_name: ${latestTaskTools.latest_tool_name || "none"}`].join(" | ")

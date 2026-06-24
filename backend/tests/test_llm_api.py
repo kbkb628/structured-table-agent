@@ -36,10 +36,17 @@ def test_post_llm_provider_smoke_returns_runtime_failure_details(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY_0011AI", "test-key")
 
     class FailingClient:
-        def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+        def generate_analysis_goal(
+            self,
+            question: str,
+            file_profile: dict,
+            business_context: list[dict],
+            memory_context: dict,
+        ) -> str:
             del question
             del file_profile
             del business_context
+            del memory_context
             raise RuntimeError("provider smoke failed")
 
     monkeypatch.setattr("app.api.llm.get_llm_client", lambda: FailingClient())
@@ -66,10 +73,17 @@ def test_post_llm_provider_smoke_returns_analysis_goal_when_provider_is_healthy(
     monkeypatch.setenv("OPENAI_API_KEY_0011AI", "test-key")
 
     class HealthyClient:
-        def generate_analysis_goal(self, question: str, file_profile: dict, business_context: list[dict]) -> str:
+        def generate_analysis_goal(
+            self,
+            question: str,
+            file_profile: dict,
+            business_context: list[dict],
+            memory_context: dict,
+        ) -> str:
             assert question == "analyse sales by region"
             assert file_profile["columns"][0]["name"] == "region"
             assert business_context[0]["id"] == "metric_sales_amount"
+            assert memory_context == {}
             return "Compare regional sales performance"
 
     monkeypatch.setattr("app.api.llm.get_llm_client", lambda: HealthyClient())

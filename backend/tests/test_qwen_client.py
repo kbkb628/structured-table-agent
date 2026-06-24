@@ -52,6 +52,7 @@ def test_qwen_client_parses_goal_response(monkeypatch):
         question="analyse sales by region",
         file_profile={"columns": [{"name": "region"}, {"name": "sales_amount"}]},
         business_context=[{"title": "Region"}],
+        memory_context={},
     )
 
     assert goal == "Compare regional sales performance"
@@ -73,6 +74,7 @@ def test_qwen_client_parses_plan_response(monkeypatch):
         analysis_goal="Compare regional sales performance",
         file_profile={"columns": [{"name": "region"}, {"name": "sales_amount"}]},
         business_context=[{"title": "Region"}],
+        memory_context={},
     )
 
     assert plan == ["match region", "aggregate sales"]
@@ -193,6 +195,7 @@ def test_qwen_client_raises_on_invalid_json(monkeypatch):
             question="analyse sales by region",
             file_profile={"columns": [{"name": "region"}, {"name": "sales_amount"}]},
             business_context=[{"title": "Region"}],
+            memory_context={},
         )
 
 
@@ -231,6 +234,35 @@ def test_qwen_client_reports_api_key_source_on_http_error(monkeypatch):
             question="analyse sales by region",
             file_profile={"columns": [{"name": "region"}, {"name": "sales_amount"}]},
             business_context=[{"title": "Region"}],
+            memory_context={},
         )
 
     assert "api_key_source=OPENAI_API_KEY_0011AI" in str(exc_info.value)
+
+
+def test_qwen_client_sends_memory_context_in_goal_request(monkeypatch):
+    from app.llm.qwen_client import QwenClient
+
+    captured_payload = {}
+
+    def _fake_urlopen(request, timeout):
+        del timeout
+        captured_payload.update(json.loads(request.data.decode("utf-8")))
+        return StubResponse(
+            200,
+            _chat_payload(json.dumps({"analysis_goal": "Compare regional sales"})),
+        )
+
+    monkeypatch.setattr("app.llm.qwen_client.urlopen", _fake_urlopen)
+
+    client = QwenClient(api_key="test-key", base_url="https://example.com/v1", model="qwen-plus")
+    client.generate_analysis_goal(
+        question="analyse sales by region",
+        file_profile={"columns": [{"name": "region"}]},
+        business_context=[{"title": "Region"}],
+        memory_context={"summary_memory": {"summary_text": "Previous regional sales analysis."}, "recent_turns": []},
+    )
+
+    user_payload = json.loads(captured_payload["messages"][1]["content"])
+    assert "memory_context" in user_payload
+    assert user_payload["memory_context"]["summary_memory"]["summary_text"] == "Previous regional sales analysis."
