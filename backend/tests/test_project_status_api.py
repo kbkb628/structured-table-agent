@@ -1,0 +1,619 @@
+from fastapi.testclient import TestClient
+from unittest.mock import patch
+
+from app.main import app
+from app.storage.analysis_store import create_task
+from app.storage.analysis_store import record_tool_call
+from app.storage.analysis_store import update_task_state
+from app.storage.analysis_store import record_event
+from app.storage.analysis_store import backfill_task_events
+from app.storage.session_store import SessionStore
+
+
+def test_get_project_status_reports_current_counters(monkeypatch):
+    monkeypatch.setenv("LLM_PROVIDER", "qwen")
+    monkeypatch.setenv("OPENAI_API_KEY_0011AI", "test-key")
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["summary"]["provider"]["provider"] == "qwen"
+    assert payload["summary"]["provider"]["diagnostics"]["smoke_ready"] is True
+    assert payload["summary"]["demo"]["available"] is True
+    assert payload["summary"]["session_store"]["preferred_backend"] == "redis"
+    assert payload["summary"]["database"]["tables"]
+    assert "analysis_tasks" in payload["summary"]["database"]["tables"]
+    assert "analysis_events" in payload["summary"]["database"]["tables"]
+
+
+def test_get_project_status_includes_live_counts():
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["summary"]["database"]["tables"]["analysis_tasks"]["exists"] is True
+    assert payload["summary"]["database"]["tables"]["analysis_events"]["exists"] is True
+    assert payload["summary"]["database"]["tables"]["tool_call_logs"]["exists"] is True
+    assert payload["summary"]["database"]["tables"]["eval_results"]["exists"] is True
+    assert payload["summary"]["session_store"]["degraded_to_sqlite"] is True
+
+
+def test_get_project_status_surfaces_embedding_cache_summary(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.project_status._embedding_cache_info",
+        lambda: {
+            "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+            "knowledge_item_count": 12,
+            "cached_item_count": 10,
+            "fresh_item_count": 9,
+            "stale_item_count": 1,
+            "missing_item_count": 2,
+            "cache_coverage_ratio": 0.8333,
+        },
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    embedding_cache = response.json()["summary"]["embedding_cache"]
+    assert embedding_cache["model_name"] == "sentence-transformers/all-MiniLM-L6-v2"
+    assert embedding_cache["cached_item_count"] == 10
+    assert embedding_cache["fresh_item_count"] == 9
+    assert embedding_cache["stale_item_count"] == 1
+    assert embedding_cache["missing_item_count"] == 2
+    assert embedding_cache["cache_coverage_ratio"] == 0.8333
+
+
+def test_get_project_status_reports_redis_session_store_when_available(monkeypatch):
+    monkeypatch.setenv("REDIS_URL", "redis://fake-redis:6379/0")
+    client = TestClient(app)
+
+    with patch.object(SessionStore, "_connect", lambda self: object()):
+        response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    session_store = payload["summary"]["session_store"]
+    assert session_store["preferred_backend"] == "redis"
+    assert session_store["active_backend"] == "redis"
+    assert session_store["redis_available"] is True
+    assert session_store["degraded_to_sqlite"] is False
+
+
+def test_get_project_status_aggregates_session_store_event_summary():
+    warning_task_id = "task_project_status_warning"
+    recovered_task_id = "task_project_status_recovered"
+    client = TestClient(app)
+
+    baseline_response = client.get("/api/project-status")
+    assert baseline_response.status_code == 200
+    baseline_summary = baseline_response.json()["summary"]["session_store"]["event_summary"]
+
+    with patch(
+        "app.storage.analysis_store._ts",
+        side_effect=["2099-12-31T23:59:58+00:00", "2099-12-31T23:59:59+00:00"],
+    ):
+        record_event(
+            warning_task_id,
+            "session_store_warning",
+            "session_store",
+            "session store downgraded to SQLite",
+            {"reason": "redis_unavailable"},
+        )
+        record_event(
+            recovered_task_id,
+            "session_state_recovered",
+            "session_store",
+            "session state recovered from granular Redis keys",
+            {
+                "recovery_source": "sqlite_plus_granular_redis",
+                "recovered_segments": ["final_report", "context_checkpoint", "business_context"],
+            },
+        )
+
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    event_summary = response.json()["summary"]["session_store"]["event_summary"]
+    assert event_summary["warning_count"] >= baseline_summary["warning_count"] + 1
+    assert event_summary["recovered_count"] >= baseline_summary["recovered_count"] + 1
+    assert event_summary["latest_warning_task_id"] != warning_task_id
+    assert event_summary["latest_recovered_task_id"] != recovered_task_id
+    assert event_summary["latest_warning_at"]
+    assert event_summary["latest_recovered_at"]
+    assert event_summary["warning_count"] > 0
+    assert event_summary["recovered_count"] > 0
+
+
+def test_get_project_status_reports_latest_task_artifact_coverage():
+    task_id = "task_project_status_latest_artifacts"
+    state = {
+        "task_id": task_id,
+        "file_id": "file_project_status_latest_artifacts",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {
+            "dimension_field": "region",
+            "metric_field": "sales_amount",
+            "analysis_type": "single_metric",
+            "candidate_fields": ["region", "sales_amount", "order_id"],
+            "warnings": ["No supported metric intent was detected."],
+            "planned_tool_sequence": ["groupby_aggregate", "generate_chart", "generate_report"],
+        },
+        "business_context": [
+            {
+                "id": "metric_sales_amount",
+                "title": "Sales Amount",
+                "related_fields": ["sales_amount", "order_status"],
+                "score": 12.48,
+                "score_breakdown": {
+                    "keyword_score": 6.0,
+                    "field_score": 4.0,
+                    "phrase_score": 0.0,
+                    "bm25_score": 2.48,
+                },
+            }
+        ],
+        "analysis_plan": ["match fields", "aggregate", "report"],
+        "current_step": "report",
+        "completed_steps": [
+            "match fields",
+            "route_next_step:continue",
+            "groupby_aggregate:sales_amount_sum",
+            "route_next_step:finish",
+        ],
+        "intermediate_findings": [{"summary": "East leads."}],
+        "tool_results": [
+            {
+                "success": True,
+                "tool_name": "groupby_aggregate",
+                "metadata": {"elapsed_ms": 12, "retry_attempts": 1, "retry_status": "recovered"},
+            },
+            {
+                "success": False,
+                "tool_name": "generate_chart",
+                "metadata": {"elapsed_ms": 7, "retry_attempts": 2, "retry_status": "exhausted"},
+            },
+        ],
+        "chart_specs": [{"chart_type": "bar"}],
+        "draft_report": {"title": "Draft report"},
+        "final_report": {
+            "title": "Final report",
+            "analysis_goal": "compare region sales",
+            "key_findings": [
+                {
+                    "finding": "East leads.",
+                    "evidence": "sales_amount_sum=1200",
+                    "source_tool": "groupby_aggregate",
+                }
+            ],
+            "chart_explanations": ["Bar chart compares region sales."],
+            "business_suggestions": ["Check channel mix in East."],
+            "data_limitations": ["Uploaded CSV only."],
+            "next_steps": ["Drill down by channel."],
+        },
+        "llm_judgement": {"supported_by_tools": True, "has_findings": True, "issue_count": 0},
+        "eval_result": {
+            "overall_score": 0.91,
+            "schema_valid": True,
+            "tool_success_rate": 1.0,
+            "tool_elapsed_ms_total": 19,
+            "field_validity": True,
+            "chart_validity": True,
+            "report_completeness": 1.0,
+            "trace_completeness": 1.0,
+            "issues": [],
+            "suggestions": ["Keep chart output and trace coverage aligned with the latest task state."],
+        },
+        "pending_metrics": [{"label": "sales_amount_sum"}],
+        "pending_tool_calls": [{"tool_name": "groupby_aggregate", "label": "sales_amount_sum"}],
+        "context_checkpoint": {
+            "analysis_goal": "compare region sales",
+            "current_step": "report",
+            "status": "completed",
+            "pending_metric_count": 1,
+            "finding_count": 1,
+            "business_context_titles": ["Sales Amount"],
+            "draft_report_status": "available",
+            "latest_error_code": "CHART_DEGRADED",
+        },
+        "tool_call_logs": [{"tool_name": "groupby_aggregate"}],
+        "events": [
+            {
+                "event_id": "evt_project_status_latest_artifacts_1",
+                "event_type": "task_created",
+                "node": "start_analysis",
+                "message": "task created",
+                "payload": {"status": "created"},
+                "created_at": "2099-12-31T23:59:51+00:00",
+            },
+            {
+                "event_id": "evt_project_status_latest_artifacts_2",
+                "event_type": "report_generated",
+                "node": "generate_report",
+                "message": "report generated",
+                "payload": {"title": "Final report"},
+                "created_at": "2099-12-31T23:59:58+00:00",
+            },
+        ],
+        "errors": [
+            {
+                "code": "CHART_DEGRADED",
+                "message": "chart generation degraded to empty preview",
+            }
+        ],
+        "status": "completed",
+    }
+    with patch("app.storage.analysis_store._ts", return_value="2099-12-31T23:59:59+00:00"):
+        create_task(task_id, state["file_id"], state["question"], state)
+        update_task_state(task_id, state)
+    backfill_task_events(task_id, state["events"])
+    record_tool_call(
+        task_id,
+        "groupby_aggregate",
+        {"group_by": "region", "metric_column": "sales_amount"},
+        {
+            "success": True,
+            "tool_name": "groupby_aggregate",
+            "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]},
+            "summary": "ok",
+            "error": None,
+            "metadata": {"elapsed_ms": 12},
+        },
+    )
+
+    client = TestClient(app)
+    with patch("app.api.project_status._now_iso", return_value="2099-12-31T23:59:59+00:00"):
+        response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    latest_task = response.json()["summary"]["latest_task"]
+    assert latest_task["task_id"] == task_id
+    assert latest_task["status"] == "completed"
+    assert latest_task["artifacts"]["has_business_context"] is True
+    assert latest_task["artifacts"]["has_context_checkpoint"] is True
+    assert latest_task["artifacts"]["has_draft_report"] is True
+    assert latest_task["artifacts"]["has_final_report"] is True
+    assert latest_task["artifacts"]["has_llm_judgement"] is True
+    assert latest_task["artifacts"]["tool_call_log_count"] >= 1
+    assert latest_task["evaluation"]["has_eval_result"] is True
+    assert latest_task["evaluation"]["overall_score"] == 0.91
+    assert latest_task["evaluation"]["issue_count"] == 0
+    assert latest_task["evaluation"]["suggestion_count"] == 1
+    assert latest_task["evaluation"]["has_dimension_scores"] is True
+    assert latest_task["evaluation"]["schema_valid"] is True
+    assert latest_task["evaluation"]["tool_success_rate"] == 1.0
+    assert latest_task["evaluation"]["tool_elapsed_ms_total"] == 19
+    assert latest_task["evaluation"]["field_validity"] is True
+    assert latest_task["evaluation"]["chart_validity"] is True
+    assert latest_task["evaluation"]["report_completeness"] == 1.0
+    assert latest_task["evaluation"]["trace_completeness"] == 1.0
+    assert latest_task["judgement"]["supported_by_tools"] is True
+    assert latest_task["judgement"]["has_findings"] is True
+    assert latest_task["judgement"]["issue_count"] == 0
+    assert latest_task["process"]["pending_metric_count"] == 1
+    assert latest_task["process"]["planned_tool_call_count"] == 1
+    assert latest_task["process"]["event_count"] >= 2
+    assert latest_task["process"]["latest_event_type"] == "report_generated"
+    assert latest_task["process"]["llm_issue_count"] == 0
+    assert latest_task["process"]["route_decision_count"] == 2
+    assert latest_task["process"]["continued_route_decision_count"] == 1
+    assert latest_task["process"]["finished_route_decision_count"] == 1
+    assert latest_task["process"]["latest_route_decision"] == "finish"
+    assert latest_task["report"]["chart_spec_count"] == 1
+    assert latest_task["report"]["key_finding_count"] == 1
+    assert latest_task["report"]["top_key_finding"] == "East leads."
+    assert latest_task["report"]["business_suggestion_count"] == 1
+    assert latest_task["report"]["data_limitation_count"] == 1
+    assert latest_task["report"]["next_step_count"] == 1
+    assert latest_task["context"]["business_context_count"] == 1
+    assert latest_task["context"]["top_business_context_title"] == "Sales Amount"
+    assert latest_task["context"]["top_business_context_score"] == 12.48
+    assert latest_task["context"]["top_business_context_related_field_count"] == 2
+    assert latest_task["context"]["top_business_context_has_score_breakdown"] is True
+    assert latest_task["context"]["top_business_context_keyword_score"] == 6.0
+    assert latest_task["context"]["top_business_context_field_score"] == 4.0
+    assert latest_task["context"]["top_business_context_phrase_score"] == 0.0
+    assert latest_task["context"]["top_business_context_bm25_score"] == 2.48
+    assert latest_task["context"]["checkpoint_current_step"] == "report"
+    assert latest_task["context"]["checkpoint_status"] == "completed"
+    assert latest_task["context"]["checkpoint_pending_metric_count"] == 1
+    assert latest_task["context"]["checkpoint_finding_count"] == 1
+    assert latest_task["context"]["checkpoint_business_context_title_count"] == 1
+    assert latest_task["context"]["checkpoint_business_context_titles"] == ["Sales Amount"]
+    assert latest_task["context"]["checkpoint_draft_report_status"] == "available"
+    assert latest_task["context"]["checkpoint_latest_error_code"] == "CHART_DEGRADED"
+    assert latest_task["semantics"]["analysis_goal"] == "compare region sales"
+    assert latest_task["semantics"]["analysis_plan_count"] == 3
+    assert latest_task["semantics"]["current_step"] == "report"
+    assert latest_task["semantics"]["completed_step_count"] == 4
+    assert latest_task["semantics"]["finding_count"] == 1
+    assert latest_task["semantics"]["latest_finding_summary"] == "East leads."
+    assert latest_task["semantics"]["dimension_field"] == "region"
+    assert latest_task["semantics"]["metric_count"] == 1
+    assert latest_task["semantics"]["match_analysis_type"] == "single_metric"
+    assert latest_task["semantics"]["candidate_field_count"] == 3
+    assert latest_task["semantics"]["match_warning_count"] == 1
+    assert latest_task["semantics"]["planned_tool_sequence"] == [
+        "groupby_aggregate",
+        "generate_chart",
+        "generate_report",
+    ]
+    assert latest_task["tools"]["tool_result_count"] == 2
+    assert latest_task["tools"]["successful_tool_result_count"] == 1
+    assert latest_task["tools"]["failed_tool_result_count"] == 1
+    assert latest_task["tools"]["total_tool_elapsed_ms"] == 19
+    assert latest_task["tools"]["latest_tool_name"] == "groupby_aggregate"
+    assert latest_task["tools"]["retried_tool_result_count"] == 2
+    assert latest_task["tools"]["retry_attempts_total"] == 3
+    assert latest_task["tools"]["latest_retry_status"] == "exhausted"
+    assert latest_task["errors"]["error_count"] == 1
+    assert latest_task["errors"]["latest_error_code"] == "CHART_DEGRADED"
+    assert latest_task["errors"]["latest_error_message"] == "chart generation degraded to empty preview"
+    assert latest_task["errors"]["has_degradation"] is True
+
+
+def test_get_project_status_surfaces_embedding_and_rerank_evidence():
+    task_id = "task_project_status_retrieval_evidence"
+    state = {
+        "task_id": task_id,
+        "file_id": "file_project_status_retrieval_evidence",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [
+            {
+                "id": "analysis_region_sales",
+                "title": "Sales By Region",
+                "related_fields": ["region", "sales_amount"],
+                "score": 21.4,
+                "score_breakdown": {
+                    "keyword_score": 6.0,
+                    "field_score": 4.0,
+                    "phrase_score": 4.0,
+                    "bm25_score": 3.4,
+                },
+                "retrieval_evidence": {
+                    "bm25_rank": 1,
+                    "bm25_score": 3.4,
+                    "embedding_rank": 2,
+                    "embedding_score": 0.8123,
+                    "rerank_score": 0.9931,
+                    "final_rank": 1,
+                    "retrieval_sources": ["bm25", "embedding"],
+                },
+            }
+        ],
+        "analysis_plan": ["match fields"],
+        "current_step": "created",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "created",
+    }
+    create_task(task_id, state["file_id"], state["question"], state)
+    update_task_state(task_id, state)
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    context = response.json()["summary"]["latest_task"]["context"]
+    assert context["top_business_context_embedding_score"] == 0.8123
+    assert context["top_business_context_rerank_score"] == 0.9931
+    assert context["top_business_context_retrieval_sources"] == ["bm25", "embedding"]
+
+
+def test_get_project_status_surfaces_memory_runtime_evidence():
+    task_id = "task_project_status_memory"
+    state = {
+        "task_id": task_id,
+        "file_id": "file_project_status_memory",
+        "question": "analyse sales by region again",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [],
+        "memory_context": {
+            "scope": {"file_id": "file_project_status_memory"},
+            "recent_turns": [{"task_id": "task_prev", "question": "analyse sales by region"}],
+            "summary_memory": {"summary_text": "Previous analysis focused on regional sales.", "turn_count": 2},
+            "stats": {"recent_turn_count": 1, "summary_turn_count": 2, "memory_enabled": True},
+        },
+        "analysis_plan": ["match fields"],
+        "current_step": "created",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "created",
+    }
+    create_task(task_id, state["file_id"], state["question"], state)
+    update_task_state(task_id, state)
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    latest_task = response.json()["summary"]["latest_task"]
+    assert latest_task["memory"]["memory_enabled"] is True
+    assert latest_task["memory"]["recent_turn_count"] == 1
+    assert latest_task["memory"]["summary_turn_count"] == 2
+    assert latest_task["memory"]["summary_text"] == "Previous analysis focused on regional sales."
+
+
+def test_get_project_status_surfaces_structured_judge_dimensions():
+    task_id = "task_project_status_judge"
+    state = {
+        "task_id": task_id,
+        "file_id": "file_project_status_judge",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [],
+        "analysis_plan": ["match fields"],
+        "current_step": "completed",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "llm_judgement": {
+            "judge_summary": "Report is grounded in tool evidence.",
+            "judge_status": "ok",
+            "dimensions": {
+                "groundedness": {"score": 0.96, "verdict": "supported", "rationale": "Tool rows support the key finding."},
+                "completeness": {"score": 0.92, "verdict": "complete", "rationale": "Required sections exist."},
+                "clarity": {"score": 0.9, "verdict": "clear", "rationale": "Language is concise."},
+            },
+            "issue_count": 0,
+            "issues": [],
+            "degraded": False,
+        },
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "completed",
+    }
+    create_task(task_id, state["file_id"], state["question"], state)
+    update_task_state(task_id, state)
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    judgement = response.json()["summary"]["latest_task"]["judgement"]
+    assert judgement["judge_status"] == "ok"
+    assert judgement["groundedness_score"] == 0.96
+    assert judgement["completeness_score"] == 0.92
+    assert judgement["clarity_score"] == 0.9
+
+
+def test_get_project_status_surfaces_sandbox_runtime_summary(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.project_status._sandbox_info",
+        lambda: {
+            "enabled": True,
+            "docker_available": True,
+            "image": "python:3.12-slim",
+            "network_disabled": True,
+            "timeout_seconds": 8,
+            "max_timeout_seconds": 8,
+            "max_code_chars": 4000,
+            "supported_templates": ["region_sales_summary", "channel_sales_summary"],
+            "memory_limit_mb": 256,
+            "latest_execution": {
+                "execution_id": "sandbox_exec_001",
+                "file_id": "file_sandbox",
+                "execution_source": "sandbox_api",
+                "execution_mode": "template",
+                "template_name": "region_sales_summary",
+                "python_code_char_count": 18,
+                "parsed_output_keys": ["region_count", "template_name", "top_region", "top_sales_amount"],
+                "template_result_field_count": 3,
+                "template_result_summary": {
+                    "top_region": "East",
+                    "top_sales_amount": 1200.0,
+                    "region_count": 4,
+                },
+                "status": "failed",
+                "elapsed_ms": 19,
+                "error": {"code": "SANDBOX_SYNTAX_ERROR", "message": "SyntaxError: invalid syntax"},
+                "created_at": "2026-06-24T10:00:00+00:00",
+            },
+        },
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    sandbox = response.json()["summary"]["sandbox"]
+    assert sandbox["enabled"] is True
+    assert sandbox["docker_available"] is True
+    assert sandbox["max_timeout_seconds"] == 8
+    assert sandbox["max_code_chars"] == 4000
+    assert sandbox["supported_templates"] == ["region_sales_summary", "channel_sales_summary"]
+    assert sandbox["latest_execution"]["execution_mode"] == "template"
+    assert sandbox["latest_execution"]["template_name"] == "region_sales_summary"
+    assert sandbox["latest_execution"]["python_code_char_count"] == 18
+    assert sandbox["latest_execution"]["parsed_output_keys"][-1] == "top_sales_amount"
+    assert sandbox["latest_execution"]["template_result_field_count"] == 3
+    assert sandbox["latest_execution"]["template_result_summary"]["region_count"] == 4
+    assert sandbox["latest_execution"]["execution_source"] == "sandbox_api"
+    assert sandbox["latest_execution"]["error"]["code"] == "SANDBOX_SYNTAX_ERROR"
+
+
+def test_get_project_status_ignores_future_dated_fixture_task_for_latest_summary():
+    frozen_now = "2099-12-31T23:59:59+00:00"
+    future_task_id = "task_project_status_future_fixture"
+    future_state = {
+        "task_id": future_task_id,
+        "file_id": "file_project_status_future_fixture",
+        "question": "fixture question",
+        "analysis_goal": "fixture goal",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [],
+        "analysis_plan": ["fixture"],
+        "current_step": "completed",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {
+            "title": "Future fixture report",
+            "analysis_goal": "fixture goal",
+            "key_findings": [],
+            "chart_explanations": [],
+            "business_suggestions": [],
+            "data_limitations": [],
+            "next_steps": [],
+        },
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "completed",
+    }
+    with patch("app.storage.analysis_store._ts", return_value=frozen_now):
+        create_task(future_task_id, future_state["file_id"], future_state["question"], future_state)
+        update_task_state(future_task_id, future_state)
+
+    client = TestClient(app)
+    with patch("app.storage.analysis_store._ts", return_value=frozen_now):
+        upload = client.post("/api/files/upload-sample")
+        file_id = upload.json()["file_id"]
+        question = "analyse sales by region"
+        start = client.post("/api/analysis/start", json={"file_id": file_id, "question": question})
+        task_id = start.json()["task_id"]
+        client.post(f"/api/analysis/{task_id}/run")
+
+    with patch("app.api.project_status._now_iso", return_value=frozen_now):
+        response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    latest_task = response.json()["summary"]["latest_task"]
+    assert latest_task["task_id"] == task_id

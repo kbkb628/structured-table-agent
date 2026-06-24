@@ -1,0 +1,376 @@
+import json
+import logging
+import threading
+import time
+import uuid
+from contextlib import contextmanager
+
+from app.core import config
+from app.observability.event_logger import record_analysis_event
+from app.observability.event_logger import record_session_state_recovered
+from app.storage.analysis_store import get_task_state
+from app.storage.analysis_store import update_task_state
+
+try:
+    import redis
+except ImportError:  # pragma: no cover
+    redis = None
+
+logger = logging.getLogger(__name__)
+
+
+class SessionStore:
+    _memory_locks: dict[str, tuple[str, float | None]] = {}
+    _memory_lock = threading.Lock()
+
+    def __init__(self, url: str = "redis://127.0.0.1:6379/0"):
+        self._url = url
+
+    def _build_keys(self, task_id: str) -> dict[str, str]:
+        return {
+            "analysis_state": f"analysis_state:{task_id}",
+            "draft_report": f"draft_report:{task_id}",
+            "final_report": f"final_report:{task_id}",
+            "llm_judgement": f"llm_judgement:{task_id}",
+            "intermediate_findings": f"intermediate_findings:{task_id}",
+            "business_context": f"business_context:{task_id}",
+            "latest_context": f"latest_context:{task_id}",
+            "task_lock": f"task_lock:{task_id}",
+        }
+
+    def _build_file_memory_keys(self, file_id: str) -> dict[str, str]:
+        return {
+            "memory_snapshot": f"file_memory:{file_id}",
+            "memory_recent_turns": f"file_memory_recent_turns:{file_id}",
+            "memory_summary": f"file_memory_summary:{file_id}",
+        }
+
+    def _default_file_memory(self, file_id: str) -> dict:
+        return {
+            "scope": {"file_id": file_id},
+            "recent_turns": [],
+            "summary_memory": {"summary_text": "", "turn_count": 0},
+            "stats": {"recent_turn_count": 0, "summary_turn_count": 0, "memory_enabled": config.MEMORY_ENABLED},
+        }
+
+    def _normalize_file_memory(self, file_id: str, memory: dict | None) -> dict:
+        base = self._default_file_memory(file_id)
+        if not isinstance(memory, dict):
+            return base
+        recent_turns = memory.get("recent_turns") if isinstance(memory.get("recent_turns"), list) else []
+        summary_memory = memory.get("summary_memory") if isinstance(memory.get("summary_memory"), dict) else {}
+        return {
+            "scope": memory.get("scope") if isinstance(memory.get("scope"), dict) else {"file_id": file_id},
+            "recent_turns": recent_turns,
+            "summary_memory": {
+                "summary_text": str(summary_memory.get("summary_text") or ""),
+                "turn_count": int(summary_memory.get("turn_count", 0) or 0),
+            },
+            "stats": {
+                "recent_turn_count": len(recent_turns),
+                "summary_turn_count": int(summary_memory.get("turn_count", 0) or 0),
+                "memory_enabled": config.MEMORY_ENABLED,
+            },
+        }
+
+    def _build_summary_text(self, archived_turns: list[dict], current_summary: str, max_chars: int) -> str:
+        fragments = [current_summary.strip()] if current_summary.strip() else []
+        for turn in archived_turns:
+            report = turn.get("final_report") or {}
+            fragments.append(
+                f"Q: {turn.get('question', '')}; Goal: {turn.get('analysis_goal', '')}; Report: {report.get('title', '')}"
+            )
+        summary = " | ".join(fragment for fragment in fragments if fragment).strip()
+        return summary[:max_chars]
+
+    def _build_context_checkpoint(self, state: dict) -> dict:
+        business_context = state.get("business_context", []) or []
+        intermediate_findings = state.get("intermediate_findings", []) or []
+        draft_report = state.get("draft_report", {}) or {}
+        latest_error = (state.get("errors") or [])[-1] if state.get("errors") else {}
+        checkpoint = {
+            "analysis_goal": state.get("analysis_goal", ""),
+            "current_step": state.get("current_step", ""),
+            "status": state.get("status", ""),
+            "pending_metric_count": len(state.get("pending_metrics", []) or []),
+            "finding_count": len(intermediate_findings),
+            "business_context_titles": [item.get("title") for item in business_context if item.get("title")],
+            "draft_report_status": "available" if draft_report else "empty",
+            "latest_error_code": latest_error.get("code", ""),
+        }
+        return checkpoint
+
+    def _record_context_checkpoint_refreshed(self, task_id: str, checkpoint: dict) -> None:
+        record_analysis_event(
+            task_id,
+            "context_checkpoint_refreshed",
+            "session_store",
+            "context checkpoint refreshed",
+            checkpoint,
+        )
+
+    def _record_session_state_recovered(self, task_id: str, recovered_segments: list[str]) -> None:
+        record_session_state_recovered(
+            task_id,
+            {
+                "recovery_source": "sqlite_plus_granular_redis",
+                "recovered_segments": recovered_segments,
+            },
+        )
+
+    def _connect(self):
+        if redis is None:
+            return None
+        try:
+            client = redis.Redis.from_url(self._url, decode_responses=True)
+            client.ping()
+            return client
+        except Exception:
+            return None
+
+    def _hydrate_state_from_granular_keys(
+        self,
+        client,
+        task_id: str,
+        base_state: dict | None = None,
+    ) -> tuple[dict | None, list[str]]:
+        keys = self._build_keys(task_id)
+        state = dict(base_state) if base_state is not None else None
+
+        granular_payloads = {
+            "draft_report": client.get(keys["draft_report"]),
+            "final_report": client.get(keys["final_report"]),
+            "llm_judgement": client.get(keys["llm_judgement"]),
+            "intermediate_findings": client.get(keys["intermediate_findings"]),
+            "business_context": client.get(keys["business_context"]),
+            "context_checkpoint": client.get(keys["latest_context"]),
+        }
+        recovered_segments = [name for name, payload in granular_payloads.items() if payload]
+        if not recovered_segments:
+            return None, []
+
+        if state is None:
+            state = get_task_state(task_id)
+            if state is None:
+                return None, []
+
+        if granular_payloads["draft_report"]:
+            state["draft_report"] = json.loads(granular_payloads["draft_report"])
+        if granular_payloads["final_report"]:
+            state["final_report"] = json.loads(granular_payloads["final_report"])
+        if granular_payloads["llm_judgement"]:
+            state["llm_judgement"] = json.loads(granular_payloads["llm_judgement"])
+        if granular_payloads["intermediate_findings"]:
+            state["intermediate_findings"] = json.loads(granular_payloads["intermediate_findings"])
+        if granular_payloads["business_context"]:
+            state["business_context"] = json.loads(granular_payloads["business_context"])
+        if granular_payloads["context_checkpoint"]:
+            state["context_checkpoint"] = json.loads(granular_payloads["context_checkpoint"])
+        else:
+            state["context_checkpoint"] = self._build_context_checkpoint(state)
+        return state, recovered_segments
+
+    def load_state(self, task_id: str) -> tuple[dict | None, bool]:
+        client = self._connect()
+        if client is not None:
+            payload = client.get(self._build_keys(task_id)["analysis_state"])
+            if payload:
+                state = json.loads(payload)
+                hydrated_state, _ = self._hydrate_state_from_granular_keys(client, task_id, base_state=state)
+                if hydrated_state is None and "context_checkpoint" not in state:
+                    hydrated_state = dict(state)
+                    hydrated_state["context_checkpoint"] = self._build_context_checkpoint(hydrated_state)
+                if get_task_state(task_id) is None:
+                    update_task_state(task_id, hydrated_state or state)
+                if hydrated_state is not None and hydrated_state != state:
+                    client.set(
+                        self._build_keys(task_id)["analysis_state"],
+                        json.dumps(hydrated_state, ensure_ascii=False),
+                    )
+                    update_task_state(task_id, hydrated_state)
+                return hydrated_state or state, True
+
+            hydrated_state, recovered_segments = self._hydrate_state_from_granular_keys(client, task_id)
+            if hydrated_state is not None:
+                logger.warning(
+                    "Redis analysis_state missing; rebuilding task %s from SQLite state plus granular Redis keys",
+                    task_id,
+                )
+                client.set(
+                    self._build_keys(task_id)["analysis_state"],
+                    json.dumps(hydrated_state, ensure_ascii=False),
+                )
+                update_task_state(task_id, hydrated_state)
+                self._record_session_state_recovered(task_id, recovered_segments)
+                return hydrated_state, True
+        logger.warning("Redis unavailable; falling back to SQLite-backed session state for task %s", task_id)
+        state = get_task_state(task_id)
+        if state is not None and "context_checkpoint" not in state:
+            state["context_checkpoint"] = self._build_context_checkpoint(state)
+        return state, False
+
+    def save_state(self, task_id: str, state: dict) -> bool:
+        client = self._connect()
+        context_checkpoint = self._build_context_checkpoint(state)
+        state["context_checkpoint"] = context_checkpoint
+        if client is not None:
+            keys = self._build_keys(task_id)
+            client.set(keys["analysis_state"], json.dumps(state, ensure_ascii=False))
+            client.set(keys["draft_report"], json.dumps(state.get("draft_report", {}), ensure_ascii=False))
+            client.set(keys["final_report"], json.dumps(state.get("final_report", {}), ensure_ascii=False))
+            client.set(keys["llm_judgement"], json.dumps(state.get("llm_judgement", {}), ensure_ascii=False))
+            client.set(
+                keys["intermediate_findings"],
+                json.dumps(state.get("intermediate_findings", []), ensure_ascii=False),
+            )
+            client.set(
+                keys["business_context"],
+                json.dumps(state.get("business_context", []), ensure_ascii=False),
+            )
+            client.set(keys["latest_context"], json.dumps(context_checkpoint, ensure_ascii=False))
+            self._record_context_checkpoint_refreshed(task_id, context_checkpoint)
+            update_task_state(task_id, state)
+            return True
+        logger.warning("Redis unavailable; persisting session state to SQLite for task %s", task_id)
+        self._record_context_checkpoint_refreshed(task_id, context_checkpoint)
+        update_task_state(task_id, state)
+        return False
+
+    def save_file_memory(self, file_id: str, memory: dict) -> bool:
+        normalized = self._normalize_file_memory(file_id, memory)
+        client = self._connect()
+        if client is None:
+            return False
+        keys = self._build_file_memory_keys(file_id)
+        client.set(keys["memory_snapshot"], json.dumps(normalized, ensure_ascii=False))
+        client.set(keys["memory_recent_turns"], json.dumps(normalized["recent_turns"], ensure_ascii=False))
+        client.set(keys["memory_summary"], json.dumps(normalized["summary_memory"], ensure_ascii=False))
+        return True
+
+    def load_file_memory(self, file_id: str) -> dict:
+        if not config.MEMORY_ENABLED:
+            disabled = self._default_file_memory(file_id)
+            disabled["stats"]["memory_enabled"] = False
+            return disabled
+
+        client = self._connect()
+        if client is None:
+            return self._default_file_memory(file_id)
+
+        keys = self._build_file_memory_keys(file_id)
+        payload = client.get(keys["memory_snapshot"])
+        if payload:
+            return self._normalize_file_memory(file_id, json.loads(payload))
+
+        recent_turns_payload = client.get(keys["memory_recent_turns"])
+        summary_payload = client.get(keys["memory_summary"])
+        if not recent_turns_payload and not summary_payload:
+            return self._default_file_memory(file_id)
+
+        memory = self._default_file_memory(file_id)
+        if recent_turns_payload:
+            memory["recent_turns"] = json.loads(recent_turns_payload)
+        if summary_payload:
+            memory["summary_memory"] = json.loads(summary_payload)
+        normalized = self._normalize_file_memory(file_id, memory)
+        client.set(keys["memory_snapshot"], json.dumps(normalized, ensure_ascii=False))
+        return normalized
+
+    def append_turn_memory(
+        self,
+        file_id: str,
+        task_id: str,
+        question: str,
+        analysis_goal: str,
+        analysis_plan: list[str],
+        final_report: dict,
+        max_recent_turns: int,
+        max_summary_chars: int | None = None,
+    ) -> dict:
+        if not config.MEMORY_ENABLED:
+            disabled = self._default_file_memory(file_id)
+            disabled["stats"]["memory_enabled"] = False
+            return disabled
+
+        effective_summary_chars = max_summary_chars or config.MEMORY_SUMMARY_MAX_CHARS
+        memory = self.load_file_memory(file_id)
+        turn = {
+            "task_id": task_id,
+            "question": question,
+            "analysis_goal": analysis_goal,
+            "analysis_plan": analysis_plan,
+            "final_report": final_report,
+        }
+        all_recent_turns = [*(memory.get("recent_turns") or []), turn]
+        archived_turns = all_recent_turns[:-max_recent_turns] if len(all_recent_turns) > max_recent_turns else []
+        recent_turns = all_recent_turns[-max_recent_turns:]
+        previous_summary = (memory.get("summary_memory") or {}).get("summary_text", "")
+        previous_summary_turn_count = int((memory.get("summary_memory") or {}).get("turn_count", 0) or 0)
+        summary_turn_count = previous_summary_turn_count + len(archived_turns)
+        updated_memory = {
+            "scope": {"file_id": file_id},
+            "recent_turns": recent_turns,
+            "summary_memory": {
+                "summary_text": self._build_summary_text(archived_turns, previous_summary, effective_summary_chars),
+                "turn_count": summary_turn_count,
+            },
+            "stats": {
+                "recent_turn_count": len(recent_turns),
+                "summary_turn_count": summary_turn_count,
+                "memory_enabled": True,
+            },
+        }
+        self.save_file_memory(file_id, updated_memory)
+        return updated_memory
+
+    def acquire_task_lock(self, task_id: str, ttl_seconds: int = 900) -> str | None:
+        token = uuid.uuid4().hex
+        client = self._connect()
+        if client is not None:
+            keys = self._build_keys(task_id)
+            locked = client.set(keys["task_lock"], token, nx=True, ex=ttl_seconds)
+            return token if locked else None
+
+        expires_at = time.monotonic() + ttl_seconds if ttl_seconds > 0 else None
+        with self._memory_lock:
+            current = self._memory_locks.get(task_id)
+            if current is not None:
+                _, current_expires_at = current
+                if current_expires_at is None or current_expires_at > time.monotonic():
+                    return None
+                self._memory_locks.pop(task_id, None)
+            self._memory_locks[task_id] = (token, expires_at)
+        return token
+
+    def release_task_lock(self, task_id: str, token: str) -> bool:
+        client = self._connect()
+        if client is not None:
+            keys = self._build_keys(task_id)
+            release_script = """
+            if redis.call("GET", KEYS[1]) == ARGV[1] then
+                return redis.call("DEL", KEYS[1])
+            end
+            return 0
+            """
+            released = client.eval(release_script, 1, keys["task_lock"], token)
+            return bool(released)
+
+        with self._memory_lock:
+            current = self._memory_locks.get(task_id)
+            if current is None:
+                return False
+            current_token, _ = current
+            if current_token != token:
+                return False
+            self._memory_locks.pop(task_id, None)
+            return True
+
+    @contextmanager
+    def task_lock(self, task_id: str, ttl_seconds: int = 900):
+        token = self.acquire_task_lock(task_id, ttl_seconds=ttl_seconds)
+        if token is None:
+            raise RuntimeError(f"Task {task_id} is already running.")
+        try:
+            yield
+        finally:
+            self.release_task_lock(task_id, token)

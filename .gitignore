@@ -26,6 +26,8 @@ Desktop.ini
 backend/data/uploads/
 backend/*.db
 backend/*.sqlite3
+backend/data/*.db
+backend/data/*.sqlite3
 backend/*.log
 
 # Temporary workspace artifacts

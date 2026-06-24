@@ -1,0 +1,384 @@
+from app.agent.state import AnalysisGraphState
+from app.eval.rule_scorer import score_task_state
+from app.llm.factory import LLMConfigurationError
+from app.llm.factory import get_llm_client
+from app.llm.qwen_client import QwenResponseError
+from app.observability.event_logger import hydrate_state_events
+from app.observability.event_logger import record_chart_failed
+from app.observability.event_logger import record_chart_generated
+from app.observability.event_logger import record_eval_finished
+from app.observability.event_logger import record_fields_matched
+from app.observability.event_logger import record_report_generated
+from app.observability.event_logger import record_task_completed
+from app.observability.event_logger import record_task_failed
+from app.observability.event_logger import record_tool_called
+from app.observability.event_logger import record_tool_failed
+from app.observability.event_logger import record_tool_succeeded
+from app.schemas.report_schema import FinalReport
+from app.storage.analysis_store import record_eval_result, record_tool_call
+from app.storage.session_store import SessionStore
+from app.tools.registry import invoke_tool
+from app.tools.registry import invoke_tool_with_retry
+
+
+def _persist_state(state: AnalysisGraphState) -> None:
+    SessionStore().save_state(state["task_id"], state)
+
+
+def _format_metric_value(value: object) -> str:
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value)
+
+
+def _build_finding_summary(tool_name: str, metric_label: str, rows: list[dict], fallback_summary: str) -> str:
+    if not rows:
+        return fallback_summary
+
+    top_row = rows[0]
+    dimension_keys = [key for key in top_row.keys() if key not in {metric_label, "share_ratio", "share_percent", "z_score", "is_anomaly"}]
+    dimension_field = dimension_keys[0] if dimension_keys else "dimension"
+    dimension_value = top_row.get(dimension_field, "unknown")
+
+    if tool_name == "calculate_share" and "share_percent" in top_row:
+        return f"{dimension_value} contributes the highest grouped share at {top_row['share_percent']}%."
+
+    if tool_name == "trend_analysis":
+        first_row = rows[0]
+        last_row = rows[-1]
+        x_field = next((key for key in first_row.keys() if key != metric_label), "dimension")
+        first_value = _format_metric_value(first_row.get(metric_label, 0))
+        last_value = _format_metric_value(last_row.get(metric_label, 0))
+        return (
+            f"{metric_label} changes over time from {first_value} on {first_row.get(x_field)} "
+            f"to {last_value} on {last_row.get(x_field)}."
+        )
+
+    if tool_name == "anomaly_analysis" and "z_score" in top_row:
+        return f"{dimension_value} is flagged as an anomaly with z_score {top_row['z_score']}."
+
+    return fallback_summary
+
+
+def fail_task(state: AnalysisGraphState, code: str, message: str, payload: dict | None = None) -> AnalysisGraphState:
+    error = {"code": code, "message": message, "details": payload or {}}
+    state["errors"].append(error)
+    state["status"] = "failed"
+    state["current_step"] = "failed"
+    record_task_failed(state["task_id"], "langgraph", message, error)
+    hydrate_state_events(state)
+    _persist_state(state)
+    return state
+
+
+def load_task_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    state["status"] = "running"
+    state["current_step"] = "match_fields"
+    _persist_state(state)
+    return state
+
+
+def match_fields_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    tool_request = {"question": state["question"], "file_profile": state["file_profile"]}
+    record_tool_called(state["task_id"], "match_fields", tool_request)
+    field_response = invoke_tool("match_fields", **tool_request)
+    record_tool_call(state["task_id"], "match_fields", tool_request, field_response.model_dump())
+    field_result = field_response.data or {}
+    state["field_understanding"] = field_result
+    record_fields_matched(state["task_id"], field_result)
+    metrics = field_result.get("metrics", [])
+
+    if field_result.get("dimension_field") is None or not metrics:
+        return fail_task(
+            state,
+            "MATCH_FIELDS_INCOMPLETE",
+            "Failed to derive an executable field-matching plan.",
+            {
+                "candidate_fields": field_result.get("candidate_fields", []),
+                "warnings": field_result.get("warnings", []),
+            },
+        )
+    state["pending_metrics"] = metrics.copy()
+    state["pending_tool_calls"] = (field_result.get("planned_tool_calls") or []).copy()
+    return state
+
+
+def execute_tools_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    pending_tool_calls = state.get("pending_tool_calls") or state["field_understanding"].get("planned_tool_calls") or []
+    metrics = state.get("pending_metrics") or state["field_understanding"]["metrics"]
+    metric = metrics[0]
+    planned_call = pending_tool_calls[0] if pending_tool_calls else {
+        "tool_name": "groupby_aggregate",
+        "group_by": state["field_understanding"]["dimension_field"],
+        "metric_column": metric["metric_field"],
+        "aggregation": metric["aggregation"],
+        "sort_order": "desc",
+        "limit": 5,
+        "label": metric["label"],
+    }
+    tool_name = str(planned_call["tool_name"])
+    tool_request = {
+        "file_id": state["file_id"],
+        "group_by": planned_call["group_by"],
+        "metric_column": planned_call["metric_column"],
+        "aggregation": planned_call["aggregation"],
+        "sort_order": planned_call["sort_order"],
+        "limit": planned_call["limit"],
+    }
+    record_tool_called(state["task_id"], tool_name, tool_request)
+    tool_response = invoke_tool_with_retry(tool_name, **tool_request)
+    tool_response_dict = tool_response.model_dump()
+    tool_response_dict["metric_label"] = metric["label"]
+    tool_response_dict["selected_tool"] = tool_name
+    record_tool_call(state["task_id"], tool_name, tool_request, tool_response_dict)
+    state["_latest_tool_result"] = tool_response_dict
+    state["_latest_tool_request"] = tool_request
+    state["_latest_metric"] = metric
+    return state
+
+
+def validate_tool_result_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    tool_result = state.get("_latest_tool_result") or {}
+    metric = state.get("_latest_metric") or {}
+    tool_name = str(tool_result.get("selected_tool") or tool_result.get("tool_name") or "unknown_tool")
+    state["completed_steps"].append("validate_tool_result")
+
+    if not tool_result.get("success"):
+        state["tool_results"].append(tool_result)
+        record_tool_failed(state["task_id"], tool_name, tool_result)
+        error = tool_result.get("error") or {}
+        return fail_task(
+            state,
+            str(error.get("code") or "TOOL_EXECUTION_FAILED"),
+            str(error.get("message") or "Tool execution failed."),
+            {"metric_label": metric.get("label")},
+        )
+
+    rows = (tool_result.get("data") or {}).get("rows") or []
+    if tool_name == "anomaly_analysis" and not rows:
+        state["tool_results"].append(tool_result)
+        state["completed_steps"].append(f"{tool_name}:{metric['label']}")
+        state["intermediate_findings"].append(
+            {
+                "metric_label": metric["label"],
+                "summary": "No anomalies were detected in the aggregated result.",
+                "top_row": {},
+            }
+        )
+        state["pending_metrics"] = (state.get("pending_metrics") or [])[1:]
+        state["pending_tool_calls"] = (state.get("pending_tool_calls") or [])[1:]
+        state.pop("_latest_tool_result", None)
+        state.pop("_latest_tool_request", None)
+        state.pop("_latest_metric", None)
+        record_tool_succeeded(state["task_id"], tool_name, tool_result)
+        return state
+
+    if not rows:
+        state["tool_results"].append(tool_result)
+        record_tool_failed(state["task_id"], tool_name, tool_result)
+        return fail_task(
+            state,
+            "EMPTY_RESULT",
+            "The aggregation returned no rows.",
+            {"metric_label": metric.get("label")},
+        )
+
+    state["tool_results"].append(tool_result)
+    state["completed_steps"].append(f"{tool_name}:{metric['label']}")
+    state["intermediate_findings"].append(
+        {
+            "metric_label": metric["label"],
+            "summary": _build_finding_summary(
+                tool_name,
+                metric["label"],
+                rows,
+                tool_result.get("summary", ""),
+            ),
+            "top_row": rows[0],
+        }
+    )
+    state["pending_metrics"] = (state.get("pending_metrics") or [])[1:]
+    state["pending_tool_calls"] = (state.get("pending_tool_calls") or [])[1:]
+    state.pop("_latest_tool_result", None)
+    state.pop("_latest_tool_request", None)
+    state.pop("_latest_metric", None)
+    record_tool_succeeded(state["task_id"], tool_name, tool_result)
+    return state
+
+
+def route_next_step_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    pending_metrics = state.get("pending_metrics", [])
+    pending_tool_calls = state.get("pending_tool_calls", [])
+    if pending_metrics or pending_tool_calls:
+        state["current_step"] = "execute_tools"
+        state["completed_steps"].append("route_next_step:continue")
+        state["next_step"] = "execute_tools"
+    else:
+        state["current_step"] = "generate_charts"
+        state["completed_steps"].append("route_next_step:finish")
+        state["next_step"] = "generate_charts"
+    _persist_state(state)
+    return state
+
+
+def generate_charts_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    dimension_field = state["field_understanding"]["dimension_field"]
+
+    for tool_result in state["tool_results"]:
+        rows = tool_result.get("data", {}).get("rows", [])
+        if not rows:
+            continue
+        metric_label = tool_result.get("metric_label")
+        tool_name = tool_result.get("tool_name")
+        if tool_name == "calculate_share" and "share_percent" in rows[0]:
+            y_field = "share_percent"
+        elif tool_name == "anomaly_analysis" and "z_score" in rows[0]:
+            y_field = "z_score"
+        else:
+            y_field = next(key for key in rows[0].keys() if key != dimension_field)
+        tool_request = {
+            "title": f"{dimension_field} vs {y_field}",
+            "x_field": dimension_field,
+            "y_field": y_field,
+            "rows": rows,
+            "chart_type": "line" if tool_name == "trend_analysis" else "bar",
+        }
+        record_tool_called(state["task_id"], "generate_chart", tool_request)
+        chart_response = invoke_tool_with_retry(
+            "generate_chart",
+            **tool_request,
+        )
+        chart_response_dict = chart_response.model_dump()
+        chart_response_dict["metric_label"] = metric_label
+        record_tool_call(state["task_id"], "generate_chart", tool_request, chart_response_dict)
+        if chart_response.success:
+            chart_spec = chart_response.data or {}
+            chart_spec["metric_label"] = metric_label
+            state["chart_specs"].append(chart_spec)
+            state["completed_steps"].append(f"generate_chart:{metric_label}")
+            record_chart_generated(state["task_id"], chart_spec)
+        else:
+            chart_error = {
+                "code": "CHART_GENERATION_FAILED",
+                "message": chart_response.error.message if chart_response.error else "Chart generation failed.",
+                "details": {"metric_label": metric_label},
+            }
+            state["errors"].append(chart_error)
+            record_chart_failed(state["task_id"], chart_error)
+    return state
+
+
+def _build_draft_report(state: AnalysisGraphState) -> dict:
+    metric_labels = [item.get("metric_label", "unknown_metric") for item in state["intermediate_findings"]]
+    chart_labels = [item.get("metric_label", "unknown_metric") for item in state["chart_specs"]]
+    top_summaries = [item.get("summary", "") for item in state["intermediate_findings"]]
+    return {
+        "title": f"Draft Report: {state['question']}",
+        "analysis_goal": state["analysis_goal"],
+        "metric_labels": metric_labels,
+        "chart_labels": chart_labels,
+        "finding_summaries": top_summaries,
+        "draft_status": "ready_for_final_report",
+    }
+
+
+def _build_judge_evidence(state: AnalysisGraphState) -> dict:
+    events = state.get("events") or []
+    if not events:
+        hydrate_state_events(state)
+        events = state.get("events") or []
+    eval_result = state.get("eval_result") or score_task_state(state)
+    return {
+        "question": state["question"],
+        "analysis_goal": state["analysis_goal"],
+        "final_report": state["final_report"],
+        "tool_results": state["tool_results"],
+        "business_context": state.get("business_context") or [],
+        "memory_context": state.get("memory_context") or {},
+        "events": events,
+        "trace_summary": {
+            "event_count": len(events),
+            "latest_event_type": events[-1].get("event_type") if events else None,
+            "completed_step_count": len(state.get("completed_steps") or []),
+        },
+        "eval_result": eval_result,
+        "eval_baseline": {
+            "overall_score": eval_result.get("overall_score"),
+            "tool_success_rate": eval_result.get("tool_success_rate"),
+            "report_completeness": eval_result.get("report_completeness"),
+            "trace_completeness": eval_result.get("trace_completeness"),
+        },
+    }
+
+
+def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    state["draft_report"] = _build_draft_report(state)
+    state["completed_steps"].append("draft_report_prepared")
+    _persist_state(state)
+    tool_request = {
+        "question": state["question"],
+        "analysis_goal": state["analysis_goal"],
+        "tool_results": state["tool_results"],
+        "chart_specs": state["chart_specs"],
+    }
+    record_tool_called(state["task_id"], "generate_report", tool_request)
+    report_response = invoke_tool_with_retry("generate_report", **tool_request)
+    record_tool_call(state["task_id"], "generate_report", tool_request, report_response.model_dump())
+    baseline_report = report_response.data or {}
+    try:
+        llm_client = get_llm_client()
+        llm_report = llm_client.generate_report(
+            analysis_goal=state["analysis_goal"],
+            intermediate_findings=state["intermediate_findings"],
+            chart_specs=state["chart_specs"],
+            business_context=state["business_context"],
+        )
+        state["final_report"] = FinalReport.model_validate(llm_report or baseline_report).model_dump()
+    except (LLMConfigurationError, QwenResponseError) as exc:
+        return fail_task(
+            state,
+            "LLM_REPORT_FAILED",
+            str(exc),
+            {"baseline_report_available": bool(baseline_report)},
+        )
+    state["completed_steps"].append("generate_report")
+    record_report_generated(state["task_id"], state["final_report"])
+    return state
+
+
+def evaluate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    judge_evidence = _build_judge_evidence(state)
+    try:
+        llm_client = get_llm_client()
+        state["llm_judgement"] = llm_client.judge_report(
+            state["question"],
+            state["final_report"],
+            state["tool_results"],
+            judge_evidence,
+        )
+    except (LLMConfigurationError, QwenResponseError) as exc:
+        state["llm_judgement"] = {
+            "judge_summary": "Judge degraded because the provider call failed.",
+            "judge_status": "degraded",
+            "dimensions": {},
+            "issue_count": 1,
+            "issues": [str(exc)],
+            "degraded": True,
+        }
+        state["errors"].append(
+            {
+                "code": "LLM_JUDGEMENT_DEGRADED",
+                "message": str(exc),
+                "details": {"final_report_available": bool(state.get("final_report"))},
+            }
+        )
+    state["current_step"] = "completed"
+    state["status"] = "completed"
+    record_task_completed(state["task_id"], "langgraph")
+    hydrate_state_events(state)
+    state["eval_result"] = score_task_state(state)
+    record_eval_result(state["task_id"], state["eval_result"])
+    record_eval_finished(state["task_id"], "langgraph", state["eval_result"])
+    hydrate_state_events(state)
+    _persist_state(state)
+    return state
