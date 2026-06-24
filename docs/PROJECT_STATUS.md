@@ -392,6 +392,7 @@ Latest real smoke evidence on this machine:
 - Judge evidence is packed from question, final report, tool outputs, retrieval context, memory context, and trace events.
 - Judge provider failures now degrade explicitly to `judge_status = degraded` instead of failing a completed task.
 - `GET /api/project-status`, `/demo`, `/api/eval/run`, and fixed eval cases now surface judge runtime evidence separately from rule scores.
+- Deterministic `overall_score` still comes from `RuleScorer`; judge output remains a supplementary runtime layer rather than a blended score.
 ## DockerSandbox Realization Update
 
 - Added real `DockerSandbox` runtime capability through the controlled `advanced_code_execution` path.

@@ -560,6 +560,10 @@ def test_eval_run_persists_eval_result(tmp_path):
     assert eval_response.status_code == 200
     assert eval_response.json()["task_id"] == task_id
     assert eval_response.json()["eval_result"]["overall_score"] > 0
+    assert eval_response.json()["eval_result"]["judge_status"] in {"ok", "degraded"}
+    assert "judge_degraded" in eval_response.json()["eval_result"]
+    assert "judge_summary" in eval_response.json()["eval_result"]
+    assert "judge_issue_count" in eval_response.json()["eval_result"]
     assert status.json()["eval_result"]["overall_score"] == eval_response.json()["eval_result"]["overall_score"]
 
 
@@ -774,6 +778,9 @@ def test_eval_cases_run_returns_fixed_case_summary():
     assert payload["average_chart_validity"] == 1.0
     assert payload["average_field_validity"] == 1.0
     assert len(payload["results"]) == 9
+    assert all(item["judge_status"] in {"ok", "degraded"} for item in payload["results"])
+    assert all("judge_degraded" in item for item in payload["results"])
+    assert all("judge_issue_count" in item for item in payload["results"])
     assert any(item["case_id"] == "category_topn_zh" for item in payload["results"])
     assert any(item["case_id"] == "region_compare_zh" for item in payload["results"])
     assert any(item["case_id"] == "channel_performance_zh" for item in payload["results"])

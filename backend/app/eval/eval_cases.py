@@ -150,6 +150,8 @@ def _evaluate_case(case: dict, result: dict) -> dict:
         "task_id": result["task_id"],
         "status": result["status"],
         "judge_status": (result.get("llm_judgement") or {}).get("judge_status"),
+        "judge_degraded": bool((result.get("llm_judgement") or {}).get("degraded")),
+        "judge_issue_count": int((result.get("llm_judgement") or {}).get("issue_count", 0) or 0),
         "overall_score": eval_result["overall_score"],
         "tool_success_rate": eval_result["tool_success_rate"],
         "tool_elapsed_ms_total": eval_result["tool_elapsed_ms_total"],

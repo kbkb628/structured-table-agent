@@ -45,6 +45,8 @@ def test_run_fixed_eval_cases_returns_passing_summary():
     assert all(item["issues"] == [] for item in summary["results"])
     assert all(item["assertion_failures"] == [] for item in summary["results"])
     assert all(item["judge_status"] in {"ok", "degraded"} for item in summary["results"])
+    assert all("judge_degraded" in item for item in summary["results"])
+    assert all("judge_issue_count" in item for item in summary["results"])
     assert any(item["case_id"] == "category_share" for item in summary["results"])
     assert any(item["case_id"] == "sales_trend" for item in summary["results"])
     assert any(item["case_id"] == "category_anomaly" for item in summary["results"])

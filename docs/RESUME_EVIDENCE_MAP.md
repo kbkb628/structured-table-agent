@@ -268,13 +268,16 @@
   - `backend/app/api/project_status.py`
   - `backend/app/api/eval.py`
 - Runtime evidence:
+  - packed judge evidence from the real task path
   - `judge_summary`
   - `judge_status`
+  - `judge_degraded`
   - `groundedness`
   - `completeness`
   - `clarity`
   - `project_status_latest_task_judge_status`
   - `project_status_latest_task_judgement_issue_count`
+  - deterministic baseline remains separated from judge output
 - Test evidence:
   - `backend/tests/test_judge_schema.py`
   - `backend/tests/test_analysis_runner.py`

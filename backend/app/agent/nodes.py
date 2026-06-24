@@ -283,6 +283,11 @@ def _build_draft_report(state: AnalysisGraphState) -> dict:
 
 
 def _build_judge_evidence(state: AnalysisGraphState) -> dict:
+    events = state.get("events") or []
+    if not events:
+        hydrate_state_events(state)
+        events = state.get("events") or []
+    eval_result = state.get("eval_result") or score_task_state(state)
     return {
         "question": state["question"],
         "analysis_goal": state["analysis_goal"],
@@ -290,8 +295,19 @@ def _build_judge_evidence(state: AnalysisGraphState) -> dict:
         "tool_results": state["tool_results"],
         "business_context": state.get("business_context") or [],
         "memory_context": state.get("memory_context") or {},
-        "events": state.get("events") or [],
-        "eval_result": state.get("eval_result") or {},
+        "events": events,
+        "trace_summary": {
+            "event_count": len(events),
+            "latest_event_type": events[-1].get("event_type") if events else None,
+            "completed_step_count": len(state.get("completed_steps") or []),
+        },
+        "eval_result": eval_result,
+        "eval_baseline": {
+            "overall_score": eval_result.get("overall_score"),
+            "tool_success_rate": eval_result.get("tool_success_rate"),
+            "report_completeness": eval_result.get("report_completeness"),
+            "trace_completeness": eval_result.get("trace_completeness"),
+        },
     }
 
 

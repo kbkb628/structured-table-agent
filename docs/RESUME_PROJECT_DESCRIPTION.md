@@ -47,10 +47,12 @@
 ## LLM-As-Judge Runtime Evidence
 
 - The project now includes a real `LLM-as-Judge` layer rather than only a lightweight supplementary judgement flag.
+- Judge input is packed evidence from the real task execution path, including the final report, tool results, business context, process trace summary, and eval baseline.
 - Judge outputs are persisted through `llm_judgement` with `judge_summary`, `judge_status`, and structured dimension results.
 - The current dimension set includes `groundedness`, `completeness`, and `clarity`.
 - Judge provider failures degrade explicitly to `judge_status = degraded` instead of failing the entire completed analysis task.
 - `GET /api/project-status`, `/demo`, and `/api/eval/run` expose judge runtime evidence separately from deterministic rule scores.
+- `RuleScorer` remains the deterministic baseline for `overall_score`; judge output is complementary rather than blended into the rule score.
 
 ## DockerSandbox Runtime Evidence
 

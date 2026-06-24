@@ -301,8 +301,16 @@ def test_run_analysis_task_records_structured_llm_judge(tmp_path: Path, monkeypa
         def judge_report(self, question: str, final_report: dict, tool_results: list[dict], judge_evidence: dict) -> dict:
             assert question == "analyse sales by region"
             assert judge_evidence["question"] == "analyse sales by region"
+            assert judge_evidence["analysis_goal"] == "compare region sales"
             assert judge_evidence["final_report"]["title"] == "LLM Final Report"
             assert judge_evidence["tool_results"][0]["tool_name"] == "groupby_aggregate"
+            assert isinstance(judge_evidence["business_context"], list)
+            assert isinstance(judge_evidence["events"], list)
+            assert "trace_summary" in judge_evidence
+            assert judge_evidence["trace_summary"]["event_count"] >= 1
+            assert judge_evidence["trace_summary"]["completed_step_count"] >= 1
+            assert "eval_baseline" in judge_evidence
+            assert judge_evidence["eval_baseline"]["overall_score"] is not None
             return {
                 "judge_summary": "Report is grounded in the deterministic aggregation.",
                 "judge_status": "ok",

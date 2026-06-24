@@ -480,7 +480,7 @@ def demo_page() -> HTMLResponse:
                   <div class="provider-title">Latest Task Judgement</div>
                   <div id="latest-task-judgement-pill" class="provider-pill">Not loaded</div>
                 </div>
-                <div id="latest-task-judgement-meta" class="provider-meta">Latest supplementary llm_judgement summary will appear here.</div>
+                <div id="latest-task-judgement-meta" class="provider-meta">Latest structured LLM-as-Judge summary will appear here.</div>
                 <div id="latest_task_judgement_output" class="provider-diag">No latest task judgement summary loaded yet.</div>
               </div>
               <div class="provider-card">

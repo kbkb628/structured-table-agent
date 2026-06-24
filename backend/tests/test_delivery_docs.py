@@ -483,11 +483,13 @@ def test_delivery_docs_mention_structured_llm_judge_runtime_evidence():
     project_status = (repo_root / "docs" / "PROJECT_STATUS.md").read_text(encoding="utf-8")
 
     assert "LLM-as-Judge" in resume_description
+    assert "packed evidence" in resume_description or "judge evidence" in resume_description
     assert "judge_summary" in resume_description
     assert "judge_status" in resume_description
     assert "groundedness" in resume_description
     assert "completeness" in resume_description
     assert "clarity" in resume_description
+    assert "deterministic baseline" in resume_description or "RuleScorer" in resume_description
 
     assert "LLM-as-Judge" in evidence_map
     assert "judge_summary" in evidence_map
@@ -499,6 +501,7 @@ def test_delivery_docs_mention_structured_llm_judge_runtime_evidence():
     assert "LLM-As-Judge" in project_status or "LLM-as-Judge" in project_status
     assert "judge_summary" in project_status
     assert "judge_status" in project_status
+    assert "judge_degraded" in project_status or "degraded" in project_status
     assert "groundedness" in project_status
     assert "completeness" in project_status
     assert "clarity" in project_status
