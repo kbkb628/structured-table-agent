@@ -157,6 +157,8 @@ class PlotlySpec(BaseModel):
 class GenerateChartOutput(BaseModel):
     chart_type: str
     plotly_spec: PlotlySpec
+    figure_backend: str
+    plotly_trace_count: int
 
 
 TOOL_DATA_SCHEMAS = {

@@ -37,6 +37,8 @@ def test_invoke_generate_chart_returns_tool_response():
     assert result.tool_name == "generate_chart"
     assert result.data["chart_type"] == "bar"
     assert result.data["plotly_spec"]["data"][0]["type"] == "bar"
+    assert result.data["figure_backend"] == "plotly"
+    assert result.data["plotly_trace_count"] == 1
 
 
 def test_invoke_trend_analysis_returns_tool_response(tmp_path):

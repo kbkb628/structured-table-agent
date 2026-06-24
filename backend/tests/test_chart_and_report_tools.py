@@ -19,6 +19,11 @@ def test_generate_chart_returns_bar_spec():
     assert result.success is True
     assert result.data["chart_type"] == "bar"
     assert result.data["plotly_spec"]["data"][0]["type"] == "bar"
+    assert result.data["plotly_spec"]["layout"]["title"] == "Sales by Region"
+    assert result.data["plotly_spec"]["layout"]["xaxis"]["title"] == "region"
+    assert result.data["plotly_spec"]["layout"]["yaxis"]["title"] == "sales_amount_sum"
+    assert result.data["figure_backend"] == "plotly"
+    assert result.data["plotly_trace_count"] == 1
 
 
 def test_generate_chart_supports_line_spec():
@@ -39,6 +44,8 @@ def test_generate_chart_supports_line_spec():
     assert result.data["chart_type"] == "line"
     assert result.data["plotly_spec"]["data"][0]["type"] == "scatter"
     assert result.data["plotly_spec"]["data"][0]["mode"] == "lines+markers"
+    assert result.data["figure_backend"] == "plotly"
+    assert result.data["plotly_trace_count"] == 1
 
 
 def test_generate_chart_rejects_empty_rows():
