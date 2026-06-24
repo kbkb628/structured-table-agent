@@ -47,7 +47,7 @@
 - 轻量 RAG 业务语义增强
 - 本地 staged retrieval 语义增强（BM25 + embedding + rerank）
 - LangGraph 多步状态流与最小动态路由
-- pandas / DuckDB 与 Plotly 风格图表配置（Plotly 配置）的受控工具链
+- pandas / DuckDB 与真实 Plotly 图表生成、`plotly_spec` 兼容持久化输出的受控工具链
 - 占比分析工具与主链接入
 - 趋势分析工具与主链接入
 - 异常检测工具与主链接入

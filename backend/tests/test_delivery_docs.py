@@ -134,7 +134,8 @@ def test_resume_project_description_mentions_qwen_and_project_status_delivery():
     assert "embedding" in content
     assert "rerank" in content
     assert "context_checkpoint" in content
-    assert "Plotly 风格图表配置" in content
+    assert "真实 Plotly 图表生成" in content
+    assert "plotly_spec" in content
     assert "Plotly 受控分析工具" not in content
     assert "SQLite 降级" in content or "SQLite" in content
 
@@ -151,7 +152,7 @@ def test_resume_evidence_map_links_resume_claims_to_runtime_evidence():
     assert "CSV / Excel" in content
     assert "route_next_step" in content
     assert "ToolResponse" in content
-    assert "Plotly 风格图表配置" in content
+    assert "真实 Plotly 图表生成" in content
     assert "plotly_spec" in content
     assert "z-score" in content
     assert "QwenClient" in content
@@ -238,7 +239,8 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "GET /api/project-status" in content
     assert "summary.session_store" in content or "session store" in content
     assert "GET /demo" in content
-    assert "Plotly 配置" in content
+    assert "plotly_spec" in content
+    assert "真实 Plotly" in content
     assert "Plotly 的受控工具链" not in content
     assert "TONGYI_API_KEY" in content or "OPENAI_API_KEY_0011AI" in content
     assert "provider smoke returned `ok = true`" in content or "401 invalid_api_key" in content
@@ -432,7 +434,7 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "INTERVIEW_DEMO_PREFLIGHT.md" in content
     assert "RELEASE_READINESS_AUDIT.md" in content
     assert "demo_mvp.ps1" in content
-    assert "Plotly 风格图表配置" in content or "plotly_spec" in content
+    assert "真实 Plotly" in content or "plotly_spec" in content
     assert "缺少可用 API key" in content
     assert "analysis_state" in content
     assert "细粒度 Redis key" in content

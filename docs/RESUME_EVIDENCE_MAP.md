@@ -47,7 +47,7 @@
   - `backend/tests/test_agent_graph.py`
   - `backend/tests/test_analysis_runner.py`
 
-### 3. 简历说法：通过统一 `ToolResponse`、Pydantic schema 和 Plotly 风格图表配置约束参数、返回值和错误信息，降低字段错配和结构漂移风险
+### 3. 简历说法：通过统一 `ToolResponse`、Pydantic schema 和真实 Plotly 图表生成约束参数、返回值和错误信息，并保持 `plotly_spec` 持久化兼容，降低字段错配和结构漂移风险
 
 - 代码证据
   - `backend/app/schemas/tool_schema.py`
@@ -59,7 +59,7 @@
   - `GET /api/project-status`
   - `GET /demo`
   - `scripts/demo_mvp.ps1`
-  - 图表结果当前以 `plotly_spec` 的结构化配置形式暴露，而不是依赖前端单独拼接图表字段
+  - 图表结果当前由真实 Plotly 生成，并以兼容既有前端与持久化契约的 `plotly_spec` 结构化配置形式暴露，而不是依赖前端单独拼接图表字段
   - 可直接观察 `project_status_latest_task_match_analysis_type`
   - 可直接观察 `project_status_latest_task_candidate_field_count`
   - 可直接观察 `project_status_latest_task_match_warning_count`

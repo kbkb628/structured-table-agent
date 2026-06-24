@@ -11,7 +11,7 @@
 
 - 基于 FastAPI 设计并实现结构化表格分析后端，支持 CSV / Excel 上传、字段画像生成、任务创建、任务执行与分析结果查询。
 - 使用 LangGraph 编排“字段匹配 - 工具执行 - 结果校验 - 下一步路由 - 图表生成 - 报告生成 - 规则评估”的最小状态流，并通过 `route_next_step` 支持多指标问题的最小动态推进。
-- 封装 pandas / DuckDB 与生成 Plotly 风格图表配置的受控分析工具，通过统一 `ToolResponse` 和 Pydantic schema 约束参数、返回值和错误信息，降低字段错配和结构漂移风险。
+- 封装 pandas / DuckDB 与真实 Plotly 图表生成的受控分析工具，对外继续输出兼容持久化的 `plotly_spec`，并通过统一 `ToolResponse` 和 Pydantic schema 约束参数、返回值和错误信息，降低字段错配和结构漂移风险。
 - 在受控工具链中补齐占比分析、趋势分析和基于 z-score 的异常检测能力，持续保持数值结论来自确定性聚合结果而非模型臆断。
 - 设计可替换 `LLMClient` 抽象，完成 `QwenClient` 与 `MockLLMClient` 双实现，并通过 provider 工厂支持真实 Tongyi Qianwen 接入、缺少可用 API key 时的显式降级与本地回退。
 - 将真实 LLM 接入到分析目标生成、分析计划生成、最终报告组织和补充型 `llm_judgement`，同时保持数值计算仍由 DuckDB / 工具链完成，避免模型直接编造结果。
