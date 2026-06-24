@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app.core import config
 from app.llm.factory import describe_llm_provider_diagnostics
 from app.llm.factory import describe_llm_provider_resolution
+from app.sandbox.runtime import describe_sandbox_runtime
 from app.storage.database import get_connection
 from app.storage.database import init_db
 from app.storage.session_store import SessionStore
@@ -115,6 +116,40 @@ def _session_store_info() -> dict:
             "latest_recovered_segment_count": len(latest_recovered_segments),
             "latest_recovered_segments": latest_recovered_segments,
         },
+    }
+
+
+def _latest_tool_execution(tool_name: str) -> dict | None:
+    init_db()
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            SELECT tool_name, response_json, success, elapsed_ms, created_at
+            FROM tool_call_logs
+            WHERE tool_name = ?
+            ORDER BY created_at DESC, rowid DESC
+            LIMIT 1
+            """,
+            (tool_name,),
+        ).fetchone()
+    if row is None:
+        return None
+    response_payload = json.loads(row[1]) if row[1] else {}
+    data_payload = response_payload.get("data") or {}
+    return {
+        "tool_name": row[0],
+        "status": data_payload.get("status"),
+        "elapsed_ms": int(row[3] or 0),
+        "success": bool(row[2]),
+        "created_at": row[4],
+    }
+
+
+def _sandbox_info() -> dict:
+    runtime = describe_sandbox_runtime()
+    return {
+        **runtime,
+        "latest_execution": _latest_tool_execution("advanced_code_execution"),
     }
 
 
@@ -402,6 +437,7 @@ def get_project_status() -> dict:
                 "available": True,
                 "path": "/demo",
             },
+            "sandbox": _sandbox_info(),
             "session_store": _session_store_info(),
             "latest_task": _latest_task_info(),
             "database": {

@@ -179,3 +179,9 @@ Runtime finding summary fields for demo diagnostics: `project_status_latest_task
 - 引入 DockerSandbox
 - 补更完整的前端过程展示
 - 在现有能力上继续扩展更细粒度的趋势分析与异常检测策略
+## DockerSandbox Interview Boundary
+
+- `DockerSandbox` is now a real implemented capability, but it is a controlled second-phase execution module rather than the main analysis path.
+- The main numeric truth path is still the deterministic DuckDB and tool chain.
+- If asked for runtime proof, show `GET /api/sandbox/status`, `POST /api/sandbox/execute`, `/demo`, and `GET /api/project-status`.
+- Do not describe DockerSandbox as a replacement for the existing structured-table analysis chain.

@@ -8,6 +8,7 @@ from app.api.eval import router as eval_router
 from app.api.files import router as files_router
 from app.api.llm import router as llm_router
 from app.api.project_status import router as project_status_router
+from app.api.sandbox import router as sandbox_router
 from app.core.config import UPLOAD_DIR
 from app.storage.database import init_db
 
@@ -26,5 +27,6 @@ app.include_router(demo_router)
 app.include_router(files_router)
 app.include_router(llm_router)
 app.include_router(project_status_router)
+app.include_router(sandbox_router)
 app.include_router(analysis_router)
 app.include_router(eval_router)

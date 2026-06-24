@@ -387,3 +387,11 @@ Latest real smoke evidence on this machine:
 - Judge evidence is packed from question, final report, tool outputs, retrieval context, memory context, and trace events.
 - Judge provider failures now degrade explicitly to `judge_status = degraded` instead of failing a completed task.
 - `GET /api/project-status`, `/demo`, `/api/eval/run`, and fixed eval cases now surface judge runtime evidence separately from rule scores.
+## DockerSandbox Realization Update
+
+- Added real `DockerSandbox` runtime capability through the controlled `advanced_code_execution` path.
+- Added sandbox diagnostics endpoint: `GET /api/sandbox/status`
+- Added sandbox execution endpoint: `POST /api/sandbox/execute`
+- Added sandbox runtime summary inside `GET /api/project-status`
+- Surfaced sandbox runtime evidence in `/demo`
+- DockerSandbox remains a second-phase controlled execution capability and does not replace the main DuckDB and tool-driven deterministic analysis chain.

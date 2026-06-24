@@ -3,6 +3,7 @@ from app.sandbox.executor import DockerSandboxExecutor
 
 def test_docker_sandbox_executor_reports_success(monkeypatch, tmp_path):
     executor = DockerSandboxExecutor()
+    monkeypatch.setattr(executor, "docker_available", lambda: True)
 
     monkeypatch.setattr(
         executor,
@@ -34,6 +35,7 @@ def test_docker_sandbox_executor_reports_success(monkeypatch, tmp_path):
 
 def test_docker_sandbox_executor_reports_timeout(monkeypatch):
     executor = DockerSandboxExecutor()
+    monkeypatch.setattr(executor, "docker_available", lambda: True)
 
     def raise_timeout(command, timeout_seconds):
         raise TimeoutError(f"timed out after {timeout_seconds}s")

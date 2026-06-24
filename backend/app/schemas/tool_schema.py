@@ -92,6 +92,12 @@ class GenerateReportArgs(ToolSchemaModel):
     chart_specs: list[dict[str, Any]] | None = None
 
 
+class AdvancedCodeExecutionArgs(ToolSchemaModel):
+    file_id: str
+    python_code: str
+    timeout_seconds: int | None = None
+
+
 class PlannedToolCall(BaseModel):
     tool_name: str
     group_by: str
@@ -161,6 +167,16 @@ class GenerateChartOutput(BaseModel):
     plotly_trace_count: int
 
 
+class AdvancedCodeExecutionOutput(BaseModel):
+    status: str
+    exit_code: int | None
+    stdout: str
+    stderr: str
+    elapsed_ms: int
+    parsed_output: dict[str, Any]
+    degraded: bool = False
+
+
 TOOL_DATA_SCHEMAS = {
     "profile_dataset": FileProfile,
     "match_fields": MatchFieldsOutput,
@@ -169,5 +185,6 @@ TOOL_DATA_SCHEMAS = {
     "trend_analysis": AggregateRowsOutput,
     "anomaly_analysis": AnomalyRowsOutput,
     "generate_chart": GenerateChartOutput,
+    "advanced_code_execution": AdvancedCodeExecutionOutput,
     "generate_report": FinalReport,
 }

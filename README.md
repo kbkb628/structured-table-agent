@@ -277,3 +277,10 @@ cd E:\bgagent1\backend
 - 为什么业务语义检索只负责增强，不负责 CSV 明细精确计算
 - 为什么要把 DuckDB、工具调用、事件时间线、规则评分、provider 诊断和 project-status 放在同一条真实链路里
 - 为什么真实 LLM 只负责目标理解、计划组织、报告表达和补充评审，而不直接替代数值计算
+## DockerSandbox Runtime Evidence
+
+- The repository now includes a real `DockerSandbox` execution path exposed as the controlled `advanced_code_execution` capability.
+- Runtime diagnostics are available through `GET /api/sandbox/status`.
+- Controlled execution is available through `POST /api/sandbox/execute`.
+- `GET /api/project-status` and `/demo` surface sandbox runtime status and latest execution evidence.
+- DockerSandbox remains a second-phase controlled execution capability and does not replace the main DuckDB and tool-driven deterministic analysis chain.

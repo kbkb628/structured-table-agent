@@ -281,3 +281,25 @@
   - `backend/tests/test_analysis_api.py`
   - `backend/tests/test_project_status_api.py`
   - `backend/tests/test_qwen_client.py`
+### DockerSandbox Addendum
+
+- Resume wording: real `DockerSandbox` controlled execution with explicit runtime diagnostics and execution evidence.
+- Code evidence:
+  - `backend/app/sandbox/executor.py`
+  - `backend/app/sandbox/runtime.py`
+  - `backend/app/tools/sandbox_tool.py`
+  - `backend/app/api/sandbox.py`
+  - `backend/app/api/project_status.py`
+  - `backend/app/api/demo.py`
+- Runtime evidence:
+  - `advanced_code_execution`
+  - `/api/sandbox/status`
+  - `/api/sandbox/execute`
+  - `summary.sandbox`
+  - `summary.sandbox.latest_execution`
+- Test evidence:
+  - `backend/tests/test_sandbox_executor.py`
+  - `backend/tests/test_sandbox_tool.py`
+  - `backend/tests/test_sandbox_api.py`
+  - `backend/tests/test_project_status_api.py`
+  - `backend/tests/test_demo_page.py`

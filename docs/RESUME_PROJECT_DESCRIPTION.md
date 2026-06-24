@@ -31,7 +31,6 @@
 
 ## 当前不能过度声称的点
 
-- 不能说已经实现 DockerSandbox
 - 不能说已经实现完整 React 前端
 - 不能说所有分析都由大模型自动完成
 - 不能说项目已经是生产级多租户或高并发系统
@@ -52,3 +51,10 @@
 - The current dimension set includes `groundedness`, `completeness`, and `clarity`.
 - Judge provider failures degrade explicitly to `judge_status = degraded` instead of failing the entire completed analysis task.
 - `GET /api/project-status`, `/demo`, and `/api/eval/run` expose judge runtime evidence separately from deterministic rule scores.
+
+## DockerSandbox Runtime Evidence
+
+- The project now includes a real `DockerSandbox` execution path exposed as the controlled `advanced_code_execution` capability.
+- Sandbox execution is available through `POST /api/sandbox/execute` and runtime diagnostics are exposed by `GET /api/sandbox/status`.
+- `GET /api/project-status` and `/demo` surface sandbox runtime evidence and latest execution status.
+- DockerSandbox is implemented as a second-phase controlled execution module and does not replace the main DuckDB and tool-driven deterministic analysis chain.

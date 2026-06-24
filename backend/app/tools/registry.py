@@ -4,6 +4,7 @@ from pydantic import ValidationError
 
 from app.schemas.tool_schema import CalculateShareArgs
 from app.schemas.tool_schema import AnomalyAnalysisArgs
+from app.schemas.tool_schema import AdvancedCodeExecutionArgs
 from app.schemas.tool_schema import GenerateChartArgs
 from app.schemas.tool_schema import GenerateReportArgs
 from app.schemas.tool_schema import GroupByAggregateArgs
@@ -19,6 +20,7 @@ from app.tools.data_profile import profile_dataset
 from app.tools.duckdb_tools import groupby_aggregate
 from app.tools.match_fields import match_fields
 from app.tools.report_tool import generate_report
+from app.tools.sandbox_tool import advanced_code_execution
 from app.tools.share_tool import calculate_share
 from app.tools.trend_tool import trend_analysis
 
@@ -34,6 +36,7 @@ TOOL_ARG_SCHEMAS = {
     "trend_analysis": TrendAnalysisArgs,
     "anomaly_analysis": AnomalyAnalysisArgs,
     "generate_chart": GenerateChartArgs,
+    "advanced_code_execution": AdvancedCodeExecutionArgs,
     "generate_report": GenerateReportArgs,
 }
 
@@ -139,5 +142,6 @@ def get_tool_registry() -> dict[str, ToolCallable]:
         "trend_analysis": trend_analysis,
         "anomaly_analysis": anomaly_analysis,
         "generate_chart": generate_chart,
+        "advanced_code_execution": advanced_code_execution,
         "generate_report": generate_report,
     }

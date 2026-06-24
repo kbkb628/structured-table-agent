@@ -394,6 +394,8 @@ def demo_page() -> HTMLResponse:
             <button id="provider-status-button" class="ghost" type="button">LLM Status</button>
             <button id="provider-smoke-button" class="ghost" type="button">LLM Smoke</button>
             <button id="project-status-button" class="ghost" type="button">Project Overview</button>
+            <button id="sandbox-status-button" class="ghost" type="button">Sandbox Status</button>
+            <button id="sandbox-execute-button" class="ghost" type="button">Run Sandbox</button>
             <button id="eval-cases-button" class="ghost" type="button">Run Fixed Eval Cases</button>
           </div>
 
@@ -439,6 +441,15 @@ def demo_page() -> HTMLResponse:
                 <div id="project-status-pill" class="provider-pill">Not loaded</div>
               </div>
               <div id="project-status-meta" class="provider-meta">Runtime summary will appear here.</div>
+              <div class="provider-card">
+                <div class="provider-card-head">
+                  <div class="provider-title">Sandbox Runtime</div>
+                  <div id="sandbox-pill" class="provider-pill">Not loaded</div>
+                </div>
+                <div id="sandbox-meta" class="provider-meta">DockerSandbox runtime summary for `advanced_code_execution` will appear here.</div>
+                <div id="sandbox-status-output" class="provider-diag">No sandbox runtime summary loaded yet.</div>
+                <div id="sandbox-result-output" class="provider-diag">No sandbox execution result loaded yet.</div>
+              </div>
               <div class="provider-card">
                 <div class="provider-card-head">
                   <div class="provider-title">Session Store Runtime Mode</div>
@@ -661,6 +672,10 @@ def demo_page() -> HTMLResponse:
     const providerDiagEl = document.getElementById("provider-diag");
     const projectStatusPillEl = document.getElementById("project-status-pill");
     const projectStatusMetaEl = document.getElementById("project-status-meta");
+    const sandboxPillEl = document.getElementById("sandbox-pill");
+    const sandboxMetaEl = document.getElementById("sandbox-meta");
+    const sandboxStatusOutputEl = document.getElementById("sandbox-status-output");
+    const sandboxResultOutputEl = document.getElementById("sandbox-result-output");
     const sessionStorePillEl = document.getElementById("session-store-pill");
     const sessionStoreMetaEl = document.getElementById("session-store-meta");
     const sessionStoreOutputEl = document.getElementById("session-store-output");
@@ -711,6 +726,8 @@ def demo_page() -> HTMLResponse:
     const providerStatusButton = document.getElementById("provider-status-button");
     const providerSmokeButton = document.getElementById("provider-smoke-button");
     const projectStatusButton = document.getElementById("project-status-button");
+    const sandboxStatusButton = document.getElementById("sandbox-status-button");
+    const sandboxExecuteButton = document.getElementById("sandbox-execute-button");
     const evalCasesButton = document.getElementById("eval-cases-button");
 
     function setStatus(message) {
@@ -975,10 +992,39 @@ def demo_page() -> HTMLResponse:
         : "No fixed eval case coverage loaded.";
     }
 
+    function renderSandboxStatus(payload) {
+      if (!payload) {
+        sandboxPillEl.textContent = "Not loaded";
+        sandboxMetaEl.textContent = "DockerSandbox runtime summary will appear here.";
+        sandboxStatusOutputEl.textContent = "No sandbox runtime summary loaded yet.";
+        return;
+      }
+
+      sandboxPillEl.textContent = payload.enabled
+        ? (payload.docker_available ? "Sandbox ready" : "Docker missing")
+        : "Sandbox off";
+      sandboxMetaEl.textContent = [
+        `image: ${payload.image || "unknown"}`,
+        `timeout: ${payload.timeout_seconds ?? "none"}s`,
+      ].join(" | ");
+      sandboxStatusOutputEl.textContent = [
+        `enabled: ${payload.enabled ?? false}`,
+        `docker_available: ${payload.docker_available ?? false}`,
+        `image: ${payload.image || "unknown"}`,
+        `network_disabled: ${payload.network_disabled ?? false}`,
+        `timeout_seconds: ${payload.timeout_seconds ?? "none"}`,
+        `memory_limit_mb: ${payload.memory_limit_mb ?? "none"}`,
+      ].join("\n");
+    }
+
     function renderProjectStatus(payload) {
       if (!payload || !payload.summary) {
         projectStatusPillEl.textContent = "Not loaded";
         projectStatusMetaEl.textContent = "Runtime summary will appear here.";
+        sandboxPillEl.textContent = "Not loaded";
+        sandboxMetaEl.textContent = "DockerSandbox runtime summary will appear here.";
+        sandboxStatusOutputEl.textContent = "No sandbox runtime summary loaded yet.";
+        sandboxResultOutputEl.textContent = "No sandbox execution result loaded yet.";
         sessionStorePillEl.textContent = "Not loaded";
         sessionStoreMetaEl.textContent = "Redis-first / SQLite-fallback summary will appear here.";
         sessionStoreOutputEl.textContent = "No session store runtime summary loaded yet.";
@@ -1017,6 +1063,7 @@ def demo_page() -> HTMLResponse:
       const tables = (summary.database || {}).tables || {};
       const provider = summary.provider || {};
       const providerDiagnostics = provider.diagnostics || {};
+      const sandbox = summary.sandbox || {};
       const sessionStore = summary.session_store || {};
       const sessionStoreEvents = sessionStore.event_summary || {};
       const latestTask = summary.latest_task || null;
@@ -1043,6 +1090,10 @@ def demo_page() -> HTMLResponse:
         `Provider: ${provider.provider || "unknown"}`,
         `Smoke ready: ${providerDiagnostics.smoke_ready}`,
       ].join(" | ");
+      renderSandboxStatus(sandbox);
+      sandboxResultOutputEl.textContent = sandbox.latest_execution
+        ? stringify(sandbox.latest_execution)
+        : "No sandbox execution result loaded yet.";
       sessionStorePillEl.textContent = sessionStore.degraded_to_sqlite ? "SQLite fallback" : "Redis active";
       sessionStoreMetaEl.textContent = [
         `Preferred: ${sessionStore.preferred_backend || "redis"}`,
@@ -1354,6 +1405,33 @@ def demo_page() -> HTMLResponse:
       return payload;
     }
 
+    async function loadSandboxStatus() {
+      setStatus("Loading sandbox runtime...");
+      const payload = await apiFetch("/api/sandbox/status");
+      renderSandboxStatus(payload);
+      setStatus("Sandbox runtime loaded.");
+      return payload;
+    }
+
+    async function runSandboxExecution() {
+      if (!state.fileId) {
+        throw new Error("Upload or load a file before sandbox execution.");
+      }
+      setStatus("Running sandbox execution...");
+      const payload = await apiFetch("/api/sandbox/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file_id: state.fileId,
+          python_code: "import json\nprint(json.dumps({'summary': 'sandbox ok'}))",
+          timeout_seconds: 8,
+        }),
+      });
+      sandboxResultOutputEl.textContent = stringify(payload);
+      setStatus(`Sandbox execution status: ${payload.status}`);
+      return payload;
+    }
+
     async function startAndRunAnalysis() {
       if (!state.fileId) {
         await uploadFile();
@@ -1497,6 +1575,28 @@ def demo_page() -> HTMLResponse:
       }
     });
 
+    sandboxStatusButton.addEventListener("click", async () => {
+      sandboxStatusButton.disabled = true;
+      try {
+        await loadSandboxStatus();
+      } catch (error) {
+        setStatus("Sandbox status failed: " + error.message);
+      } finally {
+        sandboxStatusButton.disabled = false;
+      }
+    });
+
+    sandboxExecuteButton.addEventListener("click", async () => {
+      sandboxExecuteButton.disabled = true;
+      try {
+        await runSandboxExecution();
+      } catch (error) {
+        setStatus("Sandbox execution failed: " + error.message);
+      } finally {
+        sandboxExecuteButton.disabled = false;
+      }
+    });
+
     evalCasesButton.addEventListener("click", async () => {
       evalCasesButton.disabled = true;
       try {
@@ -1520,6 +1620,10 @@ def demo_page() -> HTMLResponse:
 
     loadProjectStatus().catch((error) => {
       setStatus("Initial project runtime overview load failed: " + error.message);
+    });
+
+    loadSandboxStatus().catch((error) => {
+      setStatus("Initial sandbox runtime load failed: " + error.message);
     });
   </script>
 </body>
