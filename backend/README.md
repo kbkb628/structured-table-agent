@@ -450,3 +450,5 @@ These fields come from the already-implemented `summary.sandbox` runtime overvie
 `GET /api/project-status` now exposes `embedding_cache` with `knowledge_item_count`, `cached_item_count`, `fresh_item_count`, `stale_item_count`, `missing_item_count`, and `cache_coverage_ratio`.
 
 This summary describes the current local embedding cache backing the staged retrieval path. It is runtime evidence for embedding persistence and freshness, not a claim of external vector-service infrastructure.
+
+The backend now also provides `POST /api/rag/embedding-cache/refresh` for explicit embedding-cache governance. Supported modes are `missing|stale|all`. The endpoint computes real embeddings through the current bi-encoder path and returns refresh counters for the maintenance run. This is a local SQLite-backed cache-management capability, not an external vector database service.

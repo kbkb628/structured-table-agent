@@ -103,6 +103,15 @@ def test_backend_readme_mentions_current_fixed_eval_scope():
     assert "three Chinese MVP acceptance questions" in content
 
 
+def test_embedding_cache_refresh_governance_is_documented():
+    backend_readme = (Path(__file__).resolve().parents[2] / "backend" / "README.md").read_text(
+        encoding="utf-8"
+    )
+
+    assert "/api/rag/embedding-cache/refresh" in backend_readme
+    assert "missing|stale|all" in backend_readme
+
+
 def test_demo_script_docs_describe_post_run_project_status_refresh():
     repo_root = Path(__file__).resolve().parents[2]
     root_readme = (repo_root / "README.md").read_text(encoding="utf-8")
