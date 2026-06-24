@@ -24,12 +24,21 @@ def _degraded_result(code: str, message: str, status: str = "degraded") -> dict:
     }
 
 
-def _classify_execution_failure(stderr: str) -> tuple[str, str]:
+def _classify_execution_failure(stderr: str, returncode: int | None = None) -> tuple[str, str]:
     lowered = (stderr or "").lower()
+    if returncode in {137, 143} or "oomkilled" in lowered or lowered.strip() == "killed":
+        return "SANDBOX_RESOURCE_KILLED", stderr.strip() or "Sandbox execution was killed by runtime resource limits."
     if "syntaxerror" in lowered:
         return "SANDBOX_SYNTAX_ERROR", stderr.strip() or "Sandbox Python code has invalid syntax."
     if "importerror" in lowered or "modulenotfounderror" in lowered:
         return "SANDBOX_IMPORT_ERROR", stderr.strip() or "Sandbox code imports an unavailable module."
+    if (
+        "connectionerror" in lowered
+        or "name or service not known" in lowered
+        or "temporary failure in name resolution" in lowered
+        or "failed to establish a new connection" in lowered
+    ):
+        return "SANDBOX_NETWORK_ERROR", stderr.strip() or "Sandbox code attempted a blocked network operation."
     if "permissionerror" in lowered or "read-only file system" in lowered:
         return "SANDBOX_PERMISSION_ERROR", stderr.strip() or "Sandbox code attempted a blocked filesystem operation."
     return "SANDBOX_EXECUTION_FAILED", stderr.strip() or "Sandbox execution failed."
@@ -121,8 +130,8 @@ class DockerSandboxExecutor:
             "error": None
             if returncode == 0
             else {
-                "code": _classify_execution_failure(stderr)[0],
-                "message": _classify_execution_failure(stderr)[1],
+                "code": _classify_execution_failure(stderr, returncode)[0],
+                "message": _classify_execution_failure(stderr, returncode)[1],
                 "suggested_fields": [],
             },
         }
