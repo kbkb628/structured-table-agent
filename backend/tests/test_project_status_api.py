@@ -483,6 +483,34 @@ def test_get_project_status_surfaces_structured_judge_dimensions():
     assert judgement["clarity_score"] == 0.9
 
 
+def test_get_project_status_surfaces_sandbox_runtime_summary(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.project_status._sandbox_info",
+        lambda: {
+            "enabled": True,
+            "docker_available": True,
+            "image": "python:3.12-slim",
+            "network_disabled": True,
+            "timeout_seconds": 8,
+            "memory_limit_mb": 256,
+            "latest_execution": {
+                "tool_name": "advanced_code_execution",
+                "status": "completed",
+                "elapsed_ms": 55,
+            },
+        },
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    sandbox = response.json()["summary"]["sandbox"]
+    assert sandbox["enabled"] is True
+    assert sandbox["docker_available"] is True
+    assert sandbox["latest_execution"]["tool_name"] == "advanced_code_execution"
+
+
 def test_get_project_status_ignores_future_dated_fixture_task_for_latest_summary():
     frozen_now = "2099-12-31T23:59:59+00:00"
     future_task_id = "task_project_status_future_fixture"

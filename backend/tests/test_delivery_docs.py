@@ -474,6 +474,16 @@ def test_delivery_docs_mention_structured_llm_judge_runtime_evidence():
     assert "clarity" in project_status
 
 
+def test_delivery_docs_mention_docker_sandbox_runtime_evidence():
+    repo_root = Path(__file__).resolve().parents[2]
+    resume_description = (repo_root / "docs" / "RESUME_PROJECT_DESCRIPTION.md").read_text(encoding="utf-8")
+
+    assert "DockerSandbox" in resume_description
+    assert "advanced_code_execution" in resume_description
+    assert "/api/sandbox/execute" in resume_description
+    assert "/api/sandbox/status" in resume_description
+
+
 def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     content = (Path(__file__).resolve().parents[2] / "docs" / "INTERVIEW_GUIDE.md").read_text(
         encoding="utf-8"

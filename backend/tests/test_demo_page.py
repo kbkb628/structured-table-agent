@@ -61,6 +61,10 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert 'report_completeness' in content
     assert 'trace_completeness' in content
     assert 'latest_task_judgement_output' in content
+    assert 'id="sandbox-status-button"' in content
+    assert 'id="sandbox-execute-button"' in content
+    assert "Sandbox Runtime" in content
+    assert "advanced_code_execution" in content
     assert 'supported_by_tools' in content
     assert 'has_findings' in content
     assert 'latest_task_process_output' in content
