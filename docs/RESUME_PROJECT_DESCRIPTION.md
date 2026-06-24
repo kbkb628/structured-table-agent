@@ -57,7 +57,7 @@
 - The project now includes a real `DockerSandbox` execution path exposed as the controlled `advanced_code_execution` capability.
 - Sandbox execution is available through `POST /api/sandbox/execute` and runtime diagnostics are exposed by `GET /api/sandbox/status`.
 - Direct `POST /api/sandbox/execute` calls now persist the latest sandbox runtime evidence instead of relying only on indirect tool-log side effects.
-- Latest persisted sandbox evidence includes classified failure codes such as `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, and `SANDBOX_PERMISSION_ERROR`.
+- Latest persisted sandbox evidence includes classified failure codes such as `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, `SANDBOX_PERMISSION_ERROR`, `SANDBOX_NETWORK_ERROR`, and `SANDBOX_RESOURCE_KILLED`.
 - Sandbox demo execution now supports named templates such as `region_sales_summary` instead of only arbitrary inline Python.
 - `GET /api/sandbox/status` now exposes `supported_templates`, `max_timeout_seconds`, and `max_code_chars` so the controlled sandbox boundary is explicit in runtime evidence.
 - Sandbox timeout requests are capped by the configured runtime ceiling rather than accepted without boundary.

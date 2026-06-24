@@ -397,7 +397,7 @@ Latest real smoke evidence on this machine:
 - Added sandbox diagnostics endpoint: `GET /api/sandbox/status`
 - Added sandbox execution endpoint: `POST /api/sandbox/execute`
 - Added dedicated persisted sandbox execution evidence for direct sandbox API runs.
-- Added classified sandbox failure codes, including `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, and `SANDBOX_PERMISSION_ERROR`.
+- Added classified sandbox failure codes, including `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, `SANDBOX_PERMISSION_ERROR`, `SANDBOX_NETWORK_ERROR`, and `SANDBOX_RESOURCE_KILLED`.
 - Added named sandbox execution templates, including `region_sales_summary`.
 - Added timeout request validation so sandbox API calls cannot exceed the configured runtime ceiling.
 - Added explicit sandbox capability boundary fields: `supported_templates`, `max_timeout_seconds`, and `max_code_chars`.

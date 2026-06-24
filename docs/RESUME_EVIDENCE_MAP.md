@@ -304,6 +304,8 @@
   - `SANDBOX_SYNTAX_ERROR`
   - `SANDBOX_IMPORT_ERROR`
   - `SANDBOX_PERMISSION_ERROR`
+  - `SANDBOX_NETWORK_ERROR`
+  - `SANDBOX_RESOURCE_KILLED`
 - Test evidence:
   - `backend/tests/test_sandbox_executor.py`
   - `backend/tests/test_sandbox_tool.py`
