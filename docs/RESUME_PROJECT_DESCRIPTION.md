@@ -59,6 +59,8 @@
 - Direct `POST /api/sandbox/execute` calls now persist the latest sandbox runtime evidence instead of relying only on indirect tool-log side effects.
 - Latest persisted sandbox evidence includes classified failure codes such as `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, and `SANDBOX_PERMISSION_ERROR`.
 - Sandbox demo execution now supports named templates such as `region_sales_summary` instead of only arbitrary inline Python.
+- `GET /api/sandbox/status` now exposes `supported_templates`, `max_timeout_seconds`, and `max_code_chars` so the controlled sandbox boundary is explicit in runtime evidence.
 - Sandbox timeout requests are capped by the configured runtime ceiling rather than accepted without boundary.
+- Inline `python_code` requests are also constrained by `max_code_chars`, while named templates remain the more controlled execution path for interview demos.
 - `GET /api/project-status` and `/demo` surface sandbox runtime evidence and latest execution status.
 - DockerSandbox is implemented as a second-phase controlled execution module and does not replace the main DuckDB and tool-driven deterministic analysis chain.

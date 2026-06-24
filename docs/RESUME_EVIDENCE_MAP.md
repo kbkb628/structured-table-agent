@@ -297,6 +297,8 @@
   - `/api/sandbox/execute`
   - `sandbox_execution_logs`
   - `region_sales_summary`
+  - `supported_templates`
+  - `max_code_chars`
   - `summary.sandbox`
   - `summary.sandbox.latest_execution`
   - `SANDBOX_SYNTAX_ERROR`

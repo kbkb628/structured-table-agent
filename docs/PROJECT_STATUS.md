@@ -57,6 +57,7 @@
 - SQLite 持久化与 Redis 优先 / SQLite 降级
 - 规则评分与固定 case 回归验证
 - 受控 DockerSandbox 执行能力，支持 `advanced_code_execution`、`GET /api/sandbox/status` 和 `POST /api/sandbox/execute`
+- `GET /api/sandbox/status` 与 `GET /api/project-status` 中的 `summary.sandbox` 已显式暴露 `supported_templates`、`max_timeout_seconds` 和 `max_code_chars`
 - 基于真实 API 的极简页面演示闭环
 - 基于 `GET /api/project-status` 的项目运行总览接口
 - 基于 `scripts/demo_mvp.ps1` 的一键演示交付链路
@@ -399,6 +400,8 @@ Latest real smoke evidence on this machine:
 - Added classified sandbox failure codes, including `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, and `SANDBOX_PERMISSION_ERROR`.
 - Added named sandbox execution templates, including `region_sales_summary`.
 - Added timeout request validation so sandbox API calls cannot exceed the configured runtime ceiling.
+- Added explicit sandbox capability boundary fields: `supported_templates`, `max_timeout_seconds`, and `max_code_chars`.
+- Added inline `python_code` length validation so direct sandbox API calls stay within the configured code ceiling.
 - Added sandbox runtime summary inside `GET /api/project-status`
 - Surfaced sandbox runtime evidence in `/demo`
 - DockerSandbox remains a second-phase controlled execution capability and does not replace the main DuckDB and tool-driven deterministic analysis chain.
