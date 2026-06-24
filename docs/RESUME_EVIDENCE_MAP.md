@@ -299,6 +299,9 @@
   - `region_sales_summary`
   - `supported_templates`
   - `max_code_chars`
+  - `execution_mode`
+  - `template_name`
+  - `python_code_char_count`
   - `summary.sandbox`
   - `summary.sandbox.latest_execution`
   - `SANDBOX_SYNTAX_ERROR`

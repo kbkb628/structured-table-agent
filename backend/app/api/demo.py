@@ -997,7 +997,7 @@ def demo_page() -> HTMLResponse:
     function renderSandboxStatus(payload) {
       if (!payload) {
         sandboxPillEl.textContent = "Not loaded";
-        sandboxMetaEl.textContent = "DockerSandbox runtime summary, supported_templates, max_timeout_seconds, and max_code_chars will appear here.";
+        sandboxMetaEl.textContent = "DockerSandbox runtime summary, supported_templates, execution_mode, template_name, and python_code_char_count will appear here.";
         sandboxStatusOutputEl.textContent = "No sandbox runtime summary loaded yet.";
         return;
       }
@@ -1009,6 +1009,7 @@ def demo_page() -> HTMLResponse:
         `image: ${payload.image || "unknown"}`,
         `timeout: ${payload.timeout_seconds ?? "none"}s`,
         `max_code_chars: ${payload.max_code_chars ?? "none"}`,
+        `execution_mode: ${(payload.latest_execution || {}).execution_mode || "none"}`,
       ].join(" | ");
       sandboxStatusOutputEl.textContent = [
         `enabled: ${payload.enabled ?? false}`,
@@ -1019,6 +1020,9 @@ def demo_page() -> HTMLResponse:
         `max_timeout_seconds: ${payload.max_timeout_seconds ?? "none"}`,
         `max_code_chars: ${payload.max_code_chars ?? "none"}`,
         `supported_templates: ${(payload.supported_templates || []).join(", ") || "none"}`,
+        `execution_mode: ${(payload.latest_execution || {}).execution_mode || "none"}`,
+        `template_name: ${(payload.latest_execution || {}).template_name || "none"}`,
+        `python_code_char_count: ${(payload.latest_execution || {}).python_code_char_count ?? "none"}`,
         `memory_limit_mb: ${payload.memory_limit_mb ?? "none"}`,
       ].join("\n");
     }
@@ -1028,7 +1032,7 @@ def demo_page() -> HTMLResponse:
         projectStatusPillEl.textContent = "Not loaded";
         projectStatusMetaEl.textContent = "Runtime summary will appear here.";
         sandboxPillEl.textContent = "Not loaded";
-        sandboxMetaEl.textContent = "DockerSandbox runtime summary, supported_templates, max_timeout_seconds, and max_code_chars will appear here.";
+        sandboxMetaEl.textContent = "DockerSandbox runtime summary, supported_templates, execution_mode, template_name, and python_code_char_count will appear here.";
         sandboxStatusOutputEl.textContent = "No sandbox runtime summary loaded yet.";
         sandboxResultOutputEl.textContent = "No sandbox execution result loaded yet.";
         sessionStorePillEl.textContent = "Not loaded";
