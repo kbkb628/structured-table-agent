@@ -251,6 +251,7 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "advanced_code_execution" in content
     assert "supported_templates" in content
     assert "max_code_chars" in content
+    assert "SANDBOX_NETWORK_ERROR" in content
     assert "summary.session_store" in content or "session store" in content
     assert "GET /demo" in content
     assert "plotly_spec" in content
@@ -505,6 +506,8 @@ def test_delivery_docs_mention_docker_sandbox_runtime_evidence():
     assert "/api/sandbox/status" in resume_description
     assert "latest sandbox runtime evidence" in resume_description
     assert "SANDBOX_SYNTAX_ERROR" in resume_description
+    assert "SANDBOX_NETWORK_ERROR" in resume_description
+    assert "SANDBOX_RESOURCE_KILLED" in resume_description
     assert "region_sales_summary" in resume_description
     assert "supported_templates" in resume_description
     assert "max_code_chars" in resume_description
@@ -514,10 +517,12 @@ def test_delivery_docs_mention_docker_sandbox_runtime_evidence():
     assert "/api/sandbox/status" in interview_guide
     assert "latest sandbox execution evidence" in interview_guide
     assert "SANDBOX_IMPORT_ERROR" in interview_guide
+    assert "SANDBOX_NETWORK_ERROR" in interview_guide
     assert "template-backed sandbox execution" in interview_guide
     assert "当前仍未实现、因此不应作为封板完成项对外声称的内容包括：\n\n- DockerSandbox" not in release_readiness
     assert "sandbox_execution_logs" in evidence_map
     assert "SANDBOX_PERMISSION_ERROR" in evidence_map
+    assert "SANDBOX_RESOURCE_KILLED" in evidence_map
     assert "region_sales_summary" in evidence_map
     assert "supported_templates" in evidence_map
     assert "max_code_chars" in evidence_map

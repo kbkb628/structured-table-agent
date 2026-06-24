@@ -77,3 +77,43 @@ def test_docker_sandbox_executor_classifies_syntax_error(monkeypatch):
 
     assert result["status"] == "failed"
     assert result["error"]["code"] == "SANDBOX_SYNTAX_ERROR"
+
+
+def test_docker_sandbox_executor_classifies_network_error(monkeypatch):
+    executor = DockerSandboxExecutor()
+    monkeypatch.setattr(executor, "docker_available", lambda: True)
+    monkeypatch.setattr(
+        executor,
+        "_run_process",
+        lambda command, timeout_seconds: {
+            "returncode": 1,
+            "stdout": "",
+            "stderr": "requests.exceptions.ConnectionError: [Errno -2] Name or service not known",
+            "elapsed_ms": 18,
+        },
+    )
+
+    result = executor.execute_python(code="import requests", mounted_files=[], timeout_seconds=3)
+
+    assert result["status"] == "failed"
+    assert result["error"]["code"] == "SANDBOX_NETWORK_ERROR"
+
+
+def test_docker_sandbox_executor_classifies_resource_killed_container(monkeypatch):
+    executor = DockerSandboxExecutor()
+    monkeypatch.setattr(executor, "docker_available", lambda: True)
+    monkeypatch.setattr(
+        executor,
+        "_run_process",
+        lambda command, timeout_seconds: {
+            "returncode": 137,
+            "stdout": "",
+            "stderr": "Killed",
+            "elapsed_ms": 25,
+        },
+    )
+
+    result = executor.execute_python(code="x = '1' * 10_000_000", mounted_files=[], timeout_seconds=3)
+
+    assert result["status"] == "failed"
+    assert result["error"]["code"] == "SANDBOX_RESOURCE_KILLED"
