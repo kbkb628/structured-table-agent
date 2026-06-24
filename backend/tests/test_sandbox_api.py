@@ -78,3 +78,42 @@ def test_sandbox_execute_endpoint_persists_latest_execution(monkeypatch):
     assert captured["file_id"] == "file_sandbox"
     assert captured["execution_source"] == "sandbox_api"
     assert captured["response_payload"]["status"] == "completed"
+
+
+def test_sandbox_execute_endpoint_accepts_template_name(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.sandbox.execute_in_docker_sandbox",
+        lambda file_id, python_code, timeout_seconds=None: {
+            "status": "completed",
+            "exit_code": 0,
+            "stdout": '{"summary": "ok"}',
+            "stderr": "",
+            "elapsed_ms": 40,
+            "parsed_output": {"summary": "ok"},
+            "degraded": False,
+            "error": None,
+        },
+    )
+    monkeypatch.setattr(
+        "app.api.sandbox.build_sandbox_template_code",
+        lambda template_name: "print('templated')",
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/sandbox/execute",
+        json={"file_id": "file_sandbox", "template_name": "region_sales_summary", "timeout_seconds": 8},
+    )
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "completed"
+
+
+def test_sandbox_execute_endpoint_rejects_excessive_timeout():
+    client = TestClient(app)
+    response = client.post(
+        "/api/sandbox/execute",
+        json={"file_id": "file_sandbox", "python_code": "print('ok')", "timeout_seconds": 999},
+    )
+
+    assert response.status_code == 422
