@@ -20,6 +20,27 @@ def _summarize_request_payload(request_payload: dict) -> dict:
     }
 
 
+def _summarize_response_payload(response_payload: dict) -> dict:
+    parsed_output = response_payload.get("parsed_output") or {}
+    if not isinstance(parsed_output, dict):
+        return {
+            "parsed_output_keys": [],
+            "template_result_field_count": 0,
+            "template_result_summary": {},
+        }
+    parsed_output_keys = sorted(str(key) for key in parsed_output.keys())
+    template_result_summary = {
+        key: value
+        for key, value in parsed_output.items()
+        if key != "template_name" and isinstance(value, (str, int, float, bool))
+    }
+    return {
+        "parsed_output_keys": parsed_output_keys,
+        "template_result_field_count": len(template_result_summary),
+        "template_result_summary": template_result_summary,
+    }
+
+
 def record_sandbox_execution(file_id: str, request_payload: dict, response_payload: dict, execution_source: str) -> str:
     init_db()
     execution_id = f"sandbox_exec_{uuid.uuid4().hex[:12]}"
@@ -67,5 +88,6 @@ def get_latest_sandbox_execution() -> dict | None:
         "elapsed_ms": int(row[6] or 0),
         "created_at": row[7],
         **_summarize_request_payload(request_payload),
+        **_summarize_response_payload(response_payload),
         **response_payload,
     }
