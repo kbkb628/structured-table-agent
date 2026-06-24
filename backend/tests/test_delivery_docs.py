@@ -169,11 +169,15 @@ def test_resume_evidence_map_links_resume_claims_to_runtime_evidence():
     assert "provider-status" in content
     assert "provider-smoke" in content
     assert "project-status" in content
+    assert "DockerSandbox" in content
+    assert "advanced_code_execution" in content
     assert "demo_mvp.ps1" in content
     assert "test_files_api.py" in content
     assert "test_analysis_runner.py" in content
     assert "test_session_store.py" in content
     assert "test_keyword_retriever.py" in content
+    assert "不能说已经实现 DockerSandbox" not in content
+    assert "不能说 DockerSandbox 已经替代 DuckDB + 受控工具链成为默认分析路径" in content
 
 
 def test_interview_demo_checklist_provides_short_demo_path():
@@ -195,6 +199,8 @@ def test_interview_demo_checklist_provides_short_demo_path():
     assert "project_status_latest_task_top_business_context_rerank_score" in content
     assert "project_status_latest_task_checkpoint_status" in content
     assert "fixed_eval_pass_rate" in content
+    assert "不要说已经实现 DockerSandbox" not in content
+    assert "不要说 DockerSandbox 是默认分析执行路径或已经替代主分析链" in content
 
 
 def test_interview_demo_preflight_checklist_covers_startup_and_failure_checks():
@@ -229,6 +235,9 @@ def test_release_readiness_audit_summarizes_ship_blockers_and_verification():
     assert "/api/project-status" in content
     assert "demo_mvp.ps1" in content
     assert "DockerSandbox" in content
+    assert "advanced_code_execution" in content
+    assert "如果目标是继续补 DockerSandbox" not in content
+    assert "已实现但仍属第二阶段增强能力" in content
 
 
 def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
@@ -237,6 +246,9 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     )
 
     assert "GET /api/project-status" in content
+    assert "GET /api/sandbox/status" in content
+    assert "POST /api/sandbox/execute" in content
+    assert "advanced_code_execution" in content
     assert "summary.session_store" in content or "session store" in content
     assert "GET /demo" in content
     assert "plotly_spec" in content
@@ -333,8 +345,12 @@ def test_root_readme_matches_current_runtime_truth():
     assert "docs/RELEASE_READINESS_AUDIT.md" in content
     assert "真实 Tongyi Qianwen Provider" in content or "真实通义千问 Provider" in content
     assert "GET /api/project-status" in content
+    assert "advanced_code_execution" in content
+    assert "/api/sandbox/status" in content
+    assert "/api/sandbox/execute" in content
     assert "demo_mvp.ps1" in content
     assert "未实现真实 LLM Provider" not in content
+    assert "当前没有实现 DockerSandbox" not in content
     assert "provider_smoke_error_message" in content
     assert "project_status_latest_task_has_context_checkpoint" in content
     assert "project_status_latest_task_eval_has_dimension_scores" in content
@@ -477,11 +493,17 @@ def test_delivery_docs_mention_structured_llm_judge_runtime_evidence():
 def test_delivery_docs_mention_docker_sandbox_runtime_evidence():
     repo_root = Path(__file__).resolve().parents[2]
     resume_description = (repo_root / "docs" / "RESUME_PROJECT_DESCRIPTION.md").read_text(encoding="utf-8")
+    interview_guide = (repo_root / "docs" / "INTERVIEW_GUIDE.md").read_text(encoding="utf-8")
+    release_readiness = (repo_root / "docs" / "RELEASE_READINESS_AUDIT.md").read_text(encoding="utf-8")
 
     assert "DockerSandbox" in resume_description
     assert "advanced_code_execution" in resume_description
     assert "/api/sandbox/execute" in resume_description
     assert "/api/sandbox/status" in resume_description
+    assert "当前没有实现 DockerSandbox" not in interview_guide
+    assert "/api/sandbox/execute" in interview_guide
+    assert "/api/sandbox/status" in interview_guide
+    assert "当前仍未实现、因此不应作为封板完成项对外声称的内容包括：\n\n- DockerSandbox" not in release_readiness
 
 
 def test_interview_guide_mentions_demo_script_diagnostic_outputs():
@@ -494,6 +516,9 @@ def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     assert "INTERVIEW_DEMO_PREFLIGHT.md" in content
     assert "RELEASE_READINESS_AUDIT.md" in content
     assert "demo_mvp.ps1" in content
+    assert "/api/sandbox/status" in content
+    assert "/api/sandbox/execute" in content
+    assert "当前没有实现 DockerSandbox" not in content
     assert "真实 Plotly" in content or "plotly_spec" in content
     assert "缺少可用 API key" in content
     assert "analysis_state" in content

@@ -137,7 +137,7 @@ Runtime finding summary fields for demo diagnostics: `project_status_latest_task
 - 当前已经实现基于 FastAPI 返回的极简 `/demo` 演示页，用于串联上传、任务执行、Provider 诊断、固定评测和 project runtime overview
 - 当前已经实现 `GET /api/project-status`，用于聚合 provider 解析、demo 可用性、session store runtime mode 和 SQLite 表行数
 - `scripts/demo_mvp.ps1` 会跑真实演示链路，并输出 project status 摘要
-- 当前没有实现 DockerSandbox、完整 React 前端、异步队列
+- 当前已经实现受控 DockerSandbox，提供 `advanced_code_execution`、`GET /api/sandbox/status` 和 `POST /api/sandbox/execute`；但它不是主分析链。当前仍未实现完整 React 前端、异步队列
 
 如果把没做的能力说成已经完成，会直接破坏项目可信度。
 
@@ -176,7 +176,7 @@ Runtime finding summary fields for demo diagnostics: `project_status_latest_task
 
 - 增强 retrieval 规模化能力，例如 embedding 增量刷新、召回质量评测和模型缓存治理
 - 增强 Redis 会话记忆和异步执行
-- 引入 DockerSandbox
+- 增强 DockerSandbox 工程化能力，例如更细的资源约束、脚本模板与异常分类
 - 补更完整的前端过程展示
 - 在现有能力上继续扩展更细粒度的趋势分析与异常检测策略
 ## DockerSandbox Interview Boundary

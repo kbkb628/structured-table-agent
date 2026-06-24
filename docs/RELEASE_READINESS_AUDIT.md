@@ -12,7 +12,7 @@
 这意味着：
 
 - 如果当前目标是交付一个真实可演示、可测试、可解释、可验证的第一阶段项目，现在已经足够
-- 如果目标是继续补 DockerSandbox、完整前端或更强的生产化能力，则仍未完成
+- 如果目标是继续增强 DockerSandbox、完整前端或更强的生产化能力，则仍未完成
 
 ## 已具备
 
@@ -36,6 +36,10 @@
   - `GET /api/project-status`
   - `/demo`
   - `scripts/demo_mvp.ps1`
+- 受控第二阶段执行能力
+  - `advanced_code_execution`
+  - `GET /api/sandbox/status`
+  - `POST /api/sandbox/execute`
 - 真实持久化与运行态追踪
   - SQLite 表：`files`、`analysis_tasks`、`analysis_events`、`tool_call_logs`、`eval_results`
   - Redis 优先 / SQLite 降级
@@ -52,13 +56,17 @@
 
 当前仍未实现、因此不应作为封板完成项对外声称的内容包括：
 
-- DockerSandbox
 - 完整 React 前端
 - 异步队列执行
 - 生产级多 Provider 调度平台
 - 完整企业级多租户 / 高并发架构
 
 这些都属于后续阶段增强，而不是当前第一阶段封板所必需的能力。
+
+## 已实现但仍属第二阶段增强能力
+
+- DockerSandbox 已真实落地为受控执行能力，可通过 `advanced_code_execution`、`GET /api/sandbox/status` 和 `POST /api/sandbox/execute` 演示。
+- 这项能力仍然属于第二阶段增强模块，不替代当前主分析链里的 DuckDB 与受控数据分析工具。
 
 ## 建议封板前确认
 
@@ -105,7 +113,7 @@ cd E:\bgagent1\backend
 如果不封板而继续做第二阶段，最合理的方向是：
 
 - 增强 retrieval 规模化能力，例如 embedding 增量刷新、召回质量评测和模型缓存治理
-- 引入 DockerSandbox
+- 增强 DockerSandbox 工程化能力，例如更细的资源约束、脚本模板与异常分类
 - 补更完整的前端过程展示
 - 增强异步执行与任务治理
 - 继续提升评估与 observability 深度

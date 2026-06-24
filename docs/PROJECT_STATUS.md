@@ -16,6 +16,8 @@
 - LLM provider 诊断：`GET /api/llm/provider-status`
 - LLM provider smoke：`POST /api/llm/provider-smoke`
 - 项目运行总览：`GET /api/project-status`
+- Sandbox 运行时诊断：`GET /api/sandbox/status`
+- Sandbox 受控执行：`POST /api/sandbox/execute`
 - SQLite 持久化：`files`、`analysis_tasks`、`analysis_events`、`tool_call_logs`、`eval_results`
 - DuckDB 真实聚合工具：按品类、地区、渠道执行聚合分析
 - Share 分析工具：按维度计算指标占比、贡献率和百分比
@@ -54,6 +56,7 @@
 - 真实 Tongyi Qianwen Provider 接入
 - SQLite 持久化与 Redis 优先 / SQLite 降级
 - 规则评分与固定 case 回归验证
+- 受控 DockerSandbox 执行能力，支持 `advanced_code_execution`、`GET /api/sandbox/status` 和 `POST /api/sandbox/execute`
 - 基于真实 API 的极简页面演示闭环
 - 基于 `GET /api/project-status` 的项目运行总览接口
 - 基于 `scripts/demo_mvp.ps1` 的一键演示交付链路
@@ -61,7 +64,6 @@
 当前不能声明已实现：
 
 - 异步队列执行
-- DockerSandbox
 - 完整 React 前端
 - 完整生产级多 Provider 调度平台
 
@@ -69,6 +71,7 @@
 
 - 现在已经实现“真实外部 LLM Provider 接入”，因此旧的“未实现真实 LLM Provider”边界已经失效。
 - 但不能把项目表述成“所有分析都由 LLM 完成”。数值计算仍然由确定性工具完成，LLM 主要负责目标理解、计划组织、报告表达和补充评审。
+- 现在已经实现受控 DockerSandbox，但不能把它表述成主分析链或默认执行路径。主数值真相路径仍然是 DuckDB + 受控工具链。
 
 ## 已完成审计证据
 
@@ -341,7 +344,7 @@
 
 - 增强 retrieval 规模化能力，例如 embedding 增量刷新、召回质量评测和模型缓存治理
 - 增强 Redis 会话记忆和异步执行
-- 引入 DockerSandbox
+- 增强 DockerSandbox 工程化能力，例如更细的资源约束、脚本模板与异常分类
 - 增强前端过程展示
 - 扩展更多分析工具，如更细粒度趋势分析、更多异常检测策略
 

@@ -28,6 +28,7 @@
 - 分析任务创建、执行、事件时间线查询和工具日志查询
 - 品类、地区、渠道、趋势、占比、异常六类真实支持问题
 - 规则评分 `eval_result` 自动写回与手动重算
+- 受控 DockerSandbox 执行能力，支持 `advanced_code_execution`、`GET /api/sandbox/status` 和 `POST /api/sandbox/execute`
 - `/demo` 极简演示页
 - `GET /api/project-status` 项目运行总览接口
 - `scripts/demo_mvp.ps1` Windows 一键演示脚本
@@ -35,7 +36,6 @@
 当前明确未实现：
 
 - 异步队列
-- DockerSandbox
 - 完整 React 前端
 - 生产级多 Provider 调度平台
 
@@ -262,11 +262,11 @@ cd E:\bgagent1\backend
 - `RuleScorer + fixed eval cases`：规则评分与固定 case 回归
 - `GET /api/llm/provider-status` / `POST /api/llm/provider-smoke`：Provider 运行时诊断
 - `GET /api/project-status`：项目运行总览
+- `DockerSandbox`：受控第二阶段执行能力，独立暴露 `advanced_code_execution`、`/api/sandbox/status` 和 `/api/sandbox/execute`
 - `/demo`：极简真实 API 演示页
 
 当前仍然没有实现的部分是：
 
-- DockerSandbox
 - 完整 React 前端
 - 异步任务队列
 - 生产级多 Provider 编排
