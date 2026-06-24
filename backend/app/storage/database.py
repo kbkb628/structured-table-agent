@@ -72,3 +72,15 @@ def init_db() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS knowledge_embeddings (
+                item_id TEXT PRIMARY KEY,
+                content_hash TEXT NOT NULL,
+                embedding_json TEXT NOT NULL,
+                model_name TEXT NOT NULL,
+                vector_dim INTEGER NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )

@@ -331,6 +331,65 @@ def test_get_project_status_reports_latest_task_artifact_coverage():
     assert latest_task["errors"]["has_degradation"] is True
 
 
+def test_get_project_status_surfaces_embedding_and_rerank_evidence():
+    task_id = "task_project_status_retrieval_evidence"
+    state = {
+        "task_id": task_id,
+        "file_id": "file_project_status_retrieval_evidence",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [
+            {
+                "id": "analysis_region_sales",
+                "title": "Sales By Region",
+                "related_fields": ["region", "sales_amount"],
+                "score": 21.4,
+                "score_breakdown": {
+                    "keyword_score": 6.0,
+                    "field_score": 4.0,
+                    "phrase_score": 4.0,
+                    "bm25_score": 3.4,
+                },
+                "retrieval_evidence": {
+                    "bm25_rank": 1,
+                    "bm25_score": 3.4,
+                    "embedding_rank": 2,
+                    "embedding_score": 0.8123,
+                    "rerank_score": 0.9931,
+                    "final_rank": 1,
+                    "retrieval_sources": ["bm25", "embedding"],
+                },
+            }
+        ],
+        "analysis_plan": ["match fields"],
+        "current_step": "created",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "llm_judgement": {},
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "created",
+    }
+    create_task(task_id, state["file_id"], state["question"], state)
+    update_task_state(task_id, state)
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    context = response.json()["summary"]["latest_task"]["context"]
+    assert context["top_business_context_embedding_score"] == 0.8123
+    assert context["top_business_context_rerank_score"] == 0.9931
+    assert context["top_business_context_retrieval_sources"] == ["bm25", "embedding"]
+
+
 def test_get_project_status_ignores_future_dated_fixture_task_for_latest_summary():
     frozen_now = "2099-12-31T23:59:59+00:00"
     future_task_id = "task_project_status_future_fixture"

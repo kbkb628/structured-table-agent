@@ -209,6 +209,7 @@ def _latest_task_info() -> dict | None:
     business_context = state.get("business_context") or []
     top_business_context = business_context[0] if business_context else {}
     top_business_context_score_breakdown = top_business_context.get("score_breakdown") or {}
+    top_business_context_retrieval = top_business_context.get("retrieval_evidence") or {}
     field_understanding = state.get("field_understanding") or {}
     metrics = field_understanding.get("metrics") or []
     completed_steps = state.get("completed_steps") or []
@@ -291,6 +292,9 @@ def _latest_task_info() -> dict | None:
             "top_business_context_field_score": top_business_context_score_breakdown.get("field_score"),
             "top_business_context_phrase_score": top_business_context_score_breakdown.get("phrase_score"),
             "top_business_context_bm25_score": top_business_context_score_breakdown.get("bm25_score"),
+            "top_business_context_embedding_score": top_business_context_retrieval.get("embedding_score"),
+            "top_business_context_rerank_score": top_business_context_retrieval.get("rerank_score"),
+            "top_business_context_retrieval_sources": top_business_context_retrieval.get("retrieval_sources") or [],
             "checkpoint_current_step": context_checkpoint.get("current_step"),
             "checkpoint_status": context_checkpoint.get("status"),
             "checkpoint_pending_metric_count": context_checkpoint.get("pending_metric_count"),
