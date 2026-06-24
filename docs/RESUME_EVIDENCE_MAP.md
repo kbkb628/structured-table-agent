@@ -296,6 +296,7 @@
   - `/api/sandbox/status`
   - `/api/sandbox/execute`
   - `sandbox_execution_logs`
+  - `region_sales_summary`
   - `summary.sandbox`
   - `summary.sandbox.latest_execution`
   - `SANDBOX_SYNTAX_ERROR`

@@ -2,8 +2,9 @@ from typing import Any
 
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator, model_validator
 
+from app.core import config
 from app.schemas.file_schema import FileProfile
 from app.schemas.report_schema import FinalReport
 
@@ -94,8 +95,24 @@ class GenerateReportArgs(ToolSchemaModel):
 
 class AdvancedCodeExecutionArgs(ToolSchemaModel):
     file_id: str
-    python_code: str
+    python_code: str | None = None
+    template_name: str | None = None
     timeout_seconds: int | None = None
+
+    @model_validator(mode="after")
+    def validate_execution_mode(self):
+        if bool(self.python_code) == bool(self.template_name):
+            raise ValueError("Provide exactly one of python_code or template_name.")
+        return self
+
+    @field_validator("timeout_seconds")
+    @classmethod
+    def validate_timeout_seconds(cls, value: int | None) -> int | None:
+        if value is None:
+            return value
+        if value < 1 or value > config.DOCKER_SANDBOX_TIMEOUT_SECONDS:
+            raise ValueError("timeout_seconds exceeds the configured sandbox limit.")
+        return value
 
 
 class PlannedToolCall(BaseModel):

@@ -396,6 +396,7 @@ def demo_page() -> HTMLResponse:
             <button id="project-status-button" class="ghost" type="button">Project Overview</button>
             <button id="sandbox-status-button" class="ghost" type="button">Sandbox Status</button>
             <button id="sandbox-execute-button" class="ghost" type="button">Run Sandbox</button>
+            <button id="sandbox-template-button" class="ghost" type="button">Run Sandbox Template</button>
             <button id="eval-cases-button" class="ghost" type="button">Run Fixed Eval Cases</button>
           </div>
 
@@ -728,6 +729,7 @@ def demo_page() -> HTMLResponse:
     const projectStatusButton = document.getElementById("project-status-button");
     const sandboxStatusButton = document.getElementById("sandbox-status-button");
     const sandboxExecuteButton = document.getElementById("sandbox-execute-button");
+    const sandboxTemplateButton = document.getElementById("sandbox-template-button");
     const evalCasesButton = document.getElementById("eval-cases-button");
 
     function setStatus(message) {
@@ -1432,6 +1434,25 @@ def demo_page() -> HTMLResponse:
       return payload;
     }
 
+    async function runSandboxTemplateExecution() {
+      if (!state.fileId) {
+        throw new Error("Upload or load a file before sandbox execution.");
+      }
+      setStatus("Running sandbox template execution...");
+      const payload = await apiFetch("/api/sandbox/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          file_id: state.fileId,
+          template_name: "region_sales_summary",
+          timeout_seconds: 8,
+        }),
+      });
+      sandboxResultOutputEl.textContent = stringify(payload);
+      setStatus(`Sandbox template status: ${payload.status}`);
+      return payload;
+    }
+
     async function startAndRunAnalysis() {
       if (!state.fileId) {
         await uploadFile();
@@ -1594,6 +1615,17 @@ def demo_page() -> HTMLResponse:
         setStatus("Sandbox execution failed: " + error.message);
       } finally {
         sandboxExecuteButton.disabled = false;
+      }
+    });
+
+    sandboxTemplateButton.addEventListener("click", async () => {
+      sandboxTemplateButton.disabled = true;
+      try {
+        await runSandboxTemplateExecution();
+      } catch (error) {
+        setStatus("Sandbox template execution failed: " + error.message);
+      } finally {
+        sandboxTemplateButton.disabled = false;
       }
     });
 

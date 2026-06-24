@@ -503,14 +503,18 @@ def test_delivery_docs_mention_docker_sandbox_runtime_evidence():
     assert "/api/sandbox/status" in resume_description
     assert "latest sandbox runtime evidence" in resume_description
     assert "SANDBOX_SYNTAX_ERROR" in resume_description
+    assert "region_sales_summary" in resume_description
+    assert "configured runtime ceiling" in resume_description
     assert "当前没有实现 DockerSandbox" not in interview_guide
     assert "/api/sandbox/execute" in interview_guide
     assert "/api/sandbox/status" in interview_guide
     assert "latest sandbox execution evidence" in interview_guide
     assert "SANDBOX_IMPORT_ERROR" in interview_guide
+    assert "template-backed sandbox execution" in interview_guide
     assert "当前仍未实现、因此不应作为封板完成项对外声称的内容包括：\n\n- DockerSandbox" not in release_readiness
     assert "sandbox_execution_logs" in evidence_map
     assert "SANDBOX_PERMISSION_ERROR" in evidence_map
+    assert "region_sales_summary" in evidence_map
 
 
 def test_interview_guide_mentions_demo_script_diagnostic_outputs():

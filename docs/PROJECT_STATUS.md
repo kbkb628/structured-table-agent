@@ -397,6 +397,8 @@ Latest real smoke evidence on this machine:
 - Added sandbox execution endpoint: `POST /api/sandbox/execute`
 - Added dedicated persisted sandbox execution evidence for direct sandbox API runs.
 - Added classified sandbox failure codes, including `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, and `SANDBOX_PERMISSION_ERROR`.
+- Added named sandbox execution templates, including `region_sales_summary`.
+- Added timeout request validation so sandbox API calls cannot exceed the configured runtime ceiling.
 - Added sandbox runtime summary inside `GET /api/project-status`
 - Surfaced sandbox runtime evidence in `/demo`
 - DockerSandbox remains a second-phase controlled execution capability and does not replace the main DuckDB and tool-driven deterministic analysis chain.

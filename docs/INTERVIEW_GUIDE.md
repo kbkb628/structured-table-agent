@@ -186,4 +186,6 @@ Runtime finding summary fields for demo diagnostics: `project_status_latest_task
 - If asked for runtime proof, show `GET /api/sandbox/status`, `POST /api/sandbox/execute`, `/demo`, and `GET /api/project-status`.
 - Direct sandbox API runs now persist the latest sandbox execution evidence, so `latest_execution` no longer depends only on indirect tool-log paths.
 - Common sandbox failures now expose classified codes such as `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, and `SANDBOX_PERMISSION_ERROR`.
+- The demo path now supports template-backed sandbox execution such as `region_sales_summary`, which is a more truthful interview artifact than hardcoded ad hoc Python snippets alone.
+- Sandbox timeout requests are also bounded by the configured runtime ceiling instead of being silently accepted at arbitrary values.
 - Do not describe DockerSandbox as a replacement for the existing structured-table analysis chain.
