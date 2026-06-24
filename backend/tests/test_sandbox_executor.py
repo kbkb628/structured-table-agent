@@ -57,3 +57,23 @@ def test_docker_sandbox_executor_reports_docker_unavailable(monkeypatch):
 
     assert result["status"] == "degraded"
     assert result["error"]["code"] == "DOCKER_UNAVAILABLE"
+
+
+def test_docker_sandbox_executor_classifies_syntax_error(monkeypatch):
+    executor = DockerSandboxExecutor()
+    monkeypatch.setattr(executor, "docker_available", lambda: True)
+    monkeypatch.setattr(
+        executor,
+        "_run_process",
+        lambda command, timeout_seconds: {
+            "returncode": 1,
+            "stdout": "",
+            "stderr": "SyntaxError: invalid syntax",
+            "elapsed_ms": 21,
+        },
+    )
+
+    result = executor.execute_python(code="if True print('x')", mounted_files=[], timeout_seconds=3)
+
+    assert result["status"] == "failed"
+    assert result["error"]["code"] == "SANDBOX_SYNTAX_ERROR"
