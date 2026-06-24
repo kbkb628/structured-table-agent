@@ -251,6 +251,7 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "advanced_code_execution" in content
     assert "supported_templates" in content
     assert "max_code_chars" in content
+    assert "execution_mode" in content
     assert "SANDBOX_NETWORK_ERROR" in content
     assert "summary.session_store" in content or "session store" in content
     assert "GET /demo" in content
@@ -511,6 +512,7 @@ def test_delivery_docs_mention_docker_sandbox_runtime_evidence():
     assert "region_sales_summary" in resume_description
     assert "supported_templates" in resume_description
     assert "max_code_chars" in resume_description
+    assert "template_name" in resume_description
     assert "configured runtime ceiling" in resume_description
     assert "当前没有实现 DockerSandbox" not in interview_guide
     assert "/api/sandbox/execute" in interview_guide
@@ -526,6 +528,7 @@ def test_delivery_docs_mention_docker_sandbox_runtime_evidence():
     assert "region_sales_summary" in evidence_map
     assert "supported_templates" in evidence_map
     assert "max_code_chars" in evidence_map
+    assert "python_code_char_count" in evidence_map
 
 
 def test_interview_guide_mentions_demo_script_diagnostic_outputs():

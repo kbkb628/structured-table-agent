@@ -500,6 +500,9 @@ def test_get_project_status_surfaces_sandbox_runtime_summary(monkeypatch):
                 "execution_id": "sandbox_exec_001",
                 "file_id": "file_sandbox",
                 "execution_source": "sandbox_api",
+                "execution_mode": "template",
+                "template_name": "region_sales_summary",
+                "python_code_char_count": 18,
                 "status": "failed",
                 "elapsed_ms": 19,
                 "error": {"code": "SANDBOX_SYNTAX_ERROR", "message": "SyntaxError: invalid syntax"},
@@ -518,6 +521,9 @@ def test_get_project_status_surfaces_sandbox_runtime_summary(monkeypatch):
     assert sandbox["max_timeout_seconds"] == 8
     assert sandbox["max_code_chars"] == 4000
     assert sandbox["supported_templates"] == ["region_sales_summary", "channel_sales_summary"]
+    assert sandbox["latest_execution"]["execution_mode"] == "template"
+    assert sandbox["latest_execution"]["template_name"] == "region_sales_summary"
+    assert sandbox["latest_execution"]["python_code_char_count"] == 18
     assert sandbox["latest_execution"]["execution_source"] == "sandbox_api"
     assert sandbox["latest_execution"]["error"]["code"] == "SANDBOX_SYNTAX_ERROR"
 
