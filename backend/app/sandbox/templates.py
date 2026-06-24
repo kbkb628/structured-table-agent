@@ -40,12 +40,18 @@ print(json.dumps({
 """.strip()
 
 
+SANDBOX_TEMPLATES = {
+    "region_sales_summary": REGION_SALES_SUMMARY_TEMPLATE,
+    "channel_sales_summary": CHANNEL_SALES_SUMMARY_TEMPLATE,
+}
+
+
+def list_sandbox_templates() -> list[str]:
+    return list(SANDBOX_TEMPLATES.keys())
+
+
 def build_sandbox_template_code(template_name: str) -> str:
-    templates = {
-        "region_sales_summary": REGION_SALES_SUMMARY_TEMPLATE,
-        "channel_sales_summary": CHANNEL_SALES_SUMMARY_TEMPLATE,
-    }
     try:
-        return templates[template_name]
+        return SANDBOX_TEMPLATES[template_name]
     except KeyError as exc:
         raise ValueError(f"Unknown sandbox template: {template_name}") from exc

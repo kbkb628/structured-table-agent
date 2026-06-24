@@ -99,6 +99,15 @@ class AdvancedCodeExecutionArgs(ToolSchemaModel):
     template_name: str | None = None
     timeout_seconds: int | None = None
 
+    @field_validator("python_code")
+    @classmethod
+    def validate_python_code(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        if len(value) > config.DOCKER_SANDBOX_MAX_CODE_CHARS:
+            raise ValueError("python_code exceeds the configured sandbox code limit.")
+        return value
+
     @model_validator(mode="after")
     def validate_execution_mode(self):
         if bool(self.python_code) == bool(self.template_name):

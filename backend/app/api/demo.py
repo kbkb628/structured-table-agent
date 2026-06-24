@@ -997,7 +997,7 @@ def demo_page() -> HTMLResponse:
     function renderSandboxStatus(payload) {
       if (!payload) {
         sandboxPillEl.textContent = "Not loaded";
-        sandboxMetaEl.textContent = "DockerSandbox runtime summary will appear here.";
+        sandboxMetaEl.textContent = "DockerSandbox runtime summary, supported_templates, max_timeout_seconds, and max_code_chars will appear here.";
         sandboxStatusOutputEl.textContent = "No sandbox runtime summary loaded yet.";
         return;
       }
@@ -1008,6 +1008,7 @@ def demo_page() -> HTMLResponse:
       sandboxMetaEl.textContent = [
         `image: ${payload.image || "unknown"}`,
         `timeout: ${payload.timeout_seconds ?? "none"}s`,
+        `max_code_chars: ${payload.max_code_chars ?? "none"}`,
       ].join(" | ");
       sandboxStatusOutputEl.textContent = [
         `enabled: ${payload.enabled ?? false}`,
@@ -1015,6 +1016,9 @@ def demo_page() -> HTMLResponse:
         `image: ${payload.image || "unknown"}`,
         `network_disabled: ${payload.network_disabled ?? false}`,
         `timeout_seconds: ${payload.timeout_seconds ?? "none"}`,
+        `max_timeout_seconds: ${payload.max_timeout_seconds ?? "none"}`,
+        `max_code_chars: ${payload.max_code_chars ?? "none"}`,
+        `supported_templates: ${(payload.supported_templates || []).join(", ") || "none"}`,
         `memory_limit_mb: ${payload.memory_limit_mb ?? "none"}`,
       ].join("\n");
     }
@@ -1024,7 +1028,7 @@ def demo_page() -> HTMLResponse:
         projectStatusPillEl.textContent = "Not loaded";
         projectStatusMetaEl.textContent = "Runtime summary will appear here.";
         sandboxPillEl.textContent = "Not loaded";
-        sandboxMetaEl.textContent = "DockerSandbox runtime summary will appear here.";
+        sandboxMetaEl.textContent = "DockerSandbox runtime summary, supported_templates, max_timeout_seconds, and max_code_chars will appear here.";
         sandboxStatusOutputEl.textContent = "No sandbox runtime summary loaded yet.";
         sandboxResultOutputEl.textContent = "No sandbox execution result loaded yet.";
         sessionStorePillEl.textContent = "Not loaded";
