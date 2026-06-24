@@ -503,6 +503,13 @@ def test_get_project_status_surfaces_sandbox_runtime_summary(monkeypatch):
                 "execution_mode": "template",
                 "template_name": "region_sales_summary",
                 "python_code_char_count": 18,
+                "parsed_output_keys": ["region_count", "template_name", "top_region", "top_sales_amount"],
+                "template_result_field_count": 3,
+                "template_result_summary": {
+                    "top_region": "East",
+                    "top_sales_amount": 1200.0,
+                    "region_count": 4,
+                },
                 "status": "failed",
                 "elapsed_ms": 19,
                 "error": {"code": "SANDBOX_SYNTAX_ERROR", "message": "SyntaxError: invalid syntax"},
@@ -524,6 +531,9 @@ def test_get_project_status_surfaces_sandbox_runtime_summary(monkeypatch):
     assert sandbox["latest_execution"]["execution_mode"] == "template"
     assert sandbox["latest_execution"]["template_name"] == "region_sales_summary"
     assert sandbox["latest_execution"]["python_code_char_count"] == 18
+    assert sandbox["latest_execution"]["parsed_output_keys"][-1] == "top_sales_amount"
+    assert sandbox["latest_execution"]["template_result_field_count"] == 3
+    assert sandbox["latest_execution"]["template_result_summary"]["region_count"] == 4
     assert sandbox["latest_execution"]["execution_source"] == "sandbox_api"
     assert sandbox["latest_execution"]["error"]["code"] == "SANDBOX_SYNTAX_ERROR"
 

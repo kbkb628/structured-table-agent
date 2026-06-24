@@ -71,6 +71,8 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert "max_code_chars" in content
     assert "execution_mode" in content
     assert "python_code_char_count" in content
+    assert "parsed_output_keys" in content
+    assert "template_result_summary" in content
     assert 'supported_by_tools' in content
     assert 'has_findings' in content
     assert 'latest_task_process_output' in content
