@@ -84,3 +84,17 @@ def init_db() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS sandbox_execution_logs (
+                execution_id TEXT PRIMARY KEY,
+                file_id TEXT NOT NULL,
+                execution_source TEXT NOT NULL,
+                request_json TEXT NOT NULL,
+                response_json TEXT NOT NULL,
+                success INTEGER NOT NULL,
+                elapsed_ms INTEGER NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )

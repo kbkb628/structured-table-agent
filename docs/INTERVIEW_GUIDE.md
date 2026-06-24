@@ -184,4 +184,6 @@ Runtime finding summary fields for demo diagnostics: `project_status_latest_task
 - `DockerSandbox` is now a real implemented capability, but it is a controlled second-phase execution module rather than the main analysis path.
 - The main numeric truth path is still the deterministic DuckDB and tool chain.
 - If asked for runtime proof, show `GET /api/sandbox/status`, `POST /api/sandbox/execute`, `/demo`, and `GET /api/project-status`.
+- Direct sandbox API runs now persist the latest sandbox execution evidence, so `latest_execution` no longer depends only on indirect tool-log paths.
+- Common sandbox failures now expose classified codes such as `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, and `SANDBOX_PERMISSION_ERROR`.
 - Do not describe DockerSandbox as a replacement for the existing structured-table analysis chain.

@@ -24,6 +24,17 @@ def _degraded_result(code: str, message: str, status: str = "degraded") -> dict:
     }
 
 
+def _classify_execution_failure(stderr: str) -> tuple[str, str]:
+    lowered = (stderr or "").lower()
+    if "syntaxerror" in lowered:
+        return "SANDBOX_SYNTAX_ERROR", stderr.strip() or "Sandbox Python code has invalid syntax."
+    if "importerror" in lowered or "modulenotfounderror" in lowered:
+        return "SANDBOX_IMPORT_ERROR", stderr.strip() or "Sandbox code imports an unavailable module."
+    if "permissionerror" in lowered or "read-only file system" in lowered:
+        return "SANDBOX_PERMISSION_ERROR", stderr.strip() or "Sandbox code attempted a blocked filesystem operation."
+    return "SANDBOX_EXECUTION_FAILED", stderr.strip() or "Sandbox execution failed."
+
+
 class DockerSandboxExecutor:
     def docker_available(self) -> bool:
         docker_bin = shutil.which("docker")
@@ -110,8 +121,8 @@ class DockerSandboxExecutor:
             "error": None
             if returncode == 0
             else {
-                "code": "SANDBOX_EXECUTION_FAILED",
-                "message": stderr.strip() or "Sandbox execution failed.",
+                "code": _classify_execution_failure(stderr)[0],
+                "message": _classify_execution_failure(stderr)[1],
                 "suggested_fields": [],
             },
         }

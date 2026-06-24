@@ -8,6 +8,7 @@ from app.core import config
 from app.llm.factory import describe_llm_provider_diagnostics
 from app.llm.factory import describe_llm_provider_resolution
 from app.sandbox.runtime import describe_sandbox_runtime
+from app.sandbox.store import get_latest_sandbox_execution
 from app.storage.database import get_connection
 from app.storage.database import init_db
 from app.storage.session_store import SessionStore
@@ -147,9 +148,10 @@ def _latest_tool_execution(tool_name: str) -> dict | None:
 
 def _sandbox_info() -> dict:
     runtime = describe_sandbox_runtime()
+    latest_execution = get_latest_sandbox_execution()
     return {
         **runtime,
-        "latest_execution": _latest_tool_execution("advanced_code_execution"),
+        "latest_execution": latest_execution or _latest_tool_execution("advanced_code_execution"),
     }
 
 

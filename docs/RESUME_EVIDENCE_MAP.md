@@ -295,11 +295,16 @@
   - `advanced_code_execution`
   - `/api/sandbox/status`
   - `/api/sandbox/execute`
+  - `sandbox_execution_logs`
   - `summary.sandbox`
   - `summary.sandbox.latest_execution`
+  - `SANDBOX_SYNTAX_ERROR`
+  - `SANDBOX_IMPORT_ERROR`
+  - `SANDBOX_PERMISSION_ERROR`
 - Test evidence:
   - `backend/tests/test_sandbox_executor.py`
   - `backend/tests/test_sandbox_tool.py`
   - `backend/tests/test_sandbox_api.py`
   - `backend/tests/test_project_status_api.py`
   - `backend/tests/test_demo_page.py`
+  - `backend/tests/test_sandbox_store.py`

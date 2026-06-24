@@ -495,15 +495,22 @@ def test_delivery_docs_mention_docker_sandbox_runtime_evidence():
     resume_description = (repo_root / "docs" / "RESUME_PROJECT_DESCRIPTION.md").read_text(encoding="utf-8")
     interview_guide = (repo_root / "docs" / "INTERVIEW_GUIDE.md").read_text(encoding="utf-8")
     release_readiness = (repo_root / "docs" / "RELEASE_READINESS_AUDIT.md").read_text(encoding="utf-8")
+    evidence_map = (repo_root / "docs" / "RESUME_EVIDENCE_MAP.md").read_text(encoding="utf-8")
 
     assert "DockerSandbox" in resume_description
     assert "advanced_code_execution" in resume_description
     assert "/api/sandbox/execute" in resume_description
     assert "/api/sandbox/status" in resume_description
+    assert "latest sandbox runtime evidence" in resume_description
+    assert "SANDBOX_SYNTAX_ERROR" in resume_description
     assert "当前没有实现 DockerSandbox" not in interview_guide
     assert "/api/sandbox/execute" in interview_guide
     assert "/api/sandbox/status" in interview_guide
+    assert "latest sandbox execution evidence" in interview_guide
+    assert "SANDBOX_IMPORT_ERROR" in interview_guide
     assert "当前仍未实现、因此不应作为封板完成项对外声称的内容包括：\n\n- DockerSandbox" not in release_readiness
+    assert "sandbox_execution_logs" in evidence_map
+    assert "SANDBOX_PERMISSION_ERROR" in evidence_map
 
 
 def test_interview_guide_mentions_demo_script_diagnostic_outputs():

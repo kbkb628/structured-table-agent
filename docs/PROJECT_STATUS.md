@@ -395,6 +395,8 @@ Latest real smoke evidence on this machine:
 - Added real `DockerSandbox` runtime capability through the controlled `advanced_code_execution` path.
 - Added sandbox diagnostics endpoint: `GET /api/sandbox/status`
 - Added sandbox execution endpoint: `POST /api/sandbox/execute`
+- Added dedicated persisted sandbox execution evidence for direct sandbox API runs.
+- Added classified sandbox failure codes, including `SANDBOX_SYNTAX_ERROR`, `SANDBOX_IMPORT_ERROR`, and `SANDBOX_PERMISSION_ERROR`.
 - Added sandbox runtime summary inside `GET /api/project-status`
 - Surfaced sandbox runtime evidence in `/demo`
 - DockerSandbox remains a second-phase controlled execution capability and does not replace the main DuckDB and tool-driven deterministic analysis chain.
