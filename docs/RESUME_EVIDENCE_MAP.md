@@ -302,6 +302,9 @@
   - `execution_mode`
   - `template_name`
   - `python_code_char_count`
+  - `parsed_output_keys`
+  - `template_result_field_count`
+  - `template_result_summary`
   - `summary.sandbox`
   - `summary.sandbox.latest_execution`
   - `SANDBOX_SYNTAX_ERROR`

@@ -58,6 +58,7 @@
 - 规则评分与固定 case 回归验证
 - 受控 DockerSandbox 执行能力，支持 `advanced_code_execution`、`GET /api/sandbox/status` 和 `POST /api/sandbox/execute`
 - `GET /api/sandbox/status` 与 `GET /api/project-status` 中的 `summary.sandbox` 已显式暴露 `supported_templates`、`max_timeout_seconds`、`max_code_chars`，以及最新执行的 `execution_mode`、`template_name`、`python_code_char_count`
+- 最新模板执行证据还会给出 `parsed_output_keys`、`template_result_field_count` 和 `template_result_summary`，用于在不隐藏原始 `parsed_output` 的前提下查看标准化摘要
 - 基于真实 API 的极简页面演示闭环
 - 基于 `GET /api/project-status` 的项目运行总览接口
 - 基于 `scripts/demo_mvp.ps1` 的一键演示交付链路
@@ -402,6 +403,7 @@ Latest real smoke evidence on this machine:
 - Added timeout request validation so sandbox API calls cannot exceed the configured runtime ceiling.
 - Added explicit sandbox capability boundary fields: `supported_templates`, `max_timeout_seconds`, and `max_code_chars`.
 - Added persisted sandbox execution summary fields: `execution_mode`, `template_name`, and `python_code_char_count`.
+- Added persisted template result summary fields: `parsed_output_keys`, `template_result_field_count`, and `template_result_summary`.
 - Added inline `python_code` length validation so direct sandbox API calls stay within the configured code ceiling.
 - Added sandbox runtime summary inside `GET /api/project-status`
 - Surfaced sandbox runtime evidence in `/demo`

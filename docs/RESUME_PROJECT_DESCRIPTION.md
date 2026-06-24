@@ -61,6 +61,7 @@
 - Sandbox demo execution now supports named templates such as `region_sales_summary` instead of only arbitrary inline Python.
 - `GET /api/sandbox/status` now exposes `supported_templates`, `max_timeout_seconds`, and `max_code_chars` so the controlled sandbox boundary is explicit in runtime evidence.
 - Latest persisted sandbox evidence also exposes `execution_mode`, `template_name`, and `python_code_char_count`, making template-backed execution distinguishable from inline Python without surfacing raw code bodies.
+- Latest template-backed sandbox evidence also exposes `parsed_output_keys`, `template_result_field_count`, and `template_result_summary`, so common template outputs can be reviewed through normalized runtime summaries without replacing the original `parsed_output`.
 - Sandbox timeout requests are capped by the configured runtime ceiling rather than accepted without boundary.
 - Inline `python_code` requests are also constrained by `max_code_chars`, while named templates remain the more controlled execution path for interview demos.
 - `GET /api/project-status` and `/demo` surface sandbox runtime evidence and latest execution status.
