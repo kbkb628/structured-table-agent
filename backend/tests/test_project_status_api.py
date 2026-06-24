@@ -492,6 +492,9 @@ def test_get_project_status_surfaces_sandbox_runtime_summary(monkeypatch):
             "image": "python:3.12-slim",
             "network_disabled": True,
             "timeout_seconds": 8,
+            "max_timeout_seconds": 8,
+            "max_code_chars": 4000,
+            "supported_templates": ["region_sales_summary", "channel_sales_summary"],
             "memory_limit_mb": 256,
             "latest_execution": {
                 "execution_id": "sandbox_exec_001",
@@ -512,6 +515,9 @@ def test_get_project_status_surfaces_sandbox_runtime_summary(monkeypatch):
     sandbox = response.json()["summary"]["sandbox"]
     assert sandbox["enabled"] is True
     assert sandbox["docker_available"] is True
+    assert sandbox["max_timeout_seconds"] == 8
+    assert sandbox["max_code_chars"] == 4000
+    assert sandbox["supported_templates"] == ["region_sales_summary", "channel_sales_summary"]
     assert sandbox["latest_execution"]["execution_source"] == "sandbox_api"
     assert sandbox["latest_execution"]["error"]["code"] == "SANDBOX_SYNTAX_ERROR"
 

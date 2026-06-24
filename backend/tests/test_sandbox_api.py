@@ -12,6 +12,9 @@ def test_sandbox_status_endpoint_reports_runtime_capabilities(monkeypatch):
             "image": "python:3.12-slim",
             "network_disabled": True,
             "timeout_seconds": 8,
+            "max_timeout_seconds": 8,
+            "max_code_chars": 4000,
+            "supported_templates": ["region_sales_summary", "channel_sales_summary"],
         },
     )
 
@@ -21,6 +24,9 @@ def test_sandbox_status_endpoint_reports_runtime_capabilities(monkeypatch):
     assert response.status_code == 200
     assert response.json()["enabled"] is True
     assert response.json()["docker_available"] is True
+    assert response.json()["max_timeout_seconds"] == 8
+    assert response.json()["max_code_chars"] == 4000
+    assert response.json()["supported_templates"] == ["region_sales_summary", "channel_sales_summary"]
 
 
 def test_sandbox_execute_endpoint_returns_execution_result(monkeypatch):
@@ -114,6 +120,18 @@ def test_sandbox_execute_endpoint_rejects_excessive_timeout():
     response = client.post(
         "/api/sandbox/execute",
         json={"file_id": "file_sandbox", "python_code": "print('ok')", "timeout_seconds": 999},
+    )
+
+    assert response.status_code == 422
+
+
+def test_sandbox_execute_endpoint_rejects_excessive_python_code(monkeypatch):
+    monkeypatch.setattr("app.api.sandbox.config.DOCKER_SANDBOX_MAX_CODE_CHARS", 12)
+
+    client = TestClient(app)
+    response = client.post(
+        "/api/sandbox/execute",
+        json={"file_id": "file_sandbox", "python_code": "print('code too long')", "timeout_seconds": 8},
     )
 
     assert response.status_code == 422

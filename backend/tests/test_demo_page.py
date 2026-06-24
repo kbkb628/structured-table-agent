@@ -67,6 +67,8 @@ def test_demo_page_contains_upload_and_analysis_sections():
     assert "Sandbox Runtime" in content
     assert "advanced_code_execution" in content
     assert "region_sales_summary" in content
+    assert "supported_templates" in content
+    assert "max_code_chars" in content
     assert 'supported_by_tools' in content
     assert 'has_findings' in content
     assert 'latest_task_process_output' in content
