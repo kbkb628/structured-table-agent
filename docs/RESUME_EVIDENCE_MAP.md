@@ -318,6 +318,13 @@
   - `project_status_sandbox_latest_parsed_output_keys`
   - `project_status_sandbox_latest_template_result_field_count`
   - `project_status_sandbox_latest_error_code`
+  - `embedding_cache`
+  - `knowledge_item_count`
+  - `cached_item_count`
+  - `fresh_item_count`
+  - `stale_item_count`
+  - `missing_item_count`
+  - `cache_coverage_ratio`
   - `SANDBOX_SYNTAX_ERROR`
   - `SANDBOX_IMPORT_ERROR`
   - `SANDBOX_PERMISSION_ERROR`

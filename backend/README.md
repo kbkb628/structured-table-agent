@@ -444,3 +444,9 @@ Expected failure examples:
 `scripts/demo_mvp.ps1` also exports `project_status_sandbox_enabled`, `project_status_sandbox_docker_available`, `project_status_sandbox_supported_templates`, `project_status_sandbox_max_timeout_seconds`, `project_status_sandbox_max_code_chars`, `project_status_sandbox_latest_execution_mode`, `project_status_sandbox_latest_template_name`, `project_status_sandbox_latest_python_code_char_count`, `project_status_sandbox_latest_parsed_output_keys`, `project_status_sandbox_latest_template_result_field_count`, and `project_status_sandbox_latest_error_code`.
 
 These fields come from the already-implemented `summary.sandbox` runtime overview and are intended for truthful demo diagnostics rather than as evidence that the sandbox has replaced the main analysis path.
+
+## Embedding Cache Runtime Fields
+
+`GET /api/project-status` now exposes `embedding_cache` with `knowledge_item_count`, `cached_item_count`, `fresh_item_count`, `stale_item_count`, `missing_item_count`, and `cache_coverage_ratio`.
+
+This summary describes the current local embedding cache backing the staged retrieval path. It is runtime evidence for embedding persistence and freshness, not a claim of external vector-service infrastructure.

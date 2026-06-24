@@ -289,3 +289,9 @@ cd E:\bgagent1\backend
 `scripts/demo_mvp.ps1` now also freezes the sandbox runtime evidence fields `project_status_sandbox_enabled`, `project_status_sandbox_docker_available`, `project_status_sandbox_supported_templates`, `project_status_sandbox_max_timeout_seconds`, `project_status_sandbox_max_code_chars`, `project_status_sandbox_latest_execution_mode`, `project_status_sandbox_latest_template_name`, `project_status_sandbox_latest_python_code_char_count`, `project_status_sandbox_latest_parsed_output_keys`, `project_status_sandbox_latest_template_result_field_count`, and `project_status_sandbox_latest_error_code`.
 
 These script fields summarize the existing `summary.sandbox` and `summary.sandbox.latest_execution` runtime evidence already exposed by `GET /api/project-status`; they do not imply DockerSandbox replaces the default LangGraph + DuckDB + controlled tool chain.
+
+## Embedding Cache Runtime Fields
+
+`GET /api/project-status` now also exposes `embedding_cache` with `knowledge_item_count`, `cached_item_count`, `fresh_item_count`, `stale_item_count`, `missing_item_count`, and `cache_coverage_ratio`.
+
+These fields describe the current local embedding cache state for staged retrieval runtime evidence. They do not imply a distributed vector database or a production vector platform.

@@ -552,3 +552,16 @@ cd E:\bgagent1
 - `project_status_sandbox_latest_error_code`
 
 These fields are projections of the existing `summary.sandbox` and `summary.sandbox.latest_execution` runtime evidence from `GET /api/project-status`.
+
+## Embedding Cache Runtime Fields
+
+`GET /api/project-status` now also returns `summary.embedding_cache` with:
+
+- `knowledge_item_count`
+- `cached_item_count`
+- `fresh_item_count`
+- `stale_item_count`
+- `missing_item_count`
+- `cache_coverage_ratio`
+
+These fields summarize the current local embedding cache coverage and freshness for the staged retrieval layer.

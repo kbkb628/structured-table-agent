@@ -425,3 +425,16 @@ Latest real smoke evidence on this machine:
 - `project_status_sandbox_latest_error_code`
 
 这些字段都来自现有 `summary.sandbox` 与 `summary.sandbox.latest_execution`，用于稳定演示脚本输出，并不改变“DockerSandbox 属于第二阶段受控能力、不是默认分析主链路”的项目边界。
+
+## Embedding Cache Runtime Fields
+
+当前 `GET /api/project-status` 已额外暴露 `embedding_cache`，包含：
+
+- `knowledge_item_count`
+- `cached_item_count`
+- `fresh_item_count`
+- `stale_item_count`
+- `missing_item_count`
+- `cache_coverage_ratio`
+
+这组字段用于说明本地 `knowledge_embeddings` 缓存对 staged retrieval 的覆盖率与新鲜度，属于 embedding 持久化与缓存治理的运行时证据，不应表述成外部分布式向量基础设施。

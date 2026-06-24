@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app.core import config
 from app.llm.factory import describe_llm_provider_diagnostics
 from app.llm.factory import describe_llm_provider_resolution
+from app.rag.embedding_store import summarize_embedding_cache
 from app.sandbox.runtime import describe_sandbox_runtime
 from app.sandbox.store import get_latest_sandbox_execution
 from app.storage.database import get_connection
@@ -153,6 +154,10 @@ def _sandbox_info() -> dict:
         **runtime,
         "latest_execution": latest_execution or _latest_tool_execution("advanced_code_execution"),
     }
+
+
+def _embedding_cache_info() -> dict:
+    return summarize_embedding_cache()
 
 
 def _latest_task_info() -> dict | None:
@@ -439,6 +444,7 @@ def get_project_status() -> dict:
                 "available": True,
                 "path": "/demo",
             },
+            "embedding_cache": _embedding_cache_info(),
             "sandbox": _sandbox_info(),
             "session_store": _session_store_info(),
             "latest_task": _latest_task_info(),

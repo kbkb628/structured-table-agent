@@ -41,6 +41,33 @@ def test_get_project_status_includes_live_counts():
     assert payload["summary"]["session_store"]["degraded_to_sqlite"] is True
 
 
+def test_get_project_status_surfaces_embedding_cache_summary(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.project_status._embedding_cache_info",
+        lambda: {
+            "model_name": "sentence-transformers/all-MiniLM-L6-v2",
+            "knowledge_item_count": 12,
+            "cached_item_count": 10,
+            "fresh_item_count": 9,
+            "stale_item_count": 1,
+            "missing_item_count": 2,
+            "cache_coverage_ratio": 0.8333,
+        },
+    )
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    embedding_cache = response.json()["summary"]["embedding_cache"]
+    assert embedding_cache["model_name"] == "sentence-transformers/all-MiniLM-L6-v2"
+    assert embedding_cache["cached_item_count"] == 10
+    assert embedding_cache["fresh_item_count"] == 9
+    assert embedding_cache["stale_item_count"] == 1
+    assert embedding_cache["missing_item_count"] == 2
+    assert embedding_cache["cache_coverage_ratio"] == 0.8333
+
+
 def test_get_project_status_reports_redis_session_store_when_available(monkeypatch):
     monkeypatch.setenv("REDIS_URL", "redis://fake-redis:6379/0")
     client = TestClient(app)
