@@ -125,12 +125,16 @@
   - `backend/tests/test_analysis_runner.py`
   - `backend/tests/test_analysis_api.py`
 
-### 7. 简历说法：构建本地混合检索模块，基于 JSONL 知识库实现关键词、短语命中、字段加权和 BM25 风格评分
+### 7. 简历说法：构建 staged retrieval 检索模块，基于 JSONL 知识库实现显式 BM25 召回、embedding 向量召回、rerank 重排与 SQLite embedding cache
 
 - 代码证据
   - `backend/app/rag/knowledge_base.jsonl`
   - `backend/app/rag/knowledge_loader.py`
   - `backend/app/rag/keyword_retriever.py`
+  - `backend/app/rag/bm25_retriever.py`
+  - `backend/app/rag/vector_retriever.py`
+  - `backend/app/rag/reranker.py`
+  - `backend/app/rag/embedding_store.py`
 - 演示证据
   - `GET /api/project-status`
   - `GET /demo`
@@ -140,9 +144,16 @@
   - 可直接观察 `project_status_latest_task_top_business_context_field_score`
   - 可直接观察 `project_status_latest_task_top_business_context_phrase_score`
   - 可直接观察 `project_status_latest_task_top_business_context_bm25_score`
+  - 可直接观察 `project_status_latest_task_top_business_context_embedding_score`
+  - 可直接观察 `project_status_latest_task_top_business_context_rerank_score`
+  - 可直接观察 `project_status_latest_task_top_business_context_retrieval_sources`
 - 测试证据
   - `backend/tests/test_keyword_retriever.py`
   - `backend/tests/test_project_status_api.py`
+  - `backend/tests/test_bm25_retriever.py`
+  - `backend/tests/test_vector_retriever.py`
+  - `backend/tests/test_reranker.py`
+  - `backend/tests/test_embedding_store.py`
 
 ### 8. 简历说法：设计 Redis 优先、SQLite 降级的会话状态存储方案，并通过 `context_checkpoint` 等细粒度 key 增强过程恢复和追踪能力
 
@@ -213,7 +224,6 @@
 
 ## 不能越界的说法
 
-- 不能说已经实现 embedding / 向量检索 / rerank
 - 不能说已经实现 DockerSandbox
 - 不能说已经实现完整 React 前端
 - 不能说所有分析结论都由 LLM 自动完成

@@ -15,7 +15,7 @@
 - 在受控工具链中补齐占比分析、趋势分析和基于 z-score 的异常检测能力，持续保持数值结论来自确定性聚合结果而非模型臆断。
 - 设计可替换 `LLMClient` 抽象，完成 `QwenClient` 与 `MockLLMClient` 双实现，并通过 provider 工厂支持真实 Tongyi Qianwen 接入、缺少可用 API key 时的显式降级与本地回退。
 - 将真实 LLM 接入到分析目标生成、分析计划生成、最终报告组织和补充型 `llm_judgement`，同时保持数值计算仍由 DuckDB / 工具链完成，避免模型直接编造结果。
-- 构建本地混合检索模块，基于 JSONL 知识库实现关键词、短语命中、字段加权和 BM25 风格评分，为字段语义理解和分析计划生成提供轻量业务上下文增强。
+- 构建本地 staged retrieval 模块，基于 JSONL 知识库实现显式 BM25 召回、embedding 向量召回、rerank 重排和 SQLite embedding cache，为字段语义理解和分析计划生成提供可验证的业务上下文增强。
 - 设计 Redis 优先、SQLite 降级的会话状态存储方案，并将 `draft_report`、中间发现、业务上下文和 `context_checkpoint` 拆分为细粒度 key，增强过程恢复和追踪能力。
 - 使用 SQLite 持久化文件元数据、任务状态、事件时间线、工具调用日志和评估结果，并通过固定 case 回归输出工具成功率、Trace 完整度、报告完整度与执行耗时等质量指标。
 - 增加运行时可观测与交付能力，通过 `GET /api/llm/provider-status`、`POST /api/llm/provider-smoke`、`GET /api/project-status`、`GET /demo` 和 `scripts/demo_mvp.ps1` 支撑真实演示、provider 诊断与项目运行总览展示。
@@ -26,12 +26,11 @@
 - 为什么结构化表格分析必须把 DuckDB / pandas 工具链作为数值真相源
 - 为什么要通过 `LLMClient` 抽象和 provider 工厂实现真实模型接入，而不是把模型调用写死在节点中
 - 为什么 RAG 只负责语义增强而不替代 CSV 明细计算
-- 为什么先做本地混合检索 / BM25 风格增强，而不是直接引入完整向量库
+- 为什么当前选择 JSONL + SQLite embedding cache 的 staged retrieval，而不是直接引入独立向量数据库
 - 为什么要把事件时间线、规则评估、工具日志、provider 状态和 project-status 一起纳入主链，支撑可追踪、可验证的工程表达
 
 ## 当前不能过度声称的点
 
-- 不能说已经实现 embedding / 向量检索 / rerank
 - 不能说已经实现 DockerSandbox
 - 不能说已经实现完整 React 前端
 - 不能说所有分析都由大模型自动完成

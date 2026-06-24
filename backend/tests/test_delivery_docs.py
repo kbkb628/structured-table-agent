@@ -131,6 +131,8 @@ def test_resume_project_description_mentions_qwen_and_project_status_delivery():
     assert "缺少可用 API key 时的显式降级" in content
     assert "llm_judgement" in content
     assert "BM25" in content
+    assert "embedding" in content
+    assert "rerank" in content
     assert "context_checkpoint" in content
     assert "Plotly 风格图表配置" in content
     assert "Plotly 受控分析工具" not in content
@@ -157,6 +159,9 @@ def test_resume_evidence_map_links_resume_claims_to_runtime_evidence():
     assert "缺少可用 API key 时" in content
     assert "llm_judgement" in content
     assert "score_breakdown" in content
+    assert "embedding_score" in content or "top_business_context_embedding_score" in content
+    assert "rerank_score" in content or "top_business_context_rerank_score" in content
+    assert "retrieval_sources" in content
     assert "context_checkpoint" in content
     assert "analysis_state" in content
     assert "细粒度 Redis key" in content
@@ -185,6 +190,8 @@ def test_interview_demo_checklist_provides_short_demo_path():
     assert "project_status_latest_task_analysis_goal" in content
     assert "project_status_latest_task_latest_route_decision" in content
     assert "project_status_latest_task_top_business_context_bm25_score" in content
+    assert "project_status_latest_task_top_business_context_embedding_score" in content
+    assert "project_status_latest_task_top_business_context_rerank_score" in content
     assert "project_status_latest_task_checkpoint_status" in content
     assert "fixed_eval_pass_rate" in content
 
@@ -220,7 +227,6 @@ def test_release_readiness_audit_summarizes_ship_blockers_and_verification():
     assert "pytest -q" in content
     assert "/api/project-status" in content
     assert "demo_mvp.ps1" in content
-    assert "embedding / 向量检索 / rerank" in content
     assert "DockerSandbox" in content
 
 
@@ -268,6 +274,9 @@ def test_project_status_mentions_project_overview_and_latest_smoke_evidence():
     assert "project_status_latest_task_business_suggestion_count" in content
     assert "project_status_latest_task_data_limitation_count" in content
     assert "project_status_latest_task_top_business_context_title" in content
+    assert "project_status_latest_task_top_business_context_embedding_score" in content
+    assert "project_status_latest_task_top_business_context_rerank_score" in content
+    assert "project_status_latest_task_top_business_context_retrieval_sources" in content
     assert "project_status_latest_task_checkpoint_draft_report_status" in content
     assert "project_status_latest_task_completed_step_count" in content
     assert "project_status_latest_task_metric_count" in content

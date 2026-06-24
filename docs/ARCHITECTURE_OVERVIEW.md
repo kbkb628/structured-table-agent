@@ -62,7 +62,7 @@
 
 - `knowledge_base.jsonl`：本地知识库
 - `knowledge_loader.py`：知识加载
-- `keyword_retriever.py`：本地混合检索，包含关键词、短语命中、字段加权和 BM25 风格评分
+- `keyword_retriever.py`：staged retrieval 组装层，整合 BM25 召回、embedding 向量召回、rerank 重排与 retrieval evidence
 
 ### `app/llm`
 
@@ -170,7 +170,6 @@
 
 当前没有实现：
 
-- embedding / 向量检索 / rerank
 - DockerSandbox
 - 完整前端页面
 - 异步队列

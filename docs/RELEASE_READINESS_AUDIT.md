@@ -12,7 +12,7 @@
 这意味着：
 
 - 如果当前目标是交付一个真实可演示、可测试、可解释、可验证的第一阶段项目，现在已经足够
-- 如果目标是继续补 embedding / 向量检索 / rerank、DockerSandbox、完整前端或更强的生产化能力，则仍未完成
+- 如果目标是继续补 DockerSandbox、完整前端或更强的生产化能力，则仍未完成
 
 ## 已具备
 
@@ -52,7 +52,6 @@
 
 当前仍未实现、因此不应作为封板完成项对外声称的内容包括：
 
-- embedding / 向量检索 / rerank
 - DockerSandbox
 - 完整 React 前端
 - 异步队列执行
@@ -105,7 +104,7 @@ cd E:\bgagent1\backend
 
 如果不封板而继续做第二阶段，最合理的方向是：
 
-- 补 embedding / 向量检索 / rerank
+- 增强 retrieval 规模化能力，例如 embedding 增量刷新、召回质量评测和模型缓存治理
 - 引入 DockerSandbox
 - 补更完整的前端过程展示
 - 增强异步执行与任务治理

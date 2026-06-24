@@ -21,7 +21,7 @@
 - Share 分析工具：按维度计算指标占比、贡献率和百分比
 - Trend 分析工具：按 `order_date` 执行时间维度聚合、升序排序和折线图输出
 - Anomaly 分析工具：按分组聚合结果执行基于 z-score 的异常值识别
-- JSONL 本地混合检索，包含关键词、短语命中、字段加权和 BM25 风格评分
+- JSONL staged retrieval 检索栈，包含显式 BM25 召回、embedding 向量召回、rerank 重排与 SQLite embedding cache
 - LangGraph 显式状态流，包含 `validate_tool_result` 与 `route_next_step`
 - `GET /api/project-status` / `/demo` / `demo_mvp.ps1` 会暴露最新任务里 `route_next_step:continue|finish` 的真实摘要，证明多指标任务确实发生过继续/收尾路由
 - 真实可替换 LLM Provider 接入：
@@ -45,7 +45,7 @@
 - CSV / Excel 上传与字段画像
 - 从自然语言问题到工具执行的完整分析闭环
 - 轻量 RAG 业务语义增强
-- 本地混合检索 / BM25 风格语义增强
+- 本地 staged retrieval 语义增强（BM25 + embedding + rerank）
 - LangGraph 多步状态流与最小动态路由
 - pandas / DuckDB 与 Plotly 风格图表配置（Plotly 配置）的受控工具链
 - 占比分析工具与主链接入
@@ -61,7 +61,6 @@
 当前不能声明已实现：
 
 - 异步队列执行
-- embedding / 向量检索 / rerank
 - DockerSandbox
 - 完整 React 前端
 - 完整生产级多 Provider 调度平台
@@ -141,13 +140,14 @@
   - 按维度聚合后的 z-score 异常值识别
   - 输出 `z_score`
   - 输出 `is_anomaly`
-- `keyword_retriever` 当前已升级为本地混合检索：
-  - 关键词重叠打分
-  - 短语命中加权
-  - `related_fields` 字段加权
-  - BM25 风格归一化评分
-  - `score_breakdown` 检索打分明细
-- `GET /api/project-status` / `/demo` / `demo_mvp.ps1` 会暴露最新任务 top business context 的 `score`、`related_field_count`、`has_score_breakdown`、`keyword_score`、`field_score`、`phrase_score` 和 `bm25_score`
+- `keyword_retriever` 当前已升级为 staged retrieval 组装层：
+  - `bm25_retriever` 负责显式 BM25 lexical retrieval
+  - `vector_retriever` 负责 embedding similarity retrieval
+  - `reranker` 负责 merged candidates 的最终重排
+  - `embedding_store` 负责 SQLite knowledge embedding cache
+  - `retrieval_evidence` 会写入 `bm25_rank`、`bm25_score`、`embedding_rank`、`embedding_score`、`rerank_score`、`final_rank`、`retrieval_sources`
+  - `score_breakdown` 仍保留 lexical score 可拆解明细
+- `GET /api/project-status` / `/demo` / `demo_mvp.ps1` 会暴露最新任务 top business context 的 `score`、`related_field_count`、`has_score_breakdown`、`keyword_score`、`field_score`、`phrase_score`、`bm25_score`、`embedding_score`、`rerank_score` 和 `retrieval_sources`
 - `GET /api/project-status` / `/demo` / `demo_mvp.ps1` 也会暴露最新任务 `field_understanding` 里的 `analysis_type`、`candidate_fields`、`warnings`、`planned_tool_sequence` 摘要，作为字段错配治理和 schema 约束仍然留存在运行态的证据
 - `/demo` 当前支持：
   - 上传或加载样例数据
@@ -221,6 +221,9 @@
   - `project_status_latest_task_top_business_context_field_score`
   - `project_status_latest_task_top_business_context_phrase_score`
   - `project_status_latest_task_top_business_context_bm25_score`
+  - `project_status_latest_task_top_business_context_embedding_score`
+  - `project_status_latest_task_top_business_context_rerank_score`
+  - `project_status_latest_task_top_business_context_retrieval_sources`
   - `project_status_latest_task_checkpoint_current_step`
   - `project_status_latest_task_checkpoint_status`
   - `project_status_latest_task_checkpoint_pending_metric_count`
@@ -332,11 +335,11 @@
 
 - 如果按最初 MVP 要求看，项目主链路早已完成。
 - 按当前“贴合简历表达”的目标看，项目现在已经跨过“真实 LLM 接入”和“可验证演示交付”这两个关键门槛。
-- 现阶段剩余未实现内容主要是第二阶段增强，而不是当前主链缺口。
+- 现阶段剩余未实现内容已经不包含 retrieval 主链本体，主要集中在执行隔离、前端和生产化治理。
 
 ## 剩余增强方向
 
-- 升级到 `embedding + 向量检索 + rerank`
+- 增强 retrieval 规模化能力，例如 embedding 增量刷新、召回质量评测和模型缓存治理
 - 增强 Redis 会话记忆和异步执行
 - 引入 DockerSandbox
 - 增强前端过程展示
