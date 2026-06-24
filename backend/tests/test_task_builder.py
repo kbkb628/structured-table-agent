@@ -48,10 +48,11 @@ class StubLLMClient:
         del business_context
         return {}
 
-    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+    def judge_report(self, question: str, final_report: dict, tool_results: list[dict], judge_evidence: dict) -> dict:
         del question
         del final_report
         del tool_results
+        del judge_evidence
         return {}
 
 
@@ -229,10 +230,11 @@ def test_create_analysis_task_injects_file_memory_into_goal_and_plan(tmp_path, m
             del business_context
             return {}
 
-        def judge_report(self, question, final_report, tool_results) -> dict:
+        def judge_report(self, question, final_report, tool_results, judge_evidence) -> dict:
             del question
             del final_report
             del tool_results
+            del judge_evidence
             return {}
 
     csv_path = tmp_path / "sales_orders.csv"

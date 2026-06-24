@@ -63,15 +63,22 @@ class RunnerStubLLMClient:
             "next_steps": ["Investigate regional segment drivers."],
         }
 
-    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+    def judge_report(self, question: str, final_report: dict, tool_results: list[dict], judge_evidence: dict) -> dict:
         del question
         del final_report
         del tool_results
+        del judge_evidence
         return {
-            "supported_by_tools": True,
-            "has_findings": True,
+            "judge_summary": "Structured judge accepted the report.",
+            "judge_status": "ok",
+            "dimensions": {
+                "groundedness": {"score": 0.95, "verdict": "supported", "rationale": "Tool rows support the report."},
+                "completeness": {"score": 0.9, "verdict": "complete", "rationale": "Sections are present."},
+                "clarity": {"score": 0.88, "verdict": "clear", "rationale": "Language is concise."},
+            },
             "issue_count": 0,
             "issues": [],
+            "degraded": False,
         }
 
 
@@ -115,10 +122,11 @@ class FailingReportLLMClient:
         del business_context
         raise QwenResponseError("simulated report failure")
 
-    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+    def judge_report(self, question: str, final_report: dict, tool_results: list[dict], judge_evidence: dict) -> dict:
         del question
         del final_report
         del tool_results
+        del judge_evidence
         return {}
 
 
@@ -283,8 +291,98 @@ def test_run_analysis_task_uses_llm_final_report_and_records_judgement(tmp_path:
 
     assert result["final_report"]["title"] == "LLM Final Report"
     assert stored["final_report"]["title"] == "LLM Final Report"
-    assert result["llm_judgement"]["supported_by_tools"] is True
+    assert result["llm_judgement"]["judge_status"] == "ok"
+    assert result["llm_judgement"]["dimensions"]["groundedness"]["score"] > 0
     assert stored["llm_judgement"]["issue_count"] == 0
+
+
+def test_run_analysis_task_records_structured_llm_judge(tmp_path: Path, monkeypatch):
+    class JudgeStubLLMClient(RunnerStubLLMClient):
+        def judge_report(self, question: str, final_report: dict, tool_results: list[dict], judge_evidence: dict) -> dict:
+            assert question == "analyse sales by region"
+            assert judge_evidence["question"] == "analyse sales by region"
+            assert judge_evidence["final_report"]["title"] == "LLM Final Report"
+            assert judge_evidence["tool_results"][0]["tool_name"] == "groupby_aggregate"
+            return {
+                "judge_summary": "Report is grounded in the deterministic aggregation.",
+                "judge_status": "ok",
+                "dimensions": {
+                    "groundedness": {"score": 0.96, "verdict": "supported", "rationale": "Rows support the key finding."},
+                    "completeness": {"score": 0.92, "verdict": "complete", "rationale": "Required sections exist."},
+                    "clarity": {"score": 0.9, "verdict": "clear", "rationale": "Language is concise."},
+                },
+                "issue_count": 0,
+                "issues": [],
+                "degraded": False,
+            }
+
+    task_id = f"task_runner_judge_{uuid.uuid4().hex[:8]}"
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text(
+        "region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n",
+        encoding="utf-8",
+    )
+    file_profile = {
+        "file_id": "file_task_judge",
+        "filename": "sales_orders.csv",
+        "row_count": 2,
+        "column_count": 3,
+        "columns": [
+            {"name": "region", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+            {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+            {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+        ],
+        "created_at": "2026-06-24T00:00:00+00:00",
+    }
+
+    save_file_record(
+        FileRecord(
+            file_id="file_task_judge",
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=2,
+            column_count=3,
+            columns_json=json.dumps(file_profile["columns"]),
+            created_at="2026-06-24T00:00:00+00:00",
+        )
+    )
+
+    create_task(
+        task_id,
+        "file_task_judge",
+        "analyse sales by region",
+        {
+            "task_id": task_id,
+            "file_id": "file_task_judge",
+            "question": "analyse sales by region",
+            "analysis_goal": "compare region sales",
+            "file_profile": file_profile,
+            "field_understanding": {},
+            "business_context": [{"title": "Region"}],
+            "memory_context": {},
+            "analysis_plan": ["match fields", "aggregate", "chart", "report"],
+            "current_step": "created",
+            "completed_steps": [],
+            "intermediate_findings": [],
+            "tool_results": [],
+            "chart_specs": [],
+            "draft_report": {},
+            "final_report": {},
+            "llm_judgement": {},
+            "eval_result": {},
+            "events": [],
+            "errors": [],
+            "status": "created",
+        },
+    )
+
+    monkeypatch.setattr("app.agent.nodes.get_llm_client", lambda: JudgeStubLLMClient())
+
+    result = run_analysis_task(task_id)
+
+    assert result["llm_judgement"]["judge_status"] == "ok"
+    assert result["llm_judgement"]["judge_summary"] != ""
+    assert result["llm_judgement"]["dimensions"]["groundedness"]["score"] == 0.96
 
 
 def test_run_analysis_task_supports_category_sales_share_question(tmp_path: Path):

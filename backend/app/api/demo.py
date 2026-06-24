@@ -1098,6 +1098,12 @@ def demo_page() -> HTMLResponse:
         ? [`task_id: ${latestTask.task_id}`, `supported_by_tools: ${latestTaskJudgement.supported_by_tools}`].join(" | ")
         : "No persisted task found yet.";
       latestTaskJudgementOutputEl.textContent = latestTask ? [
+        `judge_status: ${latestTaskJudgement.judge_status || "none"}`,
+        `judge_summary: ${latestTaskJudgement.judge_summary || "none"}`,
+        `degraded: ${latestTaskJudgement.degraded ?? false}`,
+        `groundedness_score: ${latestTaskJudgement.groundedness_score ?? "none"}`,
+        `completeness_score: ${latestTaskJudgement.completeness_score ?? "none"}`,
+        `clarity_score: ${latestTaskJudgement.clarity_score ?? "none"}`,
         `supported_by_tools: ${latestTaskJudgement.supported_by_tools ?? false}`,
         `has_findings: ${latestTaskJudgement.has_findings ?? false}`,
         `issue_count: ${latestTaskJudgement.issue_count ?? 0}`,

@@ -266,3 +266,41 @@ def test_qwen_client_sends_memory_context_in_goal_request(monkeypatch):
     user_payload = json.loads(captured_payload["messages"][1]["content"])
     assert "memory_context" in user_payload
     assert user_payload["memory_context"]["summary_memory"]["summary_text"] == "Previous regional sales analysis."
+
+
+def test_qwen_client_parses_structured_judge_response(monkeypatch):
+    from app.llm.qwen_client import QwenClient
+
+    monkeypatch.setattr(
+        "app.llm.qwen_client.urlopen",
+        lambda request, timeout: StubResponse(
+            200,
+            _chat_payload(
+                json.dumps(
+                    {
+                        "judge_summary": "Report is grounded in tool evidence.",
+                        "judge_status": "ok",
+                        "dimensions": {
+                            "groundedness": {"score": 0.96, "verdict": "supported", "rationale": "Rows support the key finding."},
+                            "completeness": {"score": 0.92, "verdict": "complete", "rationale": "Sections exist."},
+                            "clarity": {"score": 0.9, "verdict": "clear", "rationale": "Language is concise."},
+                        },
+                        "issue_count": 0,
+                        "issues": [],
+                        "degraded": False,
+                    }
+                )
+            ),
+        ),
+    )
+
+    client = QwenClient(api_key="test-key", base_url="https://example.com/v1", model="qwen-plus")
+    result = client.judge_report(
+        question="analyse sales by region",
+        final_report={"title": "Report"},
+        tool_results=[{"tool_name": "groupby_aggregate", "data": {"rows": [{"region": "East"}]}}],
+        judge_evidence={"question": "analyse sales by region"},
+    )
+
+    assert result["judge_status"] == "ok"
+    assert result["dimensions"]["groundedness"]["score"] == 0.96

@@ -209,6 +209,10 @@ def _latest_task_info() -> dict | None:
         "trace_completeness",
     }
     llm_judgement = state.get("llm_judgement") or {}
+    judge_dimensions = llm_judgement.get("dimensions") or {}
+    groundedness = judge_dimensions.get("groundedness") or {}
+    completeness = judge_dimensions.get("completeness") or {}
+    clarity = judge_dimensions.get("clarity") or {}
     final_report = state.get("final_report") or {}
     chart_specs = state.get("chart_specs") or []
     context_checkpoint = state.get("context_checkpoint") or {}
@@ -271,7 +275,13 @@ def _latest_task_info() -> dict | None:
         "judgement": {
             "supported_by_tools": llm_judgement.get("supported_by_tools"),
             "has_findings": llm_judgement.get("has_findings"),
+            "judge_status": llm_judgement.get("judge_status"),
+            "judge_summary": llm_judgement.get("judge_summary"),
+            "degraded": bool(llm_judgement.get("degraded")),
             "issue_count": int(llm_judgement.get("issue_count", 0) or 0),
+            "groundedness_score": groundedness.get("score"),
+            "completeness_score": completeness.get("score"),
+            "clarity_score": clarity.get("score"),
         },
         "process": {
             "pending_metric_count": len(state.get("pending_metrics") or []),

@@ -4,6 +4,7 @@ from urllib.request import Request, urlopen
 
 from app.llm.base import LLMClient
 from app.llm.prompt_templates import GOAL_SYSTEM_PROMPT, JUDGE_SYSTEM_PROMPT, PLAN_SYSTEM_PROMPT, REPORT_SYSTEM_PROMPT
+from app.schemas.judge_schema import JudgeResult
 from app.schemas.report_schema import FinalReport
 
 
@@ -219,28 +220,20 @@ class QwenClient(LLMClient):
         normalized_payload = self._normalize_report_payload(payload, analysis_goal)
         return FinalReport.model_validate(normalized_payload).model_dump()
 
-    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+    def judge_report(
+        self,
+        question: str,
+        final_report: dict,
+        tool_results: list[dict],
+        judge_evidence: dict,
+    ) -> dict:
         payload = self._chat_json(
             JUDGE_SYSTEM_PROMPT,
             {
                 "question": question,
                 "final_report": final_report,
                 "tool_results": tool_results,
+                "judge_evidence": judge_evidence,
             },
         )
-        supported_by_tools = payload.get("supported_by_tools")
-        has_findings = payload.get("has_findings")
-        issues = payload.get("issues", [])
-        issue_count = payload.get("issue_count")
-        if not isinstance(supported_by_tools, bool) or not isinstance(has_findings, bool):
-            raise QwenResponseError("Qwen did not return valid judgement booleans.")
-        if not isinstance(issues, list) or not all(isinstance(item, str) for item in issues):
-            raise QwenResponseError("Qwen did not return a valid issues list.")
-        if not isinstance(issue_count, int):
-            raise QwenResponseError("Qwen did not return a valid issue_count.")
-        return {
-            "supported_by_tools": supported_by_tools,
-            "has_findings": has_findings,
-            "issue_count": issue_count,
-            "issues": issues,
-        }
+        return JudgeResult.model_validate(payload).model_dump()

@@ -149,6 +149,7 @@ def _evaluate_case(case: dict, result: dict) -> dict:
         "passed": len(failures) == 0,
         "task_id": result["task_id"],
         "status": result["status"],
+        "judge_status": (result.get("llm_judgement") or {}).get("judge_status"),
         "overall_score": eval_result["overall_score"],
         "tool_success_rate": eval_result["tool_success_rate"],
         "tool_elapsed_ms_total": eval_result["tool_elapsed_ms_total"],

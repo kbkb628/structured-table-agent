@@ -33,5 +33,11 @@ class LLMClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+    def judge_report(
+        self,
+        question: str,
+        final_report: dict,
+        tool_results: list[dict],
+        judge_evidence: dict,
+    ) -> dict:
         raise NotImplementedError

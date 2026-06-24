@@ -379,3 +379,11 @@ Latest real smoke evidence on this machine:
 - `SessionStore` now writes both task-scoped `analysis_state` and file-scoped memory snapshots.
 - `task_builder` injects memory into startup planning, and completed tasks append back into Redis memory.
 - `GET /api/project-status` and `/demo` now surface memory runtime evidence alongside retrieval, report, and tool evidence.
+
+## LLM-As-Judge Realization Update
+
+- Added a structured `LLM-as-Judge` layer with `judge_summary`, `judge_status`, and dimensioned judge outputs.
+- Current judge dimensions include `groundedness`, `completeness`, and `clarity`.
+- Judge evidence is packed from question, final report, tool outputs, retrieval context, memory context, and trace events.
+- Judge provider failures now degrade explicitly to `judge_status = degraded` instead of failing a completed task.
+- `GET /api/project-status`, `/demo`, `/api/eval/run`, and fixed eval cases now surface judge runtime evidence separately from rule scores.

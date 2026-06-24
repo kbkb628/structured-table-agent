@@ -257,3 +257,27 @@
   - `backend/tests/test_task_builder.py`
   - `backend/tests/test_analysis_api.py`
   - `backend/tests/test_project_status_api.py`
+
+### LLM-As-Judge Addendum
+
+- Resume wording: real `LLM-as-Judge` with structured judge dimensions and explicit degradation behavior.
+- Code evidence:
+  - `backend/app/schemas/judge_schema.py`
+  - `backend/app/agent/nodes.py`
+  - `backend/app/llm/qwen_client.py`
+  - `backend/app/api/project_status.py`
+  - `backend/app/api/eval.py`
+- Runtime evidence:
+  - `judge_summary`
+  - `judge_status`
+  - `groundedness`
+  - `completeness`
+  - `clarity`
+  - `project_status_latest_task_judge_status`
+  - `project_status_latest_task_judgement_issue_count`
+- Test evidence:
+  - `backend/tests/test_judge_schema.py`
+  - `backend/tests/test_analysis_runner.py`
+  - `backend/tests/test_analysis_api.py`
+  - `backend/tests/test_project_status_api.py`
+  - `backend/tests/test_qwen_client.py`

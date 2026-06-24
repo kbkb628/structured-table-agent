@@ -44,6 +44,7 @@ def test_run_fixed_eval_cases_returns_passing_summary():
     assert all(item["tool_elapsed_ms_total"] >= 0 for item in summary["results"])
     assert all(item["issues"] == [] for item in summary["results"])
     assert all(item["assertion_failures"] == [] for item in summary["results"])
+    assert all(item["judge_status"] in {"ok", "degraded"} for item in summary["results"])
     assert any(item["case_id"] == "category_share" for item in summary["results"])
     assert any(item["case_id"] == "sales_trend" for item in summary["results"])
     assert any(item["case_id"] == "category_anomaly" for item in summary["results"])

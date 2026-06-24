@@ -52,12 +52,14 @@ def test_mock_llm_can_generate_structured_report_and_judge_result():
         question="analyse sales by region",
         final_report=report,
         tool_results=[{"tool_name": "groupby_aggregate", "data": {"rows": [{"region": "East", "sales_amount_sum": 1200}]}}],
+        judge_evidence={"question": "analyse sales by region"},
     )
 
     assert report["title"] != ""
     assert report["analysis_goal"] == "analyse sales by region"
     assert len(report["key_findings"]) > 0
-    assert judgement["supported_by_tools"] is True
+    assert judgement["judge_status"] == "ok"
+    assert judgement["dimensions"]["groundedness"]["score"] > 0
     assert judgement["issue_count"] == 0
 
 

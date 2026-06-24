@@ -434,6 +434,55 @@ def test_get_project_status_surfaces_memory_runtime_evidence():
     assert latest_task["memory"]["summary_text"] == "Previous analysis focused on regional sales."
 
 
+def test_get_project_status_surfaces_structured_judge_dimensions():
+    task_id = "task_project_status_judge"
+    state = {
+        "task_id": task_id,
+        "file_id": "file_project_status_judge",
+        "question": "analyse sales by region",
+        "analysis_goal": "compare region sales",
+        "file_profile": {},
+        "field_understanding": {},
+        "business_context": [],
+        "analysis_plan": ["match fields"],
+        "current_step": "completed",
+        "completed_steps": [],
+        "intermediate_findings": [],
+        "tool_results": [],
+        "chart_specs": [],
+        "draft_report": {},
+        "final_report": {},
+        "llm_judgement": {
+            "judge_summary": "Report is grounded in tool evidence.",
+            "judge_status": "ok",
+            "dimensions": {
+                "groundedness": {"score": 0.96, "verdict": "supported", "rationale": "Tool rows support the key finding."},
+                "completeness": {"score": 0.92, "verdict": "complete", "rationale": "Required sections exist."},
+                "clarity": {"score": 0.9, "verdict": "clear", "rationale": "Language is concise."},
+            },
+            "issue_count": 0,
+            "issues": [],
+            "degraded": False,
+        },
+        "eval_result": {},
+        "events": [],
+        "errors": [],
+        "status": "completed",
+    }
+    create_task(task_id, state["file_id"], state["question"], state)
+    update_task_state(task_id, state)
+
+    client = TestClient(app)
+    response = client.get("/api/project-status")
+
+    assert response.status_code == 200
+    judgement = response.json()["summary"]["latest_task"]["judgement"]
+    assert judgement["judge_status"] == "ok"
+    assert judgement["groundedness_score"] == 0.96
+    assert judgement["completeness_score"] == 0.92
+    assert judgement["clarity_score"] == 0.9
+
+
 def test_get_project_status_ignores_future_dated_fixture_task_for_latest_summary():
     frozen_now = "2099-12-31T23:59:59+00:00"
     future_task_id = "task_project_status_future_fixture"

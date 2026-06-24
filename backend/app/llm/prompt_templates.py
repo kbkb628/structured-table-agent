@@ -26,6 +26,7 @@ REPORT_SYSTEM_PROMPT = (
 
 JUDGE_SYSTEM_PROMPT = (
     "You are an analytics quality reviewer. "
-    "Return JSON only with supported_by_tools, has_findings, issue_count, and issues. "
+    "Return JSON only with judge_summary, judge_status, dimensions, issue_count, issues, and degraded. "
+    "Dimensions must include groundedness, completeness, and clarity. "
     "Do not invent unsupported evidence."
 )

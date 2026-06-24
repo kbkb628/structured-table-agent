@@ -446,6 +446,34 @@ def test_delivery_docs_mention_real_redis_memory_runtime_evidence():
     assert "summary_text" in project_status
 
 
+def test_delivery_docs_mention_structured_llm_judge_runtime_evidence():
+    repo_root = Path(__file__).resolve().parents[2]
+    resume_description = (repo_root / "docs" / "RESUME_PROJECT_DESCRIPTION.md").read_text(encoding="utf-8")
+    evidence_map = (repo_root / "docs" / "RESUME_EVIDENCE_MAP.md").read_text(encoding="utf-8")
+    project_status = (repo_root / "docs" / "PROJECT_STATUS.md").read_text(encoding="utf-8")
+
+    assert "LLM-as-Judge" in resume_description
+    assert "judge_summary" in resume_description
+    assert "judge_status" in resume_description
+    assert "groundedness" in resume_description
+    assert "completeness" in resume_description
+    assert "clarity" in resume_description
+
+    assert "LLM-as-Judge" in evidence_map
+    assert "judge_summary" in evidence_map
+    assert "judge_status" in evidence_map
+    assert "groundedness" in evidence_map
+    assert "completeness" in evidence_map
+    assert "clarity" in evidence_map
+
+    assert "LLM-As-Judge" in project_status or "LLM-as-Judge" in project_status
+    assert "judge_summary" in project_status
+    assert "judge_status" in project_status
+    assert "groundedness" in project_status
+    assert "completeness" in project_status
+    assert "clarity" in project_status
+
+
 def test_interview_guide_mentions_demo_script_diagnostic_outputs():
     content = (Path(__file__).resolve().parents[2] / "docs" / "INTERVIEW_GUIDE.md").read_text(
         encoding="utf-8"

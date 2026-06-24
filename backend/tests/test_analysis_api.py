@@ -80,10 +80,11 @@ class FailingGoalLLMClient:
         del business_context
         return {}
 
-    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+    def judge_report(self, question: str, final_report: dict, tool_results: list[dict], judge_evidence: dict) -> dict:
         del question
         del final_report
         del tool_results
+        del judge_evidence
         return {}
 
 
@@ -881,6 +882,82 @@ def test_start_analysis_second_task_reads_memory_from_first_completed_task(monke
     second_state = client.get(f"/api/analysis/{second_start.json()['task_id']}").json()
     assert second_state["memory_context"]["recent_turns"]
     assert second_state["memory_context"]["recent_turns"][-1]["task_id"] == first_task_id
+
+
+def test_run_analysis_degrades_when_llm_judge_fails(tmp_path, monkeypatch):
+    class JudgeFailingClient:
+        def generate_analysis_goal(self, question, file_profile, business_context, memory_context):
+            del question
+            del file_profile
+            del business_context
+            del memory_context
+            return "compare region sales"
+
+        def generate_analysis_plan(self, analysis_goal, file_profile, business_context, memory_context):
+            del analysis_goal
+            del file_profile
+            del business_context
+            del memory_context
+            return ["match fields", "aggregate", "chart", "report"]
+
+        def generate_report(self, analysis_goal, intermediate_findings, chart_specs, business_context):
+            del intermediate_findings
+            del chart_specs
+            del business_context
+            return {
+                "title": "Judge fallback report",
+                "analysis_goal": analysis_goal,
+                "key_findings": [{"finding": "East performs best", "evidence": "1200", "source_tool": "groupby_aggregate"}],
+                "chart_explanations": ["Bar chart compares regional sales totals."],
+                "business_suggestions": ["Focus on East."],
+                "data_limitations": ["Uploaded CSV only."],
+                "next_steps": ["Check by channel."],
+            }
+
+        def judge_report(self, question, final_report, tool_results, judge_evidence):
+            del question
+            del final_report
+            del tool_results
+            del judge_evidence
+            raise QwenResponseError("judge provider failure")
+
+    csv_path = tmp_path / "sales_orders.csv"
+    csv_path.write_text("region,sales_amount,order_id\nEast,1200,ORD1\nWest,800,ORD2\n", encoding="utf-8")
+    file_id = f"file_api_judge_degrade_{uuid.uuid4().hex[:8]}"
+    save_file_record(
+        FileRecord(
+            file_id=file_id,
+            filename="sales_orders.csv",
+            stored_path=str(csv_path),
+            row_count=2,
+            column_count=3,
+            columns_json=json.dumps(
+                [
+                    {"name": "region", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "sales_amount", "type": "number", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                    {"name": "order_id", "type": "string", "missing_rate": 0.0, "sample_values": [], "unique_count": 2},
+                ]
+            ),
+            created_at="2026-06-24T00:00:00+00:00",
+        )
+    )
+    monkeypatch.setattr("app.services.task_builder.get_llm_client", lambda: JudgeFailingClient())
+    monkeypatch.setattr("app.agent.nodes.get_llm_client", lambda: JudgeFailingClient())
+
+    client = TestClient(app)
+    start = client.post(
+        "/api/analysis/start",
+        json={"file_id": file_id, "question": "analyse sales by region"},
+    )
+    task_id = start.json()["task_id"]
+
+    run = client.post(f"/api/analysis/{task_id}/run")
+
+    assert run.status_code == 200
+    assert run.json()["status"] == "completed"
+    assert run.json()["llm_judgement"]["degraded"] is True
+    assert run.json()["llm_judgement"]["judge_status"] == "degraded"
+    assert run.json()["errors"][-1]["code"] == "LLM_JUDGEMENT_DEGRADED"
 
 
 def test_run_analysis_uses_redis_snapshot_even_when_sqlite_row_is_missing():

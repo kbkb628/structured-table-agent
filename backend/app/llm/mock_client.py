@@ -105,8 +105,9 @@ class MockLLMClient(LLMClient):
             "next_steps": ["Keep the final persisted report grounded in tool outputs."],
         }
 
-    def judge_report(self, question: str, final_report: dict, tool_results: list[dict]) -> dict:
+    def judge_report(self, question: str, final_report: dict, tool_results: list[dict], judge_evidence: dict) -> dict:
         del question
+        del judge_evidence
         has_findings = bool(final_report.get("key_findings"))
         has_tool_rows = any(item.get("data", {}).get("rows") for item in tool_results)
         issues = []
@@ -115,8 +116,26 @@ class MockLLMClient(LLMClient):
         if not has_tool_rows:
             issues.append("No tool rows were available for judging.")
         return {
-            "supported_by_tools": has_tool_rows,
-            "has_findings": has_findings,
+            "judge_summary": "Mock judge completed using deterministic tool presence checks.",
+            "judge_status": "ok",
+            "dimensions": {
+                "groundedness": {
+                    "score": 1.0 if has_tool_rows else 0.2,
+                    "verdict": "supported" if has_tool_rows else "weak",
+                    "rationale": "Checks whether tool rows exist.",
+                },
+                "completeness": {
+                    "score": 1.0 if has_findings else 0.3,
+                    "verdict": "complete" if has_findings else "partial",
+                    "rationale": "Checks whether findings exist.",
+                },
+                "clarity": {
+                    "score": 0.8,
+                    "verdict": "clear",
+                    "rationale": "Mock client emits a concise summary.",
+                },
+            },
             "issue_count": len(issues),
             "issues": issues,
+            "degraded": False,
         }

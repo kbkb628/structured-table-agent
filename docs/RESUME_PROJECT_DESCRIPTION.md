@@ -44,3 +44,11 @@
 - Older turns are compressed into summary memory text and surfaced as `summary_text`.
 - `task_builder` passes `memory_context` into `generate_analysis_goal` and `generate_analysis_plan`.
 - `GET /api/project-status` and `/demo` expose `recent_turn_count`, `summary_turn_count`, and `summary_text`.
+
+## LLM-As-Judge Runtime Evidence
+
+- The project now includes a real `LLM-as-Judge` layer rather than only a lightweight supplementary judgement flag.
+- Judge outputs are persisted through `llm_judgement` with `judge_summary`, `judge_status`, and structured dimension results.
+- The current dimension set includes `groundedness`, `completeness`, and `clarity`.
+- Judge provider failures degrade explicitly to `judge_status = degraded` instead of failing the entire completed analysis task.
+- `GET /api/project-status`, `/demo`, and `/api/eval/run` expose judge runtime evidence separately from deterministic rule scores.

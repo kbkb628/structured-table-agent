@@ -20,6 +20,8 @@ def run_eval(request: EvalRunRequest) -> EvalRunResponse:
 
     hydrate_state_events(state)
     eval_result = score_task_state(state)
+    eval_result["judge_status"] = (state.get("llm_judgement") or {}).get("judge_status")
+    eval_result["judge_degraded"] = bool((state.get("llm_judgement") or {}).get("degraded"))
     state["eval_result"] = eval_result
     record_eval_result(request.task_id, eval_result)
     record_eval_finished(request.task_id, "run_eval", eval_result)

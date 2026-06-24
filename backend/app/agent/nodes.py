@@ -282,6 +282,19 @@ def _build_draft_report(state: AnalysisGraphState) -> dict:
     }
 
 
+def _build_judge_evidence(state: AnalysisGraphState) -> dict:
+    return {
+        "question": state["question"],
+        "analysis_goal": state["analysis_goal"],
+        "final_report": state["final_report"],
+        "tool_results": state["tool_results"],
+        "business_context": state.get("business_context") or [],
+        "memory_context": state.get("memory_context") or {},
+        "events": state.get("events") or [],
+        "eval_result": state.get("eval_result") or {},
+    }
+
+
 def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
     state["draft_report"] = _build_draft_report(state)
     state["completed_steps"].append("draft_report_prepared")
@@ -318,19 +331,30 @@ def generate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
 
 
 def evaluate_report_node(state: AnalysisGraphState) -> AnalysisGraphState:
+    judge_evidence = _build_judge_evidence(state)
     try:
         llm_client = get_llm_client()
         state["llm_judgement"] = llm_client.judge_report(
             state["question"],
             state["final_report"],
             state["tool_results"],
+            judge_evidence,
         )
     except (LLMConfigurationError, QwenResponseError) as exc:
-        return fail_task(
-            state,
-            "LLM_JUDGEMENT_FAILED",
-            str(exc),
-            {"final_report_available": bool(state.get("final_report"))},
+        state["llm_judgement"] = {
+            "judge_summary": "Judge degraded because the provider call failed.",
+            "judge_status": "degraded",
+            "dimensions": {},
+            "issue_count": 1,
+            "issues": [str(exc)],
+            "degraded": True,
+        }
+        state["errors"].append(
+            {
+                "code": "LLM_JUDGEMENT_DEGRADED",
+                "message": str(exc),
+                "details": {"final_report_available": bool(state.get("final_report"))},
+            }
         )
     state["current_step"] = "completed"
     state["status"] = "completed"
