@@ -10,6 +10,16 @@ def _ts() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat()
 
 
+def _summarize_request_payload(request_payload: dict) -> dict:
+    python_code = request_payload.get("python_code") or ""
+    template_name = request_payload.get("template_name")
+    return {
+        "execution_mode": "template" if template_name else "inline_python",
+        "template_name": template_name,
+        "python_code_char_count": len(python_code),
+    }
+
+
 def record_sandbox_execution(file_id: str, request_payload: dict, response_payload: dict, execution_source: str) -> str:
     init_db()
     execution_id = f"sandbox_exec_{uuid.uuid4().hex[:12]}"
@@ -47,6 +57,7 @@ def get_latest_sandbox_execution() -> dict | None:
         ).fetchone()
     if row is None:
         return None
+    request_payload = json.loads(row[3]) if row[3] else {}
     response_payload = json.loads(row[4]) if row[4] else {}
     return {
         "execution_id": row[0],
@@ -55,5 +66,6 @@ def get_latest_sandbox_execution() -> dict | None:
         "success": bool(row[5]),
         "elapsed_ms": int(row[6] or 0),
         "created_at": row[7],
+        **_summarize_request_payload(request_payload),
         **response_payload,
     }
