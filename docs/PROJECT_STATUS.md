@@ -408,3 +408,20 @@ Latest real smoke evidence on this machine:
 - Added sandbox runtime summary inside `GET /api/project-status`
 - Surfaced sandbox runtime evidence in `/demo`
 - DockerSandbox remains a second-phase controlled execution capability and does not replace the main DuckDB and tool-driven deterministic analysis chain.
+## Demo Script Sandbox Fields
+
+为避免 `/demo`、`GET /api/project-status` 与 `scripts/demo_mvp.ps1` 在 DockerSandbox 运行时证据上的对外交付口径漂移，当前脚本已冻结以下字段名：
+
+- `project_status_sandbox_enabled`
+- `project_status_sandbox_docker_available`
+- `project_status_sandbox_supported_templates`
+- `project_status_sandbox_max_timeout_seconds`
+- `project_status_sandbox_max_code_chars`
+- `project_status_sandbox_latest_execution_mode`
+- `project_status_sandbox_latest_template_name`
+- `project_status_sandbox_latest_python_code_char_count`
+- `project_status_sandbox_latest_parsed_output_keys`
+- `project_status_sandbox_latest_template_result_field_count`
+- `project_status_sandbox_latest_error_code`
+
+这些字段都来自现有 `summary.sandbox` 与 `summary.sandbox.latest_execution`，用于稳定演示脚本输出，并不改变“DockerSandbox 属于第二阶段受控能力、不是默认分析主链路”的项目边界。

@@ -57,6 +57,17 @@ def test_demo_script_mentions_project_status_summary_output():
     assert "project_status_session_store_latest_recovered_recovery_source" in script
     assert "project_status_session_store_latest_recovered_segment_count" in script
     assert "project_status_session_store_latest_recovered_segments" in script
+    assert "project_status_sandbox_enabled" in script
+    assert "project_status_sandbox_docker_available" in script
+    assert "project_status_sandbox_supported_templates" in script
+    assert "project_status_sandbox_max_timeout_seconds" in script
+    assert "project_status_sandbox_max_code_chars" in script
+    assert "project_status_sandbox_latest_execution_mode" in script
+    assert "project_status_sandbox_latest_template_name" in script
+    assert "project_status_sandbox_latest_python_code_char_count" in script
+    assert "project_status_sandbox_latest_parsed_output_keys" in script
+    assert "project_status_sandbox_latest_template_result_field_count" in script
+    assert "project_status_sandbox_latest_error_code" in script
     assert "project_status_latest_task_has_business_context" in script
     assert "project_status_latest_task_has_context_checkpoint" in script
     assert "project_status_latest_task_has_draft_report" in script
@@ -223,6 +234,17 @@ def test_demo_script_contract_matches_pscustomobject_output_shape():
     assert "project_status_analysis_events_exists" in object_fields[1]
     assert "project_status_tool_call_logs_exists" in object_fields[1]
     assert "project_status_eval_results_exists" in object_fields[1]
+    assert "project_status_sandbox_enabled" in object_fields[1]
+    assert "project_status_sandbox_docker_available" in object_fields[1]
+    assert "project_status_sandbox_supported_templates" in object_fields[1]
+    assert "project_status_sandbox_max_timeout_seconds" in object_fields[1]
+    assert "project_status_sandbox_max_code_chars" in object_fields[1]
+    assert "project_status_sandbox_latest_execution_mode" in object_fields[1]
+    assert "project_status_sandbox_latest_template_name" in object_fields[1]
+    assert "project_status_sandbox_latest_python_code_char_count" in object_fields[1]
+    assert "project_status_sandbox_latest_parsed_output_keys" in object_fields[1]
+    assert "project_status_sandbox_latest_template_result_field_count" in object_fields[1]
+    assert "project_status_sandbox_latest_error_code" in object_fields[1]
     assert "provider_status_allow_fallback" in object_fields[1]
     assert "provider_status_has_api_key" in object_fields[1]
     assert "provider_status_base_url" in object_fields[1]
@@ -241,6 +263,17 @@ def test_demo_script_contract_matches_pscustomobject_output_shape():
     assert "fixed_eval_average_tool_success_rate" in contract["documented_summary_fields"]
     assert "fixed_eval_case_ids" in contract["documented_summary_fields"]
     assert "fixed_eval_questions" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_enabled" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_docker_available" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_supported_templates" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_max_timeout_seconds" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_max_code_chars" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_latest_execution_mode" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_latest_template_name" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_latest_python_code_char_count" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_latest_parsed_output_keys" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_latest_template_result_field_count" in contract["documented_summary_fields"]
+    assert "project_status_sandbox_latest_error_code" in contract["documented_summary_fields"]
 
 
 def test_demo_script_contract_is_documented_across_delivery_docs():

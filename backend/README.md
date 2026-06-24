@@ -439,3 +439,8 @@ Expected failure examples:
 - the event timeline contains `task_failed`
 - if `LLM_PROVIDER=qwen` but no key is available, provider selection fails explicitly unless fallback is enabled
 - if the same task is already running, `/api/analysis/{task_id}/run` returns `409`
+## Demo Script Sandbox Fields
+
+`scripts/demo_mvp.ps1` also exports `project_status_sandbox_enabled`, `project_status_sandbox_docker_available`, `project_status_sandbox_supported_templates`, `project_status_sandbox_max_timeout_seconds`, `project_status_sandbox_max_code_chars`, `project_status_sandbox_latest_execution_mode`, `project_status_sandbox_latest_template_name`, `project_status_sandbox_latest_python_code_char_count`, `project_status_sandbox_latest_parsed_output_keys`, `project_status_sandbox_latest_template_result_field_count`, and `project_status_sandbox_latest_error_code`.
+
+These fields come from the already-implemented `summary.sandbox` runtime overview and are intended for truthful demo diagnostics rather than as evidence that the sandbox has replaced the main analysis path.

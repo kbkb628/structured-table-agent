@@ -307,6 +307,17 @@
   - `template_result_summary`
   - `summary.sandbox`
   - `summary.sandbox.latest_execution`
+  - `project_status_sandbox_enabled`
+  - `project_status_sandbox_docker_available`
+  - `project_status_sandbox_supported_templates`
+  - `project_status_sandbox_max_timeout_seconds`
+  - `project_status_sandbox_max_code_chars`
+  - `project_status_sandbox_latest_execution_mode`
+  - `project_status_sandbox_latest_template_name`
+  - `project_status_sandbox_latest_python_code_char_count`
+  - `project_status_sandbox_latest_parsed_output_keys`
+  - `project_status_sandbox_latest_template_result_field_count`
+  - `project_status_sandbox_latest_error_code`
   - `SANDBOX_SYNTAX_ERROR`
   - `SANDBOX_IMPORT_ERROR`
   - `SANDBOX_PERMISSION_ERROR`

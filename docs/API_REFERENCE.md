@@ -535,3 +535,20 @@ cd E:\bgagent1
 - `smoke_ready`：当前配置是否满足最小 smoke 调用前置条件
 - `warnings`：当前配置下的风险提示
 - `recommendations`：建议的下一步排查或配置动作
+## Demo Script Sandbox Fields
+
+`scripts/demo_mvp.ps1` now emits a stable sandbox runtime summary field set for delivery review:
+
+- `project_status_sandbox_enabled`
+- `project_status_sandbox_docker_available`
+- `project_status_sandbox_supported_templates`
+- `project_status_sandbox_max_timeout_seconds`
+- `project_status_sandbox_max_code_chars`
+- `project_status_sandbox_latest_execution_mode`
+- `project_status_sandbox_latest_template_name`
+- `project_status_sandbox_latest_python_code_char_count`
+- `project_status_sandbox_latest_parsed_output_keys`
+- `project_status_sandbox_latest_template_result_field_count`
+- `project_status_sandbox_latest_error_code`
+
+These fields are projections of the existing `summary.sandbox` and `summary.sandbox.latest_execution` runtime evidence from `GET /api/project-status`.

@@ -132,6 +132,17 @@ try {
         project_status_session_store_latest_recovered_recovery_source = $projectStatusAfterRuns.summary.session_store.event_summary.latest_recovered_recovery_source
         project_status_session_store_latest_recovered_segment_count = $projectStatusAfterRuns.summary.session_store.event_summary.latest_recovered_segment_count
         project_status_session_store_latest_recovered_segments = $projectStatusAfterRuns.summary.session_store.event_summary.latest_recovered_segments
+        project_status_sandbox_enabled = $projectStatusAfterRuns.summary.sandbox.enabled
+        project_status_sandbox_docker_available = $projectStatusAfterRuns.summary.sandbox.docker_available
+        project_status_sandbox_supported_templates = $projectStatusAfterRuns.summary.sandbox.supported_templates
+        project_status_sandbox_max_timeout_seconds = $projectStatusAfterRuns.summary.sandbox.max_timeout_seconds
+        project_status_sandbox_max_code_chars = $projectStatusAfterRuns.summary.sandbox.max_code_chars
+        project_status_sandbox_latest_execution_mode = $projectStatusAfterRuns.summary.sandbox.latest_execution.execution_mode
+        project_status_sandbox_latest_template_name = $projectStatusAfterRuns.summary.sandbox.latest_execution.template_name
+        project_status_sandbox_latest_python_code_char_count = $projectStatusAfterRuns.summary.sandbox.latest_execution.python_code_char_count
+        project_status_sandbox_latest_parsed_output_keys = $projectStatusAfterRuns.summary.sandbox.latest_execution.parsed_output_keys
+        project_status_sandbox_latest_template_result_field_count = $projectStatusAfterRuns.summary.sandbox.latest_execution.template_result_field_count
+        project_status_sandbox_latest_error_code = $projectStatusAfterRuns.summary.sandbox.latest_execution.error.code
         project_status_latest_task_has_business_context = $projectStatusAfterRuns.summary.latest_task.artifacts.has_business_context
         project_status_latest_task_has_context_checkpoint = $projectStatusAfterRuns.summary.latest_task.artifacts.has_context_checkpoint
         project_status_latest_task_has_draft_report = $projectStatusAfterRuns.summary.latest_task.artifacts.has_draft_report

@@ -284,3 +284,8 @@ cd E:\bgagent1\backend
 - Controlled execution is available through `POST /api/sandbox/execute`.
 - `GET /api/project-status` and `/demo` surface sandbox runtime status and latest execution evidence.
 - DockerSandbox remains a second-phase controlled execution capability and does not replace the main DuckDB and tool-driven deterministic analysis chain.
+## Demo Script Sandbox Fields
+
+`scripts/demo_mvp.ps1` now also freezes the sandbox runtime evidence fields `project_status_sandbox_enabled`, `project_status_sandbox_docker_available`, `project_status_sandbox_supported_templates`, `project_status_sandbox_max_timeout_seconds`, `project_status_sandbox_max_code_chars`, `project_status_sandbox_latest_execution_mode`, `project_status_sandbox_latest_template_name`, `project_status_sandbox_latest_python_code_char_count`, `project_status_sandbox_latest_parsed_output_keys`, `project_status_sandbox_latest_template_result_field_count`, and `project_status_sandbox_latest_error_code`.
+
+These script fields summarize the existing `summary.sandbox` and `summary.sandbox.latest_execution` runtime evidence already exposed by `GET /api/project-status`; they do not imply DockerSandbox replaces the default LangGraph + DuckDB + controlled tool chain.
